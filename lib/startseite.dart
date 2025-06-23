@@ -3,7 +3,7 @@ import 'widgets/fortschrittsbalken.dart';
 import 'widgets/kopfzeile.dart';
 
 class startseite extends StatelessWidget {
-  final int streakWert = 13;
+  final int streakWert = 25;
   final List<String> tage = ['MO', 'DI', 'MI', 'DO', 'FR', 'SA', 'SO'];
   final int aktuellerTagIndex = 3; // Donnerstag
 
@@ -56,8 +56,7 @@ class startseite extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Kopfzeile(username: "username", streakWert: streakWert),
-              SizedBox(height: 24),
-              // Wochentage
+              SizedBox(height: 16),
               Text(
                 "Journal",
                 style: TextStyle(color: Colors.white, fontSize: 18),

@@ -34,6 +34,37 @@ class _KopfzeileState extends State<Kopfzeile> {
     });
   }
 
+  Widget Willkommen() {
+    return Text(
+      "Hallo,\n${widget.username}!",
+      style: TextStyle(color: Colors.white, fontSize: 26),
+    );
+  }
+
+  Widget streakAnzeige(double progress) {
+    return SizedBox(
+      width: 200,
+      height: 100,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          CircularProgressIndicator(
+            value: progress, // Fortschrittswert wird übergeben
+            strokeWidth: 50,
+            valueColor: AlwaysStoppedAnimation<Color>(
+              const Color.fromARGB(255, 118, 3, 212),
+            ),
+            backgroundColor: Colors.grey[800],
+          ),
+          Text(
+            '${widget.streakWert}',
+            style: TextStyle(color: Colors.white, fontSize: 40),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -41,27 +72,7 @@ class _KopfzeileState extends State<Kopfzeile> {
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              "Hallo,\n${widget.username}!",
-              style: TextStyle(color: Colors.white, fontSize: 26),
-            ),
-            Stack(
-              alignment: Alignment.center,
-              children: [
-                CircularProgressIndicator(
-                  value: widget.streakWert / 30,
-                  strokeWidth: 6,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.yellow),
-                  backgroundColor: Colors.grey[800],
-                ),
-                Text(
-                  '${widget.streakWert}',
-                  style: TextStyle(color: Colors.white),
-                ),
-              ],
-            ),
-          ],
+          children: [Willkommen(), streakAnzeige(widget.streakWert / 30)],
         ),
         SizedBox(height: 16),
         Text(
