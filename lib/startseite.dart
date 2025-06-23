@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'widgets/fortschrittsbalken.dart';
+import 'widgets/kopfzeile.dart';
 
 class startseite extends StatelessWidget {
   final int streakWert = 13;
@@ -54,37 +55,13 @@ class startseite extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header mit Streak
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text("Hallo,\nJakob!",
-                      style: TextStyle(color: Colors.white, fontSize: 26)),
-                  Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      CircularProgressIndicator(
-                        value: streakWert / 30,
-                        strokeWidth: 6,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.yellow),
-                        backgroundColor: Colors.grey[800],
-                      ),
-                      Text('$streakWert', style: TextStyle(color: Colors.white)),
-                    ],
-                  )
-                ],
-              ),
-              SizedBox(height: 16),
-              Text(
-                "„Zum Erfolg gibt es keinen Lift.\nMan muss die Treppe benutzen“",
-                style: TextStyle(
-                  color: Colors.grey[400],
-                  fontStyle: FontStyle.italic,
-                ),
-              ),
+              Kopfzeile(username: "username", streakWert: streakWert),
               SizedBox(height: 24),
               // Wochentage
-              Text("Journal", style: TextStyle(color: Colors.white, fontSize: 18)),
+              Text(
+                "Journal",
+                style: TextStyle(color: Colors.white, fontSize: 18),
+              ),
               SizedBox(height: 8),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -108,14 +85,18 @@ class startseite extends StatelessWidget {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text(day,
-                                style: TextStyle(
-                                  color: isToday ? Colors.black : Colors.white,
-                                )),
+                            Text(
+                              day,
+                              style: TextStyle(
+                                color: isToday ? Colors.black : Colors.white,
+                              ),
+                            ),
                             SizedBox(height: 4),
-                            Icon(Icons.fitness_center,
-                                size: 16,
-                                color: isToday ? Colors.black : Colors.white),
+                            Icon(
+                              Icons.fitness_center,
+                              size: 16,
+                              color: isToday ? Colors.black : Colors.white,
+                            ),
                           ],
                         ),
                       ),
@@ -127,27 +108,11 @@ class startseite extends StatelessWidget {
               // Feed
               Text("Feed", style: TextStyle(color: Colors.white, fontSize: 18)),
               SizedBox(height: 8),
-              Text("keine neuen Aktivitäten",
-                  style: TextStyle(color: Colors.grey[500])),
+              Text(
+                "keine neuen Aktivitäten",
+                style: TextStyle(color: Colors.grey[500]),
+              ),
               SizedBox(height: 20),
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
               //Überschrift für Fortschritt-Bereich
               Padding(
@@ -159,8 +124,11 @@ class startseite extends StatelessWidget {
               ),
 
               //Klasse aus fortschrittsbalken.dart
-              Fortschrittsbalken(label: 'streax programmieren', fortschritt: 0.7),
-              Fortschrittsbalken(label: '80kg bis Oktober', fortschritt: 0.2)
+              Fortschrittsbalken(
+                label: 'streax programmieren',
+                fortschritt: 0.7,
+              ),
+              Fortschrittsbalken(label: '80kg bis Oktober', fortschritt: 0.2),
             ],
           ),
         ),
@@ -185,9 +153,10 @@ class startseite extends StatelessWidget {
             Container(
               padding: EdgeInsets.all(8),
               decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 0, 68, 255),
-                  shape: BoxShape.circle,
-                  boxShadow: [BoxShadow(color: Colors.black45, blurRadius: 6)]),
+                color: const Color.fromARGB(255, 0, 68, 255),
+                shape: BoxShape.circle,
+                boxShadow: [BoxShadow(color: Colors.black45, blurRadius: 6)],
+              ),
               child: Icon(Icons.add, color: Colors.white, size: 30),
             ),
             Icon(Icons.menu_book, color: Colors.white),
