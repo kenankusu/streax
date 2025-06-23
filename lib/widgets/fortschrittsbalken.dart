@@ -7,6 +7,7 @@ class Fortschrittsbalken extends StatelessWidget {
   const Fortschrittsbalken({
     required this.label,
     required this.fortschritt,
+    super.key,
   });
 
   @override
@@ -16,25 +17,36 @@ class Fortschrittsbalken extends StatelessWidget {
       children: [
         Text("Deine Ziele",
             style: TextStyle(color: Colors.white, fontSize: 18)),
-        LinearProgressIndicator(
-          value: fortschritt,
-          backgroundColor: Colors.grey[300],
-          valueColor: AlwaysStoppedAnimation<Color>(
-            fortschritt >= 1.0
-                ? Colors.green
-                : fortschritt > 0.6
-                    ? Colors.blue
-                    : fortschritt >= 0.3
-                        ? Colors.yellow
-                        : Colors.red,
+        Container( //wrappper für Progress bar, damit border styles verwendet werden können.
+          padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 4),
+          decoration: BoxDecoration(
+            color: Colors.transparent,
+            border: Border.all(color: Colors.white, width: 1),
+            borderRadius: BorderRadius.circular(10),
           ),
-          minHeight: 14,
+          child: LinearProgressIndicator( //Progressbar
+            value: fortschritt,
+            backgroundColor: Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+            valueColor: AlwaysStoppedAnimation<Color>(
+              fortschritt >= 1.0
+                  ? Colors.green
+                  : fortschritt > 0.6
+                      ? Colors.blue
+                      : fortschritt >= 0.3
+                          ? Colors.yellow
+                          : Colors.red,
+            ),
+            minHeight: 14,
+          ),
         ),
-                SizedBox(height: 8),
-        Text(
-          label,
-          style: TextStyle(color: Colors.white, fontSize: 16),
-        ),
+        const SizedBox(height: 8),
+        Center(
+          child: Text(
+            label,
+            style: const TextStyle(color: Colors.white, fontSize: 16),
+          ),
+        )
       ],
     );
   }
