@@ -131,7 +131,36 @@ class startseite extends StatelessWidget {
                   style: TextStyle(color: Colors.grey[500])),
               SizedBox(height: 20),
 
-              Fortschrittsbalken(label: 'streax programmieren', fortschritt: 0.3)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+              //Überschrift für Fortschritt-Bereich
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Text(
+                  "Deine Ziele",
+                  style: Theme.of(context).textTheme.headlineMedium,
+                ),
+              ),
+
+              //Klasse aus fortschrittsbalken.dart
+              Fortschrittsbalken(label: 'streax programmieren', fortschritt: 0.7),
+              Fortschrittsbalken(label: '80kg bis Oktober', fortschritt: 0.2)
             ],
           ),
         ),

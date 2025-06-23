@@ -12,8 +12,9 @@ class streax extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         textTheme: TextTheme(
-          bodyLarge: TextStyle(color: Colors.white, fontSize: 20),
-          bodyMedium: TextStyle(color: Colors.white, fontSize: 18),
+          headlineLarge: TextStyle(color: Colors.white, fontSize: 40),
+          headlineMedium: TextStyle(color: Colors.white,fontSize: 34, fontWeight: FontWeight.bold),
+          headlineSmall: TextStyle(color: Colors.white, fontSize: 16),
           bodySmall: TextStyle(color: Colors.white, fontSize: 16),
         ),
       ),
