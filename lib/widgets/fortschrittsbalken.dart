@@ -33,7 +33,7 @@ class Fortschrittsbalken extends StatelessWidget {
                   fortschritt == 1.0 //if else um die Farbe des Fortschrittsbalkens zu bestimmen
                       ? Colors.green
                       : fortschritt > 0.6
-                          ? Colors.blue
+                          ? const Color.fromRGBO(33, 150, 243, 1)
                           : fortschritt >= 0.3
                               ? Colors.yellow
                               : Colors.red,
