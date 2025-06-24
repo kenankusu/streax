@@ -4,6 +4,8 @@ import 'startseite.dart';
 void main() => runApp(streax());
 
 class streax extends StatelessWidget {
+  const streax({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

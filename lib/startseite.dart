@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'widgets/fortschrittsbalken.dart';
 import 'widgets/kopfzeile.dart';
+import 'widgets/journal.dart';
+import 'kalender.dart';
 
 class startseite extends StatelessWidget {
   final int streakWert = 13;
-  final List<String> tage = ['MO', 'DI', 'MI', 'DO', 'FR', 'SA', 'SO'];
-  final int aktuellerTagIndex = 3; // Donnerstag
+
+  const startseite({super.key});
 
   Color fortschrittFarbe(double fortschritt) {
     if (fortschritt >= 1.0) return Colors.green;
@@ -63,47 +65,7 @@ class startseite extends StatelessWidget {
                 style: TextStyle(color: Colors.white, fontSize: 18),
               ),
               SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: tage.asMap().entries.map((entry) {
-                  int idx = entry.key;
-                  String day = entry.value;
-                  bool isToday = idx == aktuellerTagIndex;
-
-                  return GestureDetector(
-                    onTap: () {
-                      // TODO: Öffne Journal für den Tag
-                    },
-                    child: Container(
-                      width: 40,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        color: isToday ? Colors.yellow : Colors.grey[800],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              day,
-                              style: TextStyle(
-                                color: isToday ? Colors.black : Colors.white,
-                              ),
-                            ),
-                            SizedBox(height: 4),
-                            Icon(
-                              Icons.fitness_center,
-                              size: 16,
-                              color: isToday ? Colors.black : Colors.white,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
+              journal(),
               SizedBox(height: 20),
               // Feed
               Text("Feed", style: TextStyle(color: Colors.white, fontSize: 18)),
@@ -129,6 +91,7 @@ class startseite extends StatelessWidget {
                 fortschritt: 0.7,
               ),
               Fortschrittsbalken(label: '80kg bis Oktober', fortschritt: 0.2),
+              journal(),
             ],
           ),
         ),
@@ -157,9 +120,24 @@ class startseite extends StatelessWidget {
                 shape: BoxShape.circle,
                 boxShadow: [BoxShadow(color: Colors.black45, blurRadius: 6)],
               ),
-              child: Icon(Icons.add, color: Colors.white, size: 30),
+              child: GestureDetector(
+                onTap: () async {
+                  await showJournalContextMenu(context, () {
+                    // setState in startseite aufrufen
+                    (context as Element).markNeedsBuild();
+                  });
+                },
+                child: Icon(Icons.add, color: Colors.white, size: 30),
+              ),
             ),
-            Icon(Icons.menu_book, color: Colors.white),
+            IconButton(
+              icon: Icon(Icons.calendar_month, color: Colors.white),
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => kalender()),
+                );
+              },
+            ),
             Icon(Icons.settings, color: Colors.white),
           ],
         ),
