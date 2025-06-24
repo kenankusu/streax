@@ -5,9 +5,15 @@ import 'widgets/journal.dart';
 import 'kalender.dart';
 
 class startseite extends StatelessWidget {
+<<<<<<< HEAD
   final int streakWert = 13;
 
   const startseite({super.key});
+=======
+  final int streakWert = 25;
+  final List<String> tage = ['MO', 'DI', 'MI', 'DO', 'FR', 'SA', 'SO'];
+  final int aktuellerTagIndex = 3; // Donnerstag
+>>>>>>> cb13f71eb42ab6631e88021dccd82cd0066cb0c5
 
   Color fortschrittFarbe(double fortschritt) {
     if (fortschritt >= 1.0) return Colors.green;
@@ -58,8 +64,7 @@ class startseite extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Kopfzeile(username: "username", streakWert: streakWert),
-              SizedBox(height: 24),
-              // Wochentage
+              SizedBox(height: 16),
               Text(
                 "Journal",
                 style: TextStyle(color: Colors.white, fontSize: 18),
