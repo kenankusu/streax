@@ -39,10 +39,7 @@ class _JournalState extends State<journal> {
         bool hasEntry = eintrag != null && eintrag['option'] != null && eintrag['option'] != '';
         String? option = eintrag?['option'];
 
-        // Icon-Regel:
-        // - Vergangene Tage: immer Icon (passend oder default)
-        // - Heute: nur Icon, wenn Eintrag vorhanden
-        // - Zukunft: kein Icon
+
         String? iconPath;
         if (idx < today) {
           iconPath = _iconPathForOption(option);
@@ -64,91 +61,95 @@ class _JournalState extends State<journal> {
           bgColor = const Color.fromARGB(255, 75, 73, 73); // Standard grau
         }
 
-        return GestureDetector(
-          onTap: hasEntry
-              ? () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      backgroundColor: const Color.fromARGB(255, 75, 73, 73),
-                      title: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              eintrag?['option'] ?? '',
-                              style: TextStyle(color: Colors.white),
-                              overflow: TextOverflow.ellipsis,
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 2.0), // Abstand zwischen den Blöcken verkleinern
+          child: GestureDetector(
+            onTap: hasEntry
+                ? () {
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        backgroundColor: const Color.fromARGB(255, 75, 73, 73),
+                        title: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                eintrag['option'] ?? '',
+                                style: TextStyle(color: Colors.white),
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
-                          ),
-                          IconButton(
-                            icon: Icon(Icons.edit, color: Colors.blue),
-                            tooltip: 'Bearbeiten',
-                            onPressed: () {
-                              Navigator.of(context).pop(); // Dialog schließen
-                              showJournalContextMenu(
-                                context,
-                                () => setState(() {}),
-                                tagIndex: idx, // Index des Tages übergeben
-                                initialOption: eintrag?['option'],
-                                initialText: eintrag?['text'],
-                                isEdit: true,
-                              );
-                            },
+                            IconButton(
+                              icon: Icon(Icons.edit, color: Colors.blue),
+                              tooltip: 'Bearbeiten',
+                              onPressed: () {
+                                Navigator.of(context).pop(); // Dialog schließen
+                                showJournalContextMenu(
+                                  context,
+                                  () => setState(() {}),
+                                  tagIndex: idx, // Index des Tages übergeben
+                                  initialOption: eintrag['option'],
+                                  initialText: eintrag['text'],
+                                  isEdit: true,
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                        content: Text(
+                          eintrag['text'] ?? '',
+                          style: TextStyle(color: Colors.white70),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: Text('OK', style: TextStyle(color: Colors.blue)),
                           ),
                         ],
                       ),
-                      content: Text(
-                        eintrag?['text'] ?? '',
-                        style: TextStyle(color: Colors.white70),
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          child: Text('OK', style: TextStyle(color: Colors.blue)),
+                    );
+                  }
+                : null,
+            child: Container(
+              width: 49,   
+              height: 80,  
+              decoration: BoxDecoration(
+                color: bgColor,
+                borderRadius: BorderRadius.circular(10), 
+              ),
+              child: Column(
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 8.0), // Mehr Abstand nach oben
+                      child: iconPath != null
+                          ? Image.asset(
+                              iconPath,
+                              width: 36,   // Größeres Icon
+                              height: 36,
+                              fit: BoxFit.contain,
+                            )
+                          : SizedBox.shrink(),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 1,
+                    child: Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Text(
+                        tag,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16, 
+                          fontWeight: idx == today ? FontWeight.bold : FontWeight.normal,
                         ),
-                      ],
-                    ),
-                  );
-                }
-              : null,
-          child: Container(
-            width: 40,
-            height: 60,
-            decoration: BoxDecoration(
-              color: bgColor,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Column(
-              children: [
-                Expanded(
-                  flex: 2,
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 4.0),
-                    child: iconPath != null
-                        ? Image.asset(
-                            iconPath,
-                            width: 28,
-                            height: 28,
-                            fit: BoxFit.contain,
-                          )
-                        : SizedBox.shrink(),
-                  ),
-                ),
-                Expanded(
-                  flex: 1,
-                  child: Align(
-                    alignment: Alignment.bottomCenter,
-                    child: Text(
-                      tag,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: idx == today ? FontWeight.bold : FontWeight.normal,
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );
@@ -209,8 +210,8 @@ Future<void> showJournalContextMenu(
                     'Boxen',
                   ].map((option) => RadioListTile<String>(
                         activeColor: Colors.blue,
-                        fillColor: MaterialStateProperty.resolveWith<Color>(
-                          (states) => states.contains(MaterialState.selected) ? Colors.blue : Colors.white,
+                        fillColor: WidgetStateProperty.resolveWith<Color>(
+                          (states) => states.contains(WidgetState.selected) ? Colors.blue : Colors.white,
                         ),
                         visualDensity: VisualDensity.compact,
                         title: Text(option, style: TextStyle(color: Colors.white)),

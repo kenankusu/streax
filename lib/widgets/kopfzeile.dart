@@ -37,7 +37,7 @@ class _KopfzeileState extends State<Kopfzeile> {
   Widget Willkommen() {
     return Text(
       "Hallo,\n${widget.username}!",
-      style: TextStyle(color: Colors.white, fontSize: 26),
+      style: Theme.of(context).textTheme.headlineMedium,
     );
   }
 
