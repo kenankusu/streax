@@ -6,15 +6,9 @@ import 'kalender.dart';
 import 'aktivitaet.dart';
 
 class startseite extends StatelessWidget {
-<<<<<<< HEAD
-  final int streakWert = 13;
-
-  const startseite({super.key});
-=======
   final int streakWert = 25;
   final List<String> tage = ['MO', 'DI', 'MI', 'DO', 'FR', 'SA', 'SO'];
   final int aktuellerTagIndex = 3; // Donnerstag
->>>>>>> cb13f71eb42ab6631e88021dccd82cd0066cb0c5
 
   Color fortschrittFarbe(double fortschritt) {
     if (fortschritt >= 1.0) return Colors.green;
@@ -89,11 +83,7 @@ class startseite extends StatelessWidget {
 
               // Feed
               Text("Feed", style: Theme.of(context).textTheme.headlineMedium),
-<<<<<<< HEAD
-              
-=======
               SizedBox(height: 8),
->>>>>>> c8b8edc12b3e846d25d54f77f7997bf85f1ee04b
               Text(
                 "keine neuen Aktivitäten",
                 style: TextStyle(color: Colors.grey[500]),
@@ -152,7 +142,7 @@ bottomNavigationBar: Padding(
               await showModalBottomSheet(
                 context: context,
                 isScrollControlled: true,
-                builder: (context) => const AktivitaetSheet(),
+                builder: (context) => const AktivitaetHinzufuegen(),
               );
             },
             child: Icon(Icons.add, color: Colors.white, size: 30),
