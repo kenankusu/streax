@@ -19,7 +19,7 @@ class Fortschrittsbalken extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 4),
           decoration: BoxDecoration(
             color: Colors.transparent,
-            border: Border.all(color: const Color.fromARGB(255, 84, 84, 84), width: 3),
+            border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 3),
             borderRadius: BorderRadius.circular(100), //Farbe, Rundung und Breite der Border
           ),
           child: Stack( //Überlagerung von % auf dem Balken

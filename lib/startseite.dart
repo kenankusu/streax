@@ -3,18 +3,12 @@ import 'widgets/fortschrittsbalken.dart';
 import 'widgets/kopfzeile.dart';
 import 'widgets/journal.dart';
 import 'kalender.dart';
+import 'aktivitaet.dart';
 
 class startseite extends StatelessWidget {
-<<<<<<< HEAD
   final int streakWert = 13;
 
   const startseite({super.key});
-=======
-  final int streakWert = 25;
-  final List<String> tage = ['MO', 'DI', 'MI', 'DO', 'FR', 'SA', 'SO'];
-  final int aktuellerTagIndex = 3; // Donnerstag
->>>>>>> cb13f71eb42ab6631e88021dccd82cd0066cb0c5
-
   Color fortschrittFarbe(double fortschritt) {
     if (fortschritt >= 1.0) return Colors.green;
     if (fortschritt > 0.6) return Colors.blue;
@@ -56,7 +50,7 @@ class startseite extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[900],
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -102,52 +96,58 @@ class startseite extends StatelessWidget {
           ),
         ),
       ),
-      bottomNavigationBar: Container(
-        padding: EdgeInsets.symmetric(vertical: 8),
-        decoration: BoxDecoration(
-          color: Colors.grey[850],
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black54,
-              blurRadius: 10,
-              offset: Offset(0, -2),
-            ),
-          ],
+
+bottomNavigationBar: Padding(
+  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16), // space from screen edges
+  child: Container(
+    padding: const EdgeInsets.symmetric(vertical: 8),
+    decoration: BoxDecoration(
+      color: Theme.of(context).colorScheme.surfaceContainer,
+      borderRadius: BorderRadius.circular(32), // rounded all around
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black26,
+          blurRadius: 12,
+          offset: Offset(0, 4),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            Icon(Icons.home, color: Colors.white),
-            Icon(Icons.group, color: Colors.white),
-            Container(
-              padding: EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 0, 68, 255),
-                shape: BoxShape.circle,
-                boxShadow: [BoxShadow(color: Colors.black45, blurRadius: 6)],
-              ),
-              child: GestureDetector(
-                onTap: () async {
-                  await showJournalContextMenu(context, () {
-                    // setState in startseite aufrufen
-                    (context as Element).markNeedsBuild();
-                  });
-                },
-                child: Icon(Icons.add, color: Colors.white, size: 30),
-              ),
-            ),
-            IconButton(
-              icon: Icon(Icons.calendar_month, color: Colors.white),
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => kalender()),
-                );
-              },
-            ),
-            Icon(Icons.settings, color: Colors.white),
-          ],
+      ],
+    ),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: [
+        Icon(Icons.home, color: Colors.white),
+        Icon(Icons.group, color: Colors.white),
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: const Color.fromARGB(255, 0, 68, 255),
+            shape: BoxShape.circle,
+            boxShadow: [BoxShadow(color: Colors.black45, blurRadius: 6)],
+          ),
+          child: GestureDetector(
+            onTap: () async {
+              await showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                builder: (context) => const AktivitaetSheet(),
+              );
+            },
+            child: Icon(Icons.add, color: Colors.white, size: 30),
+          ),
         ),
-      ),
+        IconButton(
+          icon: Icon(Icons.calendar_month, color: Colors.white),
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => kalender()),
+            );
+          },
+        ),
+        Icon(Icons.settings, color: Colors.white),
+            ],
+    ),
+  ),
+),
     );
   }
 }
