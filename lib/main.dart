@@ -24,6 +24,9 @@ class streax extends StatelessWidget {
           primary: const Color.fromARGB(255, 0, 115, 255),
           secondary: const Color.fromARGB(255, 100, 223, 211),
           tertiary: const Color.fromARGB(255, 22, 0, 147),
+          surface: const Color.fromARGB(255, 28, 32, 31), //Hintergrundfarbe aller Seiten
+          onSurface: const Color.fromARGB(255, 64, 65, 65), //Highlight Farbe
+          surfaceContainer: const Color.fromARGB(255, 43, 47, 46), //Hintergrundfarbe der Container, z.B. Navigation bar
         ),
       )
     );
