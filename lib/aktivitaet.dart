@@ -27,80 +27,83 @@ class AktivitaetHinzufuegen extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.all(24),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('Neue Aktivität', style: Theme.of(context).textTheme.headlineMedium),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                decoration: InputDecoration(
-                  labelText: 'Sportart auswählen',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20),
-                    borderSide: BorderSide(
-                      color: Theme.of(context).colorScheme.primary,
-                      width: 6,
+        child: SizedBox(
+          height: MediaQuery.of(context).size.height * 0.85,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Neue Aktivität', style: Theme.of(context).textTheme.headlineMedium),
+                const SizedBox(height: 16),
+                DropdownButtonFormField<String>(
+                  decoration: InputDecoration(
+                    labelText: 'Sportart auswählen',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(20),
+                      borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.primary,
+                        width: 6,
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(20),
+                      borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.primary,
+                        width: 6,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(20),
+                      borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.primary,
+                        width: 6,
+                      ),
                     ),
                   ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20),
-                    borderSide: BorderSide(
-                      color: Theme.of(context).colorScheme.primary,
-                      width: 6,
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20),
-                    borderSide: BorderSide(
-                      color: Theme.of(context).colorScheme.primary,
-                      width: 6,
-                    ),
-                  ),
+                  items: sportarten
+                      .map((sport) => DropdownMenuItem(
+                            value: sport,
+                            child: Text(sport),
+                          ))
+                      .toList(),
+                  onChanged: (value) {},
                 ),
-                items: sportarten
-                    .map((sport) => DropdownMenuItem(
-                          value: sport,
-                          child: Text(sport),
-                        ))
-                    .toList(),
-                onChanged: (value) {},
-              ),
-              const SizedBox(height: 16),
-              ZeitDatumAuswahl(),
-              const SizedBox(height: 16),
-              Text('Wie hast du dich gefühlt?', style: Theme.of(context).textTheme.headlineSmall),
-              const SizedBox(height: 16),
-              EmojiAuswahl(),
-              const SizedBox(height: 16),
-              FotoHinzufuegen(),
-              const SizedBox(height: 16),
-              TextField(
-                controller: notizenController,
-                maxLines: 3,
-                decoration: InputDecoration(
-                  labelText: 'Notizen',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: null, // keine Funktion für jetzt
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(
+                const SizedBox(height: 16),
+                ZeitDatumAuswahl(),
+                const SizedBox(height: 16),
+                Text('Wie hast du dich gefühlt?', style: Theme.of(context).textTheme.headlineSmall),
+                const SizedBox(height: 16),
+                EmojiAuswahl(),
+                const SizedBox(height: 16),
+                FotoHinzufuegen(),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: notizenController,
+                  maxLines: 3,
+                  decoration: InputDecoration(
+                    labelText: 'Notizen',
+                    border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(20),
                     ),
                   ),
-                  child: const Text('Speichern'),
                 ),
-              ),
-            ],
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: null, // keine Funktion für jetzt
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                    child: const Text('Speichern'),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
