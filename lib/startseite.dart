@@ -5,15 +5,11 @@ import 'widgets/journal.dart';
 import 'kalender.dart';
 
 class startseite extends StatelessWidget {
-<<<<<<< HEAD
-  final int streakWert = 13;
-
-  const startseite({super.key});
-=======
   final int streakWert = 25;
   final List<String> tage = ['MO', 'DI', 'MI', 'DO', 'FR', 'SA', 'SO'];
   final int aktuellerTagIndex = 3; // Donnerstag
->>>>>>> cb13f71eb42ab6631e88021dccd82cd0066cb0c5
+
+  startseite({super.key});
 
   Color fortschrittFarbe(double fortschritt) {
     if (fortschritt >= 1.0) return Colors.green;
@@ -65,16 +61,29 @@ class startseite extends StatelessWidget {
             children: [
               Kopfzeile(username: "username", streakWert: streakWert),
               SizedBox(height: 16),
-              Text(
-                "Journal",
-                style: TextStyle(color: Colors.white, fontSize: 18),
+              GestureDetector(
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (context) => kalender()),
+                  );
+                },
+                child: Row(
+                  children: [
+                    Text(
+                      "Deine Woche",
+                      style: Theme.of(context).textTheme.headlineMedium,
+                    ),
+                    SizedBox(width: 2),
+                    Icon(Icons.chevron_right, color: Colors.white, size: 32),
+                  ],
+                ),
               ),
               SizedBox(height: 8),
               journal(),
               SizedBox(height: 20),
               // Feed
-              Text("Feed", style: TextStyle(color: Colors.white, fontSize: 18)),
-              SizedBox(height: 8),
+              Text("Feed", style: Theme.of(context).textTheme.headlineMedium),
+              
               Text(
                 "keine neuen Aktivitäten",
                 style: TextStyle(color: Colors.grey[500]),
@@ -96,7 +105,6 @@ class startseite extends StatelessWidget {
                 fortschritt: 0.7,
               ),
               Fortschrittsbalken(label: '80kg bis Oktober', fortschritt: 0.2),
-              journal(),
             ],
           ),
         ),
