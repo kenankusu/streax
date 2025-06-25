@@ -19,7 +19,13 @@ class streax extends StatelessWidget {
           headlineSmall: TextStyle(color: Colors.white, fontSize: 16),
           bodySmall: TextStyle(color: Colors.white, fontSize: 16),
         ),
-      ),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.green,
+          primary: const Color.fromARGB(255, 0, 115, 255),
+          secondary: const Color.fromARGB(255, 100, 223, 211),
+          tertiary: const Color.fromARGB(255, 22, 0, 147),
+        ),
+      )
     );
   }
 }

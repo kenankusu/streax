@@ -81,9 +81,14 @@ class startseite extends StatelessWidget {
               SizedBox(height: 8),
               journal(),
               SizedBox(height: 20),
+
               // Feed
               Text("Feed", style: Theme.of(context).textTheme.headlineMedium),
+<<<<<<< HEAD
               
+=======
+              SizedBox(height: 8),
+>>>>>>> c8b8edc12b3e846d25d54f77f7997bf85f1ee04b
               Text(
                 "keine neuen Aktivitäten",
                 style: TextStyle(color: Colors.grey[500]),
