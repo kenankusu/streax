@@ -9,22 +9,15 @@ final Map<String, String> optionIconMap = {
   'Tischtennis': 'assets/icons/journal/tt.png',
   'Boxen': 'assets/icons/journal/boxen.png',
 };
-final String defaultIconPath = 'assets/icons/journal/fail.png';
-
-String _iconPathForOption(String? option) {
-  if (option == null) return defaultIconPath;
-  return optionIconMap[option] ?? defaultIconPath;
-}
 
 class journal extends StatefulWidget {
   const journal({super.key});
-
   @override
   State<journal> createState() => _JournalState();
 }
 
 class _JournalState extends State<journal> {
-  final List<String> wochentage = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
+  final List<String> wochentage = ["MO", "DI", "MI", "DO", "FR", "SA", "SO"];
 
   @override
   Widget build(BuildContext context) {
@@ -39,118 +32,109 @@ class _JournalState extends State<journal> {
         bool hasEntry = eintrag != null && eintrag['option'] != null && eintrag['option'] != '';
         String? option = eintrag?['option'];
 
+        // Farben bestimmen
+        Color borderColor;
+        if (hasEntry) {
+          borderColor = Theme.of(context).colorScheme.primary;
+        } else {
+          borderColor = const Color.fromARGB(255, 75, 73, 73); // Standard grau
+        }
 
         String? iconPath;
         if (idx < today) {
-          iconPath = _iconPathForOption(option);
+          iconPath = optionIconMap[option];
         } else if (idx == today && hasEntry) {
-          iconPath = _iconPathForOption(option);
+          iconPath = optionIconMap[option];
         } else {
           iconPath = null;
         }
 
-        // Farben bestimmen
-        Color bgColor;
-        if (idx == today && hasEntry) {
-          bgColor = const Color.fromARGB(255, 0, 40, 150); // dunkleres Blau für heute mit Eintrag
-        } else if (hasEntry) {
-          bgColor = const Color.fromARGB(255, 0, 68, 255); // blau für Tage mit Eintrag
-        } else if (idx == today) {
-          bgColor = const Color.fromARGB(255, 0, 68, 255); // Standard blau für heute ohne Eintrag
-        } else {
-          bgColor = const Color.fromARGB(255, 75, 73, 73); // Standard grau
-        }
-
         return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 2.0), // Abstand zwischen den Blöcken verkleinern
-          child: GestureDetector(
-            onTap: hasEntry
-                ? () {
-                    showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        backgroundColor: const Color.fromARGB(255, 75, 73, 73),
-                        title: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                eintrag['option'] ?? '',
-                                style: TextStyle(color: Colors.white),
-                                overflow: TextOverflow.ellipsis,
+          padding: const EdgeInsets.symmetric(horizontal: 2.0),
+          child: Column(
+            children: [
+              // Tagesbezeichnung über der Box
+              Text(
+                tag,
+                style: TextStyle(
+                  color: idx == today ? Theme.of(context).colorScheme.primary : Colors.white,
+                  fontSize: 16,
+                  fontWeight: idx == today ? FontWeight.bold : FontWeight.normal,
+                ),
+              ),
+              SizedBox(height: 4),
+              GestureDetector(
+                onTap: hasEntry
+                    ? () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            backgroundColor: const Color.fromARGB(255, 75, 73, 73),
+                            title: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    eintrag['option'] ?? '',
+                                    style: TextStyle(color: Colors.white),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: Icon(Icons.edit, color: Theme.of(context).colorScheme.primary),
+                                  tooltip: 'Bearbeiten',
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                    showJournalContextMenu(
+                                      context,
+                                      () => setState(() {}),
+                                      tagIndex: idx,
+                                      initialOption: eintrag['option'],
+                                      initialText: eintrag['text'],
+                                      isEdit: true,
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
+                            content: Text(
+                              eintrag['text'] ?? '',
+                              style: TextStyle(color: Colors.white70),
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                                child: Text('OK', style: TextStyle(color: Theme.of(context).colorScheme.primary)),
                               ),
-                            ),
-                            IconButton(
-                              icon: Icon(Icons.edit, color: Colors.blue),
-                              tooltip: 'Bearbeiten',
-                              onPressed: () {
-                                Navigator.of(context).pop(); // Dialog schließen
-                                showJournalContextMenu(
-                                  context,
-                                  () => setState(() {}),
-                                  tagIndex: idx, // Index des Tages übergeben
-                                  initialOption: eintrag['option'],
-                                  initialText: eintrag['text'],
-                                  isEdit: true,
-                                );
-                              },
-                            ),
-                          ],
-                        ),
-                        content: Text(
-                          eintrag['text'] ?? '',
-                          style: TextStyle(color: Colors.white70),
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(),
-                            child: Text('OK', style: TextStyle(color: Colors.blue)),
+                            ],
                           ),
-                        ],
-                      ),
-                    );
-                  }
-                : null,
-            child: Container(
-              width: 49,   
-              height: 80,  
-              decoration: BoxDecoration(
-                color: bgColor,
-                borderRadius: BorderRadius.circular(10), 
-              ),
-              child: Column(
-                children: [
-                  Expanded(
-                    flex: 2,
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 8.0), // Mehr Abstand nach oben
-                      child: iconPath != null
-                          ? Image.asset(
-                              iconPath,
-                              width: 36,   // Größeres Icon
-                              height: 36,
-                              fit: BoxFit.contain,
-                            )
-                          : SizedBox.shrink(),
+                        );
+                      }
+                    : null,
+                child: Container(
+                  width: 50,
+                  height: 70,
+                  decoration: BoxDecoration(
+                    color: Colors.transparent,
+                    border: Border.all(
+                      color: borderColor,
+                      width: 4,
                     ),
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  Expanded(
-                    flex: 1,
-                    child: Align(
-                      alignment: Alignment.bottomCenter,
-                      child: Text(
-                        tag,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16, 
-                          fontWeight: idx == today ? FontWeight.bold : FontWeight.normal,
-                        ),
-                      ),
-                    ),
+                  child: Center(
+                    child: iconPath != null
+                        ? Image.asset(
+                            iconPath,
+                            width: 36,
+                            height: 36,
+                            fit: BoxFit.contain,
+                          )
+                        : SizedBox.shrink(),
                   ),
-                ],
+                ),
               ),
-            ),
+            ],
           ),
         );
       }).toList(),
@@ -182,7 +166,7 @@ Future<void> showJournalContextMenu(
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: Text('OK', style: TextStyle(color: Colors.blue)),
+            child: Text('OK', style: TextStyle(color: Theme.of(context).colorScheme.primary)),
           ),
         ],
       ),
@@ -209,9 +193,9 @@ Future<void> showJournalContextMenu(
                     'Tischtennis',
                     'Boxen',
                   ].map((option) => RadioListTile<String>(
-                        activeColor: Colors.blue,
+                        activeColor: Theme.of(context).colorScheme.primary,
                         fillColor: WidgetStateProperty.resolveWith<Color>(
-                          (states) => states.contains(WidgetState.selected) ? Colors.blue : Colors.white,
+                          (states) => states.contains(WidgetState.selected) ? Theme.of(context).colorScheme.primary : Colors.white,
                         ),
                         visualDensity: VisualDensity.compact,
                         title: Text(option, style: TextStyle(color: Colors.white)),
@@ -229,10 +213,10 @@ Future<void> showJournalContextMenu(
                       labelText: 'Beschreibe dein heutiges Training..',
                       labelStyle: TextStyle(color: Colors.white70),
                       enabledBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: Colors.blue),
+                        borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
                       ),
                       focusedBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: Colors.blue),
+                        borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
                       ),
                     ),
                     style: TextStyle(color: Colors.white),
@@ -246,21 +230,23 @@ Future<void> showJournalContextMenu(
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: Text('Abbrechen', style: TextStyle(color: Colors.blue)),
+                child: Text('Abbrechen', style: TextStyle(color: Theme.of(context).colorScheme.primary)),
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
                   foregroundColor: Colors.white,
                 ),
-                onPressed: () {
-                  eintraege[index] = {
-                    'option': selectedOption ?? '',
-                    'text': inputText,
-                  };
-                  refresh();
-                  Navigator.of(context).pop();
-                },
+                onPressed: (selectedOption == null || selectedOption!.isEmpty)
+                    ? null
+                    : () {
+                        eintraege[index] = {
+                          'option': ?selectedOption,
+                          'text': inputText,
+                        };
+                        refresh();
+                        Navigator.of(context).pop();
+                      },
                 child: Text('OK'),
               ),
             ],
