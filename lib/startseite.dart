@@ -2,19 +2,21 @@ import 'package:flutter/material.dart';
 import 'widgets/fortschrittsbalken.dart';
 import 'widgets/kopfzeile.dart';
 import 'widgets/journal.dart';
+import 'widgets/navigationsleiste.dart';
 import 'kalender.dart';
-import 'aktivitaet.dart';
 
-class startseite extends StatelessWidget {
-<<<<<<< HEAD
-  final int streakWert = 13;
-
+class startseite extends StatefulWidget {
   const startseite({super.key});
-=======
+
+  @override
+  State<startseite> createState() => _startseiteState();
+}
+
+class _startseiteState extends State<startseite> {
   final int streakWert = 25;
   final List<String> tage = ['MO', 'DI', 'MI', 'DO', 'FR', 'SA', 'SO'];
   final int aktuellerTagIndex = 3; // Donnerstag
->>>>>>> cb13f71eb42ab6631e88021dccd82cd0066cb0c5
+  int _currentPage = 0;
 
   Color fortschrittFarbe(double fortschritt) {
     if (fortschritt >= 1.0) return Colors.green;
@@ -54,123 +56,119 @@ class startseite extends StatelessWidget {
     );
   }
 
+  Widget _buildPage() {
+    switch (_currentPage) {
+      case 0:
+        return _buildHomePage();
+      case 1:
+        return _buildFriendsPage();
+      case 3:
+        return kalender();
+      case 4:
+        return _buildSettingsPage();
+      default:
+        return _buildHomePage();
+    }
+  }
+
+  Widget _buildHomePage() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Kopfzeile(username: "username", streakWert: streakWert),
+          SizedBox(height: 16),
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                _currentPage = 3; // Wechsel zum Kalender-Tab
+              });
+            },
+            child: Row(
+              children: [
+                Text(
+                  "Deine Woche",
+                  style: Theme.of(context).textTheme.headlineMedium,
+                ),
+                SizedBox(width: 2),
+                Icon(Icons.chevron_right, color: Colors.white, size: 32),
+              ],
+            ),
+          ),
+          SizedBox(height: 8),
+          journal(),
+          SizedBox(height: 20),
+
+          // Feed
+          Text("Feed", style: Theme.of(context).textTheme.headlineMedium),
+          SizedBox(height: 8),
+          Text(
+            "keine neuen Aktivitäten",
+            style: TextStyle(color: Colors.grey[500]),
+          ),
+          SizedBox(height: 20),
+
+          //Überschrift für Fortschritt-Bereich
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Text(
+              "Deine Ziele",
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
+          ),
+
+          //Klasse aus fortschrittsbalken.dart
+          Fortschrittsbalken(
+            label: 'streax programmieren',
+            fortschritt: 0.7,
+          ),
+          Fortschrittsbalken(label: '80kg bis Oktober', fortschritt: 0.2),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFriendsPage() {
+    return Center(
+      child: Text(
+        'Freunde',
+        style: TextStyle(color: Colors.white, fontSize: 30),
+      ),
+    );
+  }
+
+  Widget _buildSettingsPage() {
+    return Center(
+      child: Text(
+        'Einstellungen',
+        style: TextStyle(color: Colors.white, fontSize: 30),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: Colors.grey[900],
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Kopfzeile(username: "username", streakWert: streakWert),
-              SizedBox(height: 16),
-              GestureDetector(
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(builder: (context) => kalender()),
-                  );
-                },
-                child: Row(
-                  children: [
-                    Text(
-                      "Deine Woche",
-                      style: Theme.of(context).textTheme.headlineMedium,
-                    ),
-                    SizedBox(width: 2),
-                    Icon(Icons.chevron_right, color: Colors.white, size: 32),
-                  ],
-                ),
-              ),
-              SizedBox(height: 8),
-              journal(),
-              SizedBox(height: 20),
-
-              // Feed
-              Text("Feed", style: Theme.of(context).textTheme.headlineMedium),
-<<<<<<< HEAD
-              
-=======
-              SizedBox(height: 8),
->>>>>>> c8b8edc12b3e846d25d54f77f7997bf85f1ee04b
-              Text(
-                "keine neuen Aktivitäten",
-                style: TextStyle(color: Colors.grey[500]),
-              ),
-              SizedBox(height: 20),
-
-              //Überschrift für Fortschritt-Bereich
-              Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Text(
-                  "Deine Ziele",
-                  style: Theme.of(context).textTheme.headlineMedium,
-                ),
-              ),
-
-              //Klasse aus fortschrittsbalken.dart
-              Fortschrittsbalken(
-                label: 'streax programmieren',
-                fortschritt: 0.7,
-              ),
-              Fortschrittsbalken(label: '80kg bis Oktober', fortschritt: 0.2),
-            ],
-          ),
-        ),
+        child: _buildPage(),
       ),
-
-bottomNavigationBar: Padding(
-  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16), // space from screen edges
-  child: Container(
-    padding: const EdgeInsets.symmetric(vertical: 8),
-    decoration: BoxDecoration(
-      color: Theme.of(context).colorScheme.surfaceContainer,
-      borderRadius: BorderRadius.circular(32), // rounded all around
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black26,
-          blurRadius: 12,
-          offset: Offset(0, 4),
-        ),
-      ],
-    ),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: [
-        Icon(Icons.home, color: Colors.white),
-        Icon(Icons.group, color: Colors.white),
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: const Color.fromARGB(255, 0, 68, 255),
-            shape: BoxShape.circle,
-            boxShadow: [BoxShadow(color: Colors.black45, blurRadius: 6)],
-          ),
-          child: GestureDetector(
-            onTap: () async {
-              await showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                builder: (context) => const AktivitaetSheet(),
-              );
-            },
-            child: Icon(Icons.add, color: Colors.white, size: 30),
-          ),
-        ),
-        IconButton(
-          icon: Icon(Icons.calendar_month, color: Colors.white),
-          onPressed: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (context) => kalender()),
-            );
-          },
-        ),
-        Icon(Icons.settings, color: Colors.white),
-            ],
-    ),
-  ),
-),
+      bottomNavigationBar: NavigationsLeiste(
+        currentPage: _currentPage,
+        onPageChanged: (index) {
+          if (index == 2) {
+            // Wenn der Plus-Button gedrückt wurde
+            showJournalContextMenu(context, () {
+              setState(() {}); // UI aktualisieren
+            });
+          } else {
+            setState(() {
+              _currentPage = index;
+            });
+          }
+        },
+      ),
     );
   }
 }
