@@ -38,7 +38,7 @@ class NavigationsLeiste extends StatelessWidget {
             borderRadius: BorderRadius.circular(50),
             child: BottomNavigationBar(
               backgroundColor: colorScheme.surfaceContainer,
-              selectedItemColor: colorScheme.primary,
+              selectedItemColor: colorScheme.onSurface,
               unselectedItemColor: Colors.white,
               showSelectedLabels: false,
               showUnselectedLabels: false,
@@ -69,14 +69,18 @@ class NavigationsLeiste extends StatelessWidget {
                     );
                     break;
                   case 3:
-                    Navigator.of(context).push(
-                      MaterialPageRoute(builder: (context) => kalender()),
-                    );
+                    if (currentPage != 3) {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (context) => kalender()),
+                      );
+                    }
                     break;
                   case 4:
-                    Navigator.of(context).push(
-                      MaterialPageRoute(builder: (context) => Profil()),
-                    );
+                    if (currentPage != 4) {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (context) => Profil()),
+                      );
+                    }
                     break;
                 }
               },
