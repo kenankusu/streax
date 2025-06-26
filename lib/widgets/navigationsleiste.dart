@@ -21,7 +21,8 @@ class NavigationsLeiste extends StatelessWidget {
       children: [
         // Hauptnavigationsleiste
         Container(
-          margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          height: 60,
+          margin: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
           decoration: BoxDecoration(
             color: colorScheme.surfaceContainer,
             borderRadius: BorderRadius.circular(50),
@@ -105,7 +106,7 @@ class NavigationsLeiste extends StatelessWidget {
         ),
         // Erhöhter Plus-Button
         Positioned(
-          bottom: 40,
+          bottom: 35,
           left: 0,
           right: 0,
           child: Center(
@@ -147,7 +148,7 @@ class NavigationsLeiste extends StatelessWidget {
                 child: Icon(
                   Icons.add,
                   color: Colors.white,
-                  size: 36,
+                  size: 50,
                 ),
               ),
             ),
