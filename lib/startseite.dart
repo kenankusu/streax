@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'widgets/fortschrittsbalken.dart';
 import 'widgets/kopfzeile.dart';
 import 'widgets/journal.dart';
+import 'widgets/navigationsleiste.dart';
 import 'kalender.dart';
 import 'aktivitaet.dart';
 import 'profil.dart';
@@ -110,69 +111,7 @@ class startseite extends StatelessWidget {
           ),
         ),
       ),
-
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 16,
-        ), // space from screen edges
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceContainer,
-            borderRadius: BorderRadius.circular(32), // rounded all around
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black26,
-                blurRadius: 12,
-                offset: Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              Icon(Icons.home, color: Colors.white),
-              Icon(Icons.group, color: Colors.white),
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 0, 68, 255),
-                  shape: BoxShape.circle,
-                  boxShadow: [BoxShadow(color: Colors.black45, blurRadius: 6)],
-                ),
-                child: GestureDetector(
-                  onTap: () async {
-                    await showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      builder: (context) =>
-                          const AktivitaetHinzufuegen(), // Korrektur: AktivitaetHinzufuegen
-                    );
-                  },
-                  child: Icon(Icons.add, color: Colors.white, size: 30),
-                ),
-              ),
-              IconButton(
-                icon: Icon(Icons.calendar_month, color: Colors.white),
-                onPressed: () {
-                  Navigator.of(
-                    context,
-                  ).push(MaterialPageRoute(builder: (context) => kalender()));
-                },
-              ),
-              IconButton(
-                icon: Icon(Icons.settings, color: Colors.white),
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(builder: (context) => const Profil()),
-                  );
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
+      bottomNavigationBar: NavigationsLeiste(currentPage: 0),
     );
   }
 }
