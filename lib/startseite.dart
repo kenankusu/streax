@@ -152,22 +152,61 @@ class _startseiteState extends State<startseite> {
     return Scaffold(
       backgroundColor: Colors.grey[900],
       body: SafeArea(
-        child: _buildPage(),
-      ),
-      bottomNavigationBar: NavigationsLeiste(
-        currentPage: _currentPage,
-        onPageChanged: (index) {
-          if (index == 2) {
-            // Wenn der Plus-Button gedrückt wurde
-            showJournalContextMenu(context, () {
-              setState(() {}); // UI aktualisieren
-            });
-          } else {
-            setState(() {
-              _currentPage = index;
-            });
-          }
-        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Kopfzeile(username: "username", streakWert: streakWert),
+              SizedBox(height: 16),
+              GestureDetector(
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (context) => kalender()),
+                  );
+                },
+                child: Row(
+                  children: [
+                    Text(
+                      "Deine Woche",
+                      style: Theme.of(context).textTheme.headlineMedium,
+                    ),
+                    SizedBox(width: 2),
+                    Icon(Icons.chevron_right, color: Colors.white, size: 32),
+                  ],
+                ),
+              ),
+              SizedBox(height: 8),
+              journal(),
+              SizedBox(height: 20),
+
+              // Feed
+              Text("Feed", style: Theme.of(context).textTheme.headlineMedium),
+              SizedBox(height: 8),
+              Text(
+                "keine neuen Aktivitäten",
+                style: TextStyle(color: Colors.grey[500]),
+              ),
+              SizedBox(height: 20),
+
+              //Überschrift für Fortschritt-Bereich
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Text(
+                  "Deine Ziele",
+                  style: Theme.of(context).textTheme.headlineMedium,
+                ),
+              ),
+
+              //Klasse aus fortschrittsbalken.dart
+              Fortschrittsbalken(
+                label: 'streax programmieren',
+                fortschritt: 0.7,
+              ),
+              Fortschrittsbalken(label: '80kg bis Oktober', fortschritt: 0.2),
+            ],
+          ),
+        ),
       ),
     );
   }
