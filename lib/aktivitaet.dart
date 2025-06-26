@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'widgets/journal.dart';
 
 class AktivitaetHinzufuegen extends StatelessWidget {
   const AktivitaetHinzufuegen({super.key});
@@ -13,10 +14,12 @@ class AktivitaetHinzufuegen extends StatelessWidget {
       'Jaxxen',
       'Fußball',
     ];
+    String? ausgewaehlteSportart;
     TimeOfDay? vonZeit;
     TimeOfDay? bisZeit;
     DateTime datum = DateTime.now();
     TextEditingController notizenController = TextEditingController();
+    int ausgewaehltesEmoji = -1;
     return DecoratedBox(
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
@@ -38,6 +41,7 @@ class AktivitaetHinzufuegen extends StatelessWidget {
                 DropdownButtonFormField<String>(
                   decoration: InputDecoration(
                     labelText: 'Sportart auswählen',
+                    labelStyle: Theme.of(context).textTheme.bodySmall,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(20),
                       borderSide: BorderSide(
@@ -63,25 +67,35 @@ class AktivitaetHinzufuegen extends StatelessWidget {
                   items: sportarten
                       .map((sport) => DropdownMenuItem(
                             value: sport,
-                            child: Text(sport),
+                            child: Text(sport, style: Theme.of(context).textTheme.bodySmall),
                           ))
                       .toList(),
-                  onChanged: (value) {},
+                  onChanged: (value) {
+                    ausgewaehlteSportart = value;
+                  },
                 ),
                 const SizedBox(height: 16),
-                ZeitDatumAuswahl(),
+                ZeitDatumAuswahl(
+                  onVonZeitChanged: (zeit) => vonZeit = zeit,
+                  onBisZeitChanged: (zeit) => bisZeit = zeit,
+                  onDatumChanged: (d) => datum = d,
+                ),
                 const SizedBox(height: 16),
                 Text('Wie hast du dich gefühlt?', style: Theme.of(context).textTheme.headlineSmall),
                 const SizedBox(height: 16),
-                EmojiAuswahl(),
+                EmojiAuswahl(
+                  onEmojiSelected: (index) => ausgewaehltesEmoji = index,
+                ),
                 const SizedBox(height: 16),
                 FotoHinzufuegen(),
                 const SizedBox(height: 16),
                 TextField(
                   controller: notizenController,
                   maxLines: 3,
+                  style: Theme.of(context).textTheme.bodySmall,
                   decoration: InputDecoration(
                     labelText: 'Notizen',
+                    labelStyle: Theme.of(context).textTheme.bodySmall,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(20),
                     ),
@@ -89,17 +103,45 @@ class AktivitaetHinzufuegen extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
                 SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: null, // keine Funktion für jetzt
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: Colors.black,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black,
+                          blurRadius: 16,
+                          offset: Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          // Speichern-Logik: Werte an das Journal übergeben
+                          Navigator.of(context).pop();
+                          eintraege[datum.weekday - 1] = {
+                            'option': ausgewaehlteSportart ?? '',
+                            'text': notizenController.text,
+                            'emoji': ausgewaehltesEmoji.toString(),
+                            'von': vonZeit != null ? vonZeit!.format(context) : '',
+                            'bis': bisZeit != null ? bisZeit!.format(context) : '',
+                            'datum': datum.toIso8601String(),
+                          };
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          shadowColor: Colors.black,
+                          foregroundColor: const Color.fromARGB(255, 255, 0, 0),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(500),
+                          ),
+                          textStyle: Theme.of(context).textTheme.bodySmall,
+                        ),
+                        child: Text('Speichern', style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: Colors.black)),
                       ),
                     ),
-                    child: const Text('Speichern'),
                   ),
                 ),
               ],
@@ -111,7 +153,12 @@ class AktivitaetHinzufuegen extends StatelessWidget {
   }
 }
 
+// ZeitDatumAuswahl anpassen:
 class ZeitDatumAuswahl extends StatefulWidget {
+  final ValueChanged<TimeOfDay?>? onVonZeitChanged;
+  final ValueChanged<TimeOfDay?>? onBisZeitChanged;
+  final ValueChanged<DateTime>? onDatumChanged;
+  const ZeitDatumAuswahl({this.onVonZeitChanged, this.onBisZeitChanged, this.onDatumChanged, super.key});
   @override
   State<ZeitDatumAuswahl> createState() => _ZeitDatumAuswahlState();
 }
@@ -130,8 +177,10 @@ class _ZeitDatumAuswahlState extends State<ZeitDatumAuswahl> {
       setState(() {
         if (isVon) {
           vonZeit = picked;
+          widget.onVonZeitChanged?.call(vonZeit);
         } else {
           bisZeit = picked;
+          widget.onBisZeitChanged?.call(bisZeit);
         }
       });
     }
@@ -147,6 +196,7 @@ class _ZeitDatumAuswahlState extends State<ZeitDatumAuswahl> {
     if (picked != null) {
       setState(() {
         datum = picked;
+        widget.onDatumChanged?.call(datum);
       });
     }
   }
@@ -159,7 +209,7 @@ class _ZeitDatumAuswahlState extends State<ZeitDatumAuswahl> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('von'),
+            Text('von', style: Theme.of(context).textTheme.bodySmall),
             GestureDetector(
               onTap: () => _pickTime(context, true),
               child: Container(
@@ -168,11 +218,11 @@ class _ZeitDatumAuswahlState extends State<ZeitDatumAuswahl> {
                   color: Theme.of(context).colorScheme.surfaceVariant,
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: Text(vonZeit != null ? vonZeit!.format(context) : '--:--', style: const TextStyle(fontSize: 20)),
+                child: Text(vonZeit != null ? vonZeit!.format(context) : '--:--', style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 20)),
               ),
             ),
             const SizedBox(height: 8),
-            const Text('bis'),
+            Text('bis', style: Theme.of(context).textTheme.bodySmall),
             GestureDetector(
               onTap: () => _pickTime(context, false),
               child: Container(
@@ -181,7 +231,7 @@ class _ZeitDatumAuswahlState extends State<ZeitDatumAuswahl> {
                   color: Theme.of(context).colorScheme.surfaceVariant,
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: Text(bisZeit != null ? bisZeit!.format(context) : '--:--', style: const TextStyle(fontSize: 20)),
+                child: Text(bisZeit != null ? bisZeit!.format(context) : '--:--', style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 20)),
               ),
             ),
           ],
@@ -189,7 +239,7 @@ class _ZeitDatumAuswahlState extends State<ZeitDatumAuswahl> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Datum'),
+            Text('Datum', style: Theme.of(context).textTheme.bodySmall),
             GestureDetector(
               onTap: () => _pickDate(context),
               child: Container(
@@ -199,8 +249,8 @@ class _ZeitDatumAuswahlState extends State<ZeitDatumAuswahl> {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  'heute, ${datum.day.toString().padLeft(2, '0')}.${datum.month.toString().padLeft(2, '0')}.',
-                  style: const TextStyle(fontSize: 20),
+                  'heute, ${datum.day.toString().padLeft(2, '0')}.${datum.month.toString().padLeft(2, '0')}',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 20),
                 ),
               ),
             ),
@@ -223,23 +273,26 @@ class FotoHinzufuegen extends StatelessWidget {
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
-          Icon(Icons.camera_alt_outlined, color: Colors.grey),
-          SizedBox(width: 8),
-          Text('Foto hinzufügen', style: TextStyle(color: Colors.grey)),
+        children: [
+          const Icon(Icons.camera_alt_outlined, color: Colors.grey),
+          const SizedBox(width: 8),
+          Text('Foto hinzufügen', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey)),
         ],
       ),
     );
   }
 }
 
+// EmojiAuswahl anpassen:
 class EmojiAuswahl extends StatefulWidget {
+  final ValueChanged<int>? onEmojiSelected;
+  const EmojiAuswahl({this.onEmojiSelected, super.key});
   @override
   State<EmojiAuswahl> createState() => _EmojiAuswahlState();
 }
 
 class _EmojiAuswahlState extends State<EmojiAuswahl> {
-  int ausgewaehlt = 2; // Standard: neutral
+  int ausgewaehlt = -1; // Kein Emoji standardmäßig ausgewählt
   final List<String> emojis = [
     '😢', // sehr traurig
     '🙁', // traurig
@@ -258,6 +311,7 @@ class _EmojiAuswahlState extends State<EmojiAuswahl> {
           onTap: () {
             setState(() {
               ausgewaehlt = index;
+              widget.onEmojiSelected?.call(ausgewaehlt);
             });
           },
           child: Container(
@@ -273,7 +327,7 @@ class _EmojiAuswahlState extends State<EmojiAuswahl> {
             ),
             child: Text(
               emojis[index],
-              style: const TextStyle(fontSize: 32),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 32),
             ),
           ),
         );
