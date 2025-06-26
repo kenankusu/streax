@@ -65,6 +65,8 @@ flutter:
     - assets/icons/journal/tt.png
     - assets/icons/journal/boxen.png
     - assets/icons/journal/fail.png
+    - assets/profil/informationen.json
+    - assets/profil/profilbild.png
     
   # To add assets to your application, add an assets section, like this:
   # assets:

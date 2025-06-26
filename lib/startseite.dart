@@ -5,6 +5,7 @@ import 'widgets/journal.dart';
 import 'widgets/navigationsleiste.dart';
 import 'kalender.dart';
 import 'aktivitaet.dart';
+import 'profil.dart';
 
 class startseite extends StatelessWidget {
   final int streakWert = 25;
@@ -63,9 +64,9 @@ class startseite extends StatelessWidget {
               SizedBox(height: 16),
               GestureDetector(
                 onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(builder: (context) => kalender()),
-                  );
+                  Navigator.of(
+                    context,
+                  ).push(MaterialPageRoute(builder: (context) => kalender()));
                 },
                 child: Row(
                   children: [
