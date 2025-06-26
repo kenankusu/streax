@@ -241,11 +241,11 @@ class EmojiAuswahl extends StatefulWidget {
 class _EmojiAuswahlState extends State<EmojiAuswahl> {
   int ausgewaehlt = 2; // Standard: neutral
   final List<String> emojis = [
-    '😄', // sehr glücklich
-    '🙂', // glücklich
-    '😐', // neutral
-    '🙁', // traurig
     '😢', // sehr traurig
+    '🙁', // traurig
+    '😐', // neutral
+    '🙂', // glücklich
+    '😄', // sehr glücklich
   ];
 
   @override
