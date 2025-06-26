@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'widgets/journal.dart';
+import 'widgets/navigationsleiste.dart'; // Import hinzufügen
 
 class kalender extends StatefulWidget {
   const kalender({super.key});
@@ -137,6 +138,7 @@ String _dateKey(DateTime date) =>
           },
         ),
       ),
+      bottomNavigationBar: NavigationsLeiste(currentPage: 3), // Navigationsleiste hinzufügen (currentPage: 3 = Kalender)
     );
   }
 
