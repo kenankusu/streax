@@ -33,10 +33,10 @@ class Fortschrittsbalken extends StatelessWidget {
                   fortschritt == 1.0 //if else um die Farbe des Fortschrittsbalkens zu bestimmen
                       ? const Color.fromARGB(255, 133, 209, 40)
                       : fortschritt > 0.6
-                          ? const Color.fromARGB(255, 56, 132, 180)
+                          ? const Color.fromARGB(255, 66, 181, 212)
                           : fortschritt >= 0.3
                               ? const Color.fromARGB(255, 220, 177, 33)
-                              : const Color.fromARGB(255, 220, 123, 71),
+                              : const Color.fromARGB(255, 221, 91, 52),
                 ),
                 minHeight: 40, //Höhe des Fortschrittsbalkens
               ),

@@ -1,11 +1,16 @@
-import 'package:flutter/material.dart';
-import 'widgets/journal.dart';
+import 'package:flutter/material.dart'; // Grundlegende Flutter-Widgets und Material Design
+import 'package:image_picker/image_picker.dart'; // Für das Auswählen von Bildern aus Galerie oder Kamera
+import 'dart:io'; // Für Dateioperationen auf mobilen Plattformen (z.B. Image.file)
+import 'widgets/journal.dart'; // Zugriff auf das Journal für das Speichern der Aktivität
+import 'package:flutter/foundation.dart'; // Für kIsWeb, um Web-spezifisches Verhalten zu steuern
+import 'package:flutter/cupertino.dart'; // Für CupertinoDatePicker
 
 class AktivitaetHinzufuegen extends StatelessWidget {
   const AktivitaetHinzufuegen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    //statische Auswahl an Sportarten
     final List<String> sportarten = [
       'Laufen',
       'Tischtennis',
@@ -19,17 +24,26 @@ class AktivitaetHinzufuegen extends StatelessWidget {
     TimeOfDay? bisZeit;
     DateTime datum = DateTime.now();
     TextEditingController notizenController = TextEditingController();
-    int ausgewaehltesEmoji = -1;
-    return DecoratedBox(
+    int ausgewaehltesEmoji = -1;// damit kein Emoji standardmäßig ausgewählt ist
+
+    // Ersetze DecoratedBox durch Container mit Gradient-Hintergrund
+    return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        gradient: LinearGradient(
+          begin: Alignment.bottomCenter,
+          end: Alignment.topCenter,
+          colors: [
+            Theme.of(context).colorScheme.surface, //unten
+            Theme.of(context).colorScheme.surfaceContainer, //oben
+          ],
+        ),
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(50),
           topRight: Radius.circular(50),
         ),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(30),
         child: SizedBox(
           height: MediaQuery.of(context).size.height * 0.85,
           child: SingleChildScrollView(
@@ -37,56 +51,78 @@ class AktivitaetHinzufuegen extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text('Neue Aktivität', style: Theme.of(context).textTheme.headlineMedium),
-                const SizedBox(height: 16),
-                DropdownButtonFormField<String>(
-                  decoration: InputDecoration(
-                    labelText: 'Sportart auswählen',
-                    labelStyle: Theme.of(context).textTheme.bodySmall,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
-                      borderSide: BorderSide(
-                        color: Theme.of(context).colorScheme.primary,
-                        width: 6,
-                      ),
+                const SizedBox(height: 50),
+                // Dropdown mit Gradient-Hintergrund und DropShadow umhüllen
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    gradient: LinearGradient(
+                      colors: [
+                        Theme.of(context).colorScheme.primary,
+                        Theme.of(context).colorScheme.secondary,
+                      ],
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
                     ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
-                      borderSide: BorderSide(
-                        color: Theme.of(context).colorScheme.primary,
-                        width: 6,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black,
+                        blurRadius: 16,
+                        offset: Offset(0, 4),
                       ),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
-                      borderSide: BorderSide(
-                        color: Theme.of(context).colorScheme.primary,
-                        width: 6,
-                      ),
-                    ),
+                    ],
                   ),
-                  items: sportarten
-                      .map((sport) => DropdownMenuItem(
-                            value: sport,
-                            child: Text(sport, style: Theme.of(context).textTheme.bodySmall),
-                          ))
-                      .toList(),
-                  onChanged: (value) {
-                    ausgewaehlteSportart = value;
-                  },
+                  child: DropdownButtonFormField<String>(
+                    decoration: InputDecoration(
+                      labelText: 'Sportart auswählen',
+                      labelStyle: Theme.of(context).textTheme.bodySmall,
+                      filled: true,
+                      fillColor: Colors.transparent, // Gradient kommt vom Container
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        borderSide: BorderSide.none,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white),
+                    iconEnabledColor: Colors.white,
+                    dropdownColor: Theme.of(context).colorScheme.surfaceVariant, // Menü in Theme-Farbe
+                    items: sportarten
+                        .map((sport) => DropdownMenuItem(
+                              value: sport,
+                              child: Text(sport, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white)),
+                            ))
+                        .toList(),
+                    onChanged: (value) {
+                      ausgewaehlteSportart = value;
+                    },
+                  ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 30),
                 ZeitDatumAuswahl(
                   onVonZeitChanged: (zeit) => vonZeit = zeit,
                   onBisZeitChanged: (zeit) => bisZeit = zeit,
                   onDatumChanged: (d) => datum = d,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 40),
+
+                //Gefühl-Auswahl
                 Text('Wie hast du dich gefühlt?', style: Theme.of(context).textTheme.headlineSmall),
-                const SizedBox(height: 16),
+                const SizedBox(height: 15),
                 EmojiAuswahl(
                   onEmojiSelected: (index) => ausgewaehltesEmoji = index,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 50),
+
+                // Foto hinzufügen und Notizen
                 FotoHinzufuegen(),
                 const SizedBox(height: 16),
                 TextField(
@@ -98,48 +134,54 @@ class AktivitaetHinzufuegen extends StatelessWidget {
                     labelStyle: Theme.of(context).textTheme.bodySmall,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(20),
+                      borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.onSurface,
+                        width: 2,
+                      ),
                     ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(20),
+                      borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.onSurface,
+                        width: 2,
+                      ),
+                    ),
+                    // focusedBorder wird entfernt, damit im Fokus der Standardrand erscheint
                   ),
                 ),
-                const SizedBox(height: 24),
+
+
+                const SizedBox(height: 40),
                 SizedBox(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black,
-                          blurRadius: 16,
-                          offset: Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Padding(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      // Speichern-Logik: Werte an das Journal übergeben
+                      Navigator.of(context).pop();
+                      eintraege[datum.weekday - 1] = {
+                        'option': ausgewaehlteSportart ?? '',
+                        'text': notizenController.text,
+                        'emoji': ausgewaehltesEmoji.toString(),
+                        'von': vonZeit != null ? vonZeit!.format(context) : '',
+                        'bis': bisZeit != null ? bisZeit!.format(context) : '',
+                        'datum': datum.toIso8601String(),
+                      };
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      shadowColor: Colors.black,
+                      foregroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                      textStyle: Theme.of(context).textTheme.bodySmall,
                       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
-                      child: ElevatedButton(
-                        onPressed: () {
-                          // Speichern-Logik: Werte an das Journal übergeben
-                          Navigator.of(context).pop();
-                          eintraege[datum.weekday - 1] = {
-                            'option': ausgewaehlteSportart ?? '',
-                            'text': notizenController.text,
-                            'emoji': ausgewaehltesEmoji.toString(),
-                            'von': vonZeit != null ? vonZeit!.format(context) : '',
-                            'bis': bisZeit != null ? bisZeit!.format(context) : '',
-                            'datum': datum.toIso8601String(),
-                          };
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.transparent,
-                          shadowColor: Colors.black,
-                          foregroundColor: const Color.fromARGB(255, 255, 0, 0),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(500),
-                          ),
-                          textStyle: Theme.of(context).textTheme.bodySmall,
-                        ),
-                        child: Text('Speichern', style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: Colors.black)),
+                      elevation: 8,
+                    ),
+                    child: Text(
+                      'Speichern',
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
@@ -169,17 +211,58 @@ class _ZeitDatumAuswahlState extends State<ZeitDatumAuswahl> {
   DateTime datum = DateTime.now();
 
   Future<void> _pickTime(BuildContext context, bool isVon) async {
-    final picked = await showTimePicker(
-      context: context,
-      initialTime: isVon ? (vonZeit ?? TimeOfDay.now()) : (bisZeit ?? TimeOfDay.now()),
+    TimeOfDay? pickedTime;
+    DateTime initialDateTime = DateTime(
+      2000,
+      1,
+      1,
+      isVon ? (vonZeit?.hour ?? 0) : (bisZeit?.hour ?? 0),
+      isVon ? (vonZeit?.minute ?? 0) : (bisZeit?.minute ?? 0),
     );
-    if (picked != null) {
+    DateTime tempTime = initialDateTime;
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+          contentPadding: const EdgeInsets.all(0),
+          content: SizedBox(
+            width: 300,
+            height: 300,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Expanded(
+                  child: CupertinoDatePicker(
+                    mode: CupertinoDatePickerMode.time,
+                    initialDateTime: initialDateTime,
+                    use24hFormat: true, // 24-Stunden-Anzeige
+                    onDateTimeChanged: (DateTime newTime) {
+                      tempTime = newTime;
+                    },
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {
+                    pickedTime = TimeOfDay(hour: tempTime.hour, minute: tempTime.minute);
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Übernehmen'),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+    if (pickedTime != null) {
       setState(() {
         if (isVon) {
-          vonZeit = picked;
+          vonZeit = pickedTime;
           widget.onVonZeitChanged?.call(vonZeit);
         } else {
-          bisZeit = picked;
+          bisZeit = pickedTime;
           widget.onBisZeitChanged?.call(bisZeit);
         }
       });
@@ -201,83 +284,106 @@ class _ZeitDatumAuswahlState extends State<ZeitDatumAuswahl> {
     }
   }
 
+  String _formatTime24h(TimeOfDay? time) {
+    if (time == null) return '--:--';
+    final hour = time.hour.toString().padLeft(2, '0');
+    final minute = time.minute.toString().padLeft(2, '0');
+    return '$hour:$minute';
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('von', style: Theme.of(context).textTheme.bodySmall),
-            GestureDetector(
-              onTap: () => _pickTime(context, true),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceVariant,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(vonZeit != null ? vonZeit!.format(context) : '--:--', style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 20)),
+    Widget zeitFeld(String label, String value, VoidCallback onTap) => Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start, // Label linksbündig
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(label, style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 12)),
+          GestureDetector(
+            onTap: onTap,
+            child: Container(
+              constraints: const BoxConstraints(minHeight: 36, maxHeight: 44),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceVariant,
+                borderRadius: BorderRadius.circular(16),
               ),
+              alignment: Alignment.center, // Wert zentriert
+              child: Text(value, style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 18)),
             ),
-            const SizedBox(height: 8),
-            Text('bis', style: Theme.of(context).textTheme.bodySmall),
-            GestureDetector(
-              onTap: () => _pickTime(context, false),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceVariant,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(bisZeit != null ? bisZeit!.format(context) : '--:--', style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 20)),
-              ),
-            ),
-          ],
-        ),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Datum', style: Theme.of(context).textTheme.bodySmall),
-            GestureDetector(
-              onTap: () => _pickDate(context),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceVariant,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  'heute, ${datum.day.toString().padLeft(2, '0')}.${datum.month.toString().padLeft(2, '0')}',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 20),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ],
+          ),
+        ],
+      ),
+    );
+
+    return SizedBox(
+      height: 100,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          zeitFeld('von', _formatTime24h(vonZeit), () => _pickTime(context, true)),
+          const SizedBox(width: 6),
+          zeitFeld('bis', _formatTime24h(bisZeit), () => _pickTime(context, false)),
+          const SizedBox(width: 6),
+          zeitFeld(
+            'Datum',
+            'heute, ${datum.day.toString().padLeft(2, '0')}.${datum.month.toString().padLeft(2, '0')}',
+            () => _pickDate(context),
+          ),
+        ],
+      ),
     );
   }
 }
 
-class FotoHinzufuegen extends StatelessWidget {
+class FotoHinzufuegen extends StatefulWidget {
+  @override
+  State<FotoHinzufuegen> createState() => _FotoHinzufuegenState();
+}
+
+class _FotoHinzufuegenState extends State<FotoHinzufuegen> {
+  XFile? _bild;
+  final ImagePicker _picker = ImagePicker();
+
+  Future<void> _bildAuswaehlen() async {
+    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _bild = pickedFile;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      decoration: BoxDecoration(
-        border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 2),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.camera_alt_outlined, color: Colors.grey),
-          const SizedBox(width: 8),
-          Text('Foto hinzufügen', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey)),
-        ],
+    // FotoHinzufuegen: Icon und Text weiß
+    return GestureDetector(
+      onTap: _bildAuswaehlen,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.onSurface,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _bild != null
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: kIsWeb
+                        ? Image.network(_bild!.path, width: 48, height: 48, fit: BoxFit.cover)
+                        : Image.file(File(_bild!.path), width: 48, height: 48, fit: BoxFit.cover),
+                  )
+                : const Icon(Icons.camera_alt_outlined, color: Colors.white),
+            const SizedBox(width: 8),
+            Text(
+              _bild != null ? 'Foto ausgewählt' : 'Foto hinzufügen',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -324,6 +430,14 @@ class _EmojiAuswahlState extends State<EmojiAuswahl> {
                       width: 3,
                     )
                   : null,
+              boxShadow: [
+                BoxShadow(
+                  // ignore: deprecated_member_use
+                  color: Colors.black.withOpacity(0.25),
+                  blurRadius: 8,
+                  offset: Offset(0, 2),
+                ),
+              ],
             ),
             child: Text(
               emojis[index],

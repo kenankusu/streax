@@ -15,10 +15,9 @@ class startseite extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: Theme.of(context).colorScheme.surface, //Theme Hintergrundfarbe
       body: SafeArea(
         child: SingleChildScrollView( // Damit die Seite scrollen kann
-          physics: BouncingScrollPhysics(), // Für ein besseres Scroll-Erlebnis
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 48, 20, 16), // Oben mehr Platz
             child: Column(
@@ -26,7 +25,7 @@ class startseite extends StatelessWidget {
               children: [
                 // Begrüßung und Streak-Wert
                 Kopfzeile(username: "username", streakWert: streakWert),
-                SizedBox(height: 40),
+                SizedBox(height: 40), // Abstand zwischen Kopfzeile und Kalender
 
                 // Kalender
                 Padding(
@@ -49,7 +48,8 @@ class startseite extends StatelessWidget {
                           ],
                         ),
                       ),
-                      SizedBox(height: 8),
+                      SizedBox(height: 30), // Abstand zwischen Überschrift und Kalender
+                      //tatsächliches Kalender Widget
                       journal(),
                     ],
                   ),
@@ -69,7 +69,7 @@ class startseite extends StatelessWidget {
                       SizedBox(height: 20),
                       Text(
                         "keine neuen Aktivitäten",
-                        style: TextStyle(color: Colors.grey[500]),
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey[500]), // Textfarbe für "keine neuen Aktivitäten"
                       ),
                     ],
                   ),
