@@ -3,6 +3,7 @@ import '../startseite.dart';
 import 'journal.dart';
 import '../kalender.dart';
 import '../aktivitaet.dart';
+import '../profil.dart';
 
 class NavigationsLeiste extends StatelessWidget {
   final int currentPage;
@@ -73,8 +74,8 @@ class NavigationsLeiste extends StatelessWidget {
                     );
                     break;
                   case 4:
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Einstellungen-Seite kommt bald!')),
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (context) => Profil()),
                     );
                     break;
                 }

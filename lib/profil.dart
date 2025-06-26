@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'widgets/navigationsleiste.dart'; 
 
 class Profil extends StatefulWidget {
   const Profil({super.key});
@@ -115,6 +116,7 @@ class _ProfilState extends State<Profil> {
           ],
         ),
       ),
+      bottomNavigationBar: NavigationsLeiste(currentPage: 4),
     );
   }
 
