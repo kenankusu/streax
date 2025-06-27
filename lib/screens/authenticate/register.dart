@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/Screens/Authenticate/inputFieldStyle.dart';
 import 'package:flutter_application_1/Screens/Shared/loading.dart';
 import 'package:flutter_application_1/Services/auth.dart';
-import 'package:flutter_application_1/Screens/Welcome/welcome.dart'; // ✅ Import hinzufügen
+import 'package:flutter_application_1/Services/database.dart';
 
 class Register extends StatefulWidget {
   final Function toggleView;
@@ -21,6 +21,9 @@ class _RegisterState extends State<Register> {
   String email = '';
   String password = '';
   String error = '';
+  
+  // Checkbox state für "Eingeloggt bleiben"
+  bool stayLoggedIn = false;
 
   @override
   Widget build(BuildContext context) {
@@ -29,16 +32,14 @@ class _RegisterState extends State<Register> {
       appBar: AppBar(
         backgroundColor: Colors.brown[400],
         elevation: 0.0,
-        title: const Text('Registriere dich'),
+        title: Text('Bei Streax registrieren'),
         actions: <Widget>[
           TextButton.icon(
             icon: Icon(Icons.person),
             label: Text('Anmelden'),
-            onPressed: () async {
-              widget.toggleView();
-            }
-          )
-        ]
+            onPressed: () => widget.toggleView(),
+          ),
+        ],
       ),
       body: Container(
         padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 50.0),
@@ -48,44 +49,74 @@ class _RegisterState extends State<Register> {
             children: <Widget>[
               SizedBox(height: 20.0),
               TextFormField(
-                decoration: textInputDecoration.copyWith(hintText: 'E-Mail'),
-                validator: (val) => val?.isEmpty ?? true ? 'Gib eine E-Mail ein' : null,
+                decoration: textInputDecoration.copyWith(hintText: 'Email'),
+                validator: (val) => val!.isEmpty ? 'Email eingeben' : null,
                 onChanged: (val) {
                   setState(() => email = val);
-                }
+                },
               ),
               SizedBox(height: 20.0),
               TextFormField(
-                decoration: textInputDecoration.copyWith(hintText: 'Passwort'),
-                validator: (val) => (val?.length ?? 0) < 6 ? 'Gib ein Passwort mit mindestens 6 Zeichen ein' : null,
                 obscureText: true,
+                decoration: textInputDecoration.copyWith(hintText: 'Passwort'),
+                validator: (val) => val!.length < 6 ? 'Passwort muss mindestens 6 Zeichen lang sein' : null,
                 onChanged: (val) {
                   setState(() => password = val);
-                }
+                },
               ),
+              SizedBox(height: 15.0),
+              
+              // "Eingeloggt bleiben" Checkbox
+              Row(
+                children: [
+                  Checkbox(
+                    value: stayLoggedIn,
+                    onChanged: (value) {
+                      setState(() {
+                        stayLoggedIn = value ?? false;
+                      });
+                    },
+                    activeColor: Colors.brown[400],
+                  ),
+                  Expanded(
+                    child: Text(
+                      'Eingeloggt bleiben',
+                      style: TextStyle(
+                        color: Colors.grey[700],
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              
               SizedBox(height: 20.0),
               ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.pink[400],
-                  foregroundColor: Colors.white,
+                child: Text(
+                  'Registrieren',
+                  style: TextStyle(color: Colors.white),
                 ),
-                child: Text('Registrieren'),
                 onPressed: () async {
-                  if (_formKey.currentState?.validate() ?? false) {
+                  if(_formKey.currentState!.validate()){
                     setState(() => loading = true);
-                    dynamic result = await _auth.registerWithEmailAndPassword(email, password);
-                    if (result == null) {
+                    
+                    // Checkbox-Wert an Auth-Service übergeben
+                    dynamic result = await _auth.registerWithEmailAndPassword(
+                      email, 
+                      password, 
+                      stayLoggedIn: stayLoggedIn
+                    );
+                    
+                    if(result == null) {
                       setState(() {
-                        error = 'Registration fehlgeschlagen';
+                        error = 'Registrierung fehlgeschlagen - Email bereits vergeben?';
                         loading = false;
                       });
                     } else {
-                      // ✅ Navigation zur eigenen Willkommens-Seite
-                      setState(() => loading = false);
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => WillkommensSeite(uid: result.uid),
-                        ),
+                      // Profil erstellen nach erfolgreicher Registrierung
+                      await DatabaseService(uid: result.uid).updateUserData(
+                        'Neuer User',
+                        'user${DateTime.now().millisecondsSinceEpoch}',
                       );
                     }
                   }
@@ -95,10 +126,10 @@ class _RegisterState extends State<Register> {
               Text(
                 error,
                 style: TextStyle(color: Colors.red, fontSize: 14.0),
-              )
-            ]
-          )
-        )
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
