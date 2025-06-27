@@ -35,6 +35,8 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   table_calendar: ^3.0.9
+  syncfusion_flutter_calendar: 30.1.37
+  syncfusion_flutter_core: 30.1.37
 
 dev_dependencies:
   flutter_test:
@@ -64,7 +66,8 @@ flutter:
     - assets/icons/journal/gym.png
     - assets/icons/journal/tt.png
     - assets/icons/journal/boxen.png
-    - assets/icons/journal/fail.png
+    - assets/icons/journal/laufen.png
+    - assets/icons/journal/fussball.png
     - assets/profil/informationen.json
     - assets/profil/profilbild.png
     

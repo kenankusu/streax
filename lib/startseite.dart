@@ -9,7 +9,9 @@ import 'profil.dart';
 
 class startseite extends StatelessWidget {
   final int streakWert = 25;
-  final int aktuellerTagIndex = 3; // Donnerstag
+  final int aktuellerTagIndex = 3;
+
+  const startseite({super.key}); // Donnerstag
 
 
   @override

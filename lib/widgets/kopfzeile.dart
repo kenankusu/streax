@@ -36,8 +36,8 @@ class _KopfzeileState extends State<Kopfzeile> {
 
   Widget Willkommen() {
     return Text(
-      "Hallo,\n${widget.username}!",
-      style: Theme.of(context).textTheme.headlineMedium,
+      "Hallo, \nJakob!",
+      style: Theme.of(context).textTheme.headlineLarge,
     );
   }
 
@@ -54,14 +54,14 @@ class _KopfzeileState extends State<Kopfzeile> {
               value: progress,
               strokeWidth: 3,
               valueColor: AlwaysStoppedAnimation<Color>(
-                const Color.fromARGB(255, 255, 255, 0),
+                Theme.of(context).colorScheme.primary,
               ),
               backgroundColor: Colors.grey[800],
               strokeCap: StrokeCap.round,
             ),
             Text(
               '${widget.streakWert}',
-              style: Theme.of(context).textTheme.headlineSmall,
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
             ),
           ],
         ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:table_calendar/table_calendar.dart';
+// TableCalendar entfernen
+import 'package:syncfusion_flutter_calendar/calendar.dart';
 import 'widgets/journal.dart';
 import 'widgets/navigationsleiste.dart'; // Import hinzufügen
 
@@ -12,8 +13,8 @@ class kalender extends StatefulWidget {
 
 class _KalenderState extends State<kalender> {
   DateTime _focusedDay = DateTime.now();
-String _dateKey(DateTime date) =>
-    "${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
+  String _dateKey(DateTime date) =>
+      "${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -25,87 +26,28 @@ String _dateKey(DateTime date) =>
         elevation: 0,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: TableCalendar(
-          firstDay: DateTime.utc(2020, 1, 1),
-          lastDay: DateTime.utc(2030, 12, 31),
-          focusedDay: _focusedDay,
-          calendarStyle: CalendarStyle(
-            todayDecoration: BoxDecoration(
-              color: Color.fromARGB(255, 0, 68, 255),
-              shape: BoxShape.circle,
-            ),
-            selectedDecoration: BoxDecoration(
-              color: Colors.blue,
-              shape: BoxShape.circle,
-            ),
-            weekendTextStyle: TextStyle(color: Colors.white70),
-            defaultTextStyle: TextStyle(color: Colors.white),
-            outsideTextStyle: TextStyle(color: Colors.grey),
+        padding: const EdgeInsets.all(8.0),
+        child: SfCalendar(
+          view: CalendarView.month,
+          allowedViews: const [CalendarView.month],
+          viewNavigationMode: ViewNavigationMode.snap,
+          backgroundColor: Colors.grey[900],
+          todayHighlightColor: Color.fromARGB(255, 0, 68, 255),
+          selectionDecoration: BoxDecoration(
+            color: Colors.blue.withOpacity(0.3),
+            shape: BoxShape.rectangle,
+            borderRadius: BorderRadius.circular(6),
           ),
-          headerStyle: HeaderStyle(
-            titleTextStyle: TextStyle(color: Colors.white, fontSize: 18),
-            formatButtonVisible: false,
-            leftChevronIcon: Icon(Icons.chevron_left, color: Colors.white),
-            rightChevronIcon: Icon(Icons.chevron_right, color: Colors.white),
-            decoration: BoxDecoration(
-              color: Colors.grey[850],
-            ),
+          monthViewSettings: MonthViewSettings(
+            showTrailingAndLeadingDates: true,
+            appointmentDisplayMode: MonthAppointmentDisplayMode.none,
+            dayFormat: 'EEE',
+            numberOfWeeksInView: 6, // Standard, aber "unendlich" durch ScrollDirection
+            navigationDirection: MonthNavigationDirection.vertical,
           ),
-          calendarBuilders: CalendarBuilders(
-            defaultBuilder: (context, day, focusedDay) {
-              final eintrag = eintraege[_dateKey(day)];
-              final isToday = _isSameDay(day, DateTime.now());
-              if (eintrag != null && eintrag['option'] != null && eintrag['option'] != '') {
-                return Container(
-                  decoration: BoxDecoration(
-                    color: isToday
-                        ? Color.fromARGB(255, 0, 40, 150) // dunkler blau für heute mit Eintrag
-                        : Color.fromARGB(255, 0, 68, 255), // blau für andere Tage mit Eintrag
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: Text(
-                      '${day.day}',
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                );
-              }
-              return null;
-            },
-            todayBuilder: (context, day, focusedDay) {
-              final eintrag = eintraege[_dateKey(day)];
-              if (eintrag != null && eintrag['option'] != null && eintrag['option'] != '') {
-                return Container(
-                  decoration: BoxDecoration(
-                    color: Color.fromARGB(255, 0, 40, 150),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: Text(
-                      '${day.day}',
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                );
-              }
-              // Standard-heute-Dekoration
-              return Container(
-                decoration: BoxDecoration(
-                  color: Color.fromARGB(255, 0, 68, 255),
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Text(
-                    '${day.day}',
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              );
-            },
-          ),
-          onDaySelected: (selectedDay, focusedDay) {
+          onTap: (calendarTapDetails) {
+            final DateTime? selectedDay = calendarTapDetails.date;
+            if (selectedDay == null) return;
             String key = _dateKey(selectedDay);
             final eintrag = eintraege[key];
             if (eintrag != null && eintrag['option'] != null && eintrag['option'] != '') {
@@ -133,12 +75,48 @@ String _dateKey(DateTime date) =>
               );
             }
             setState(() {
-              _focusedDay = focusedDay;
+              _focusedDay = selectedDay;
             });
+          },
+          monthCellBuilder: (context, details) {
+            final eintrag = eintraege[_dateKey(details.date)];
+            final theme = Theme.of(context);
+
+            return Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: eintrag != null ? theme.colorScheme.primary : null,
+                    shape: BoxShape.circle,
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    '${details.date.day}',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: eintrag != null ? FontWeight.bold : FontWeight.normal,
+                    ),
+                  ),
+                ),
+                if (eintrag != null && eintrag['icon'] != null && eintrag['icon'] != '')
+                  Positioned(
+                    top: -2, // leicht außerhalb des Kreises
+                    right: 12,
+                    child: Image.asset(
+                      eintrag['icon'],
+                      width: 18,
+                      height: 18,
+                    ),
+                  ),
+              ],
+            );
           },
         ),
       ),
-      bottomNavigationBar: NavigationsLeiste(currentPage: 3), // Navigationsleiste hinzufügen (currentPage: 3 = Kalender)
+      bottomNavigationBar: NavigationsLeiste(currentPage: 3),
     );
   }
 

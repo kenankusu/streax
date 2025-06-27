@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'startseite.dart';
 
-void main() => runApp(streax());
+void main() {
+  runApp(streax());
+}
 
 class streax extends StatelessWidget {
   const streax({super.key});
