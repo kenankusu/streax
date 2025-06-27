@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../shared/aktivitaet.dart';
+import '../Shared/addActivity.dart';
 
 // Einträge werden nach Datum gespeichert (z.B. "2025-06-28")
 Map<String, Map<String, dynamic>> eintraege = {};
