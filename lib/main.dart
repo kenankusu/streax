@@ -12,6 +12,7 @@ class streax extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'streax',
+      locale: const Locale('de'),
       home: startseite(),
       debugShowCheckedModeBanner: false,
       theme: ThemeData(

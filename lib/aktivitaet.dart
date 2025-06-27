@@ -12,12 +12,12 @@ class AktivitaetHinzufuegen extends StatelessWidget {
   Widget build(BuildContext context) {
     //statische Auswahl an Sportarten
     final List<String> sportarten = [
+      'Ruhetag',
+      'Krafttraining',
       'Laufen',
       'Tischtennis',
-      'Bop geben',
-      'Krafttraining',
-      'Jaxxen',
-      'Fußball',
+      'Boxen',
+      'Fussball',
     ];
     String? ausgewaehlteSportart;
     TimeOfDay? vonZeit;
@@ -155,16 +155,18 @@ class AktivitaetHinzufuegen extends StatelessWidget {
                 SizedBox(
                   child: ElevatedButton(
                     onPressed: () {
-                      // Speichern-Logik: Werte an das Journal übergeben
-                      Navigator.of(context).pop();
-                      eintraege[datum.weekday - 1] = {
+                      String dateKey = "${datum.year.toString().padLeft(4, '0')}-${datum.month.toString().padLeft(2, '0')}-${datum.day.toString().padLeft(2, '0')}";
+                      eintraege[dateKey] = {
                         'option': ausgewaehlteSportart ?? '',
                         'text': notizenController.text,
                         'emoji': ausgewaehltesEmoji.toString(),
                         'von': vonZeit != null ? vonZeit!.format(context) : '',
                         'bis': bisZeit != null ? bisZeit!.format(context) : '',
                         'datum': datum.toIso8601String(),
+                        'icon': sportartIcons[ausgewaehlteSportart ?? ''] ?? '',
                       };
+                      Navigator.of(context).pop();
+                      // ggf. Callback für setState aufrufen, falls nötig
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
@@ -195,9 +197,8 @@ class AktivitaetHinzufuegen extends StatelessWidget {
   }
 }
 
-// Mapping von Sportart zu Icon-Asset
 const Map<String, String> sportartIcons = {
-  'Rest': 'assets/icons/journal/rest.png',
+  'Ruhetag': 'assets/icons/journal/rest.png',
   'Krafttraining': 'assets/icons/journal/gym.png',
   'Boxen': 'assets/icons/journal/boxen.png',
   'Laufen': 'assets/icons/journal/laufen.png',
@@ -337,7 +338,7 @@ class _ZeitDatumAuswahlState extends State<ZeitDatumAuswahl> {
           const SizedBox(width: 6),
           zeitFeld(
             'Datum',
-            'heute, ${datum.day.toString().padLeft(2, '0')}.${datum.month.toString().padLeft(2, '0')}',
+            '${datum.day.toString().padLeft(2, '0')}.${datum.month.toString().padLeft(2, '0')}',
             () => _pickDate(context),
           ),
         ],
