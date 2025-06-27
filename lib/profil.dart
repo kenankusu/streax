@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'widgets/navigationsleiste.dart'; 
+import 'widgets/navigationsleiste.dart';
 
 class Profil extends StatefulWidget {
   const Profil({super.key});
@@ -14,6 +14,7 @@ class _ProfilState extends State<Profil> {
   String vorname = "";
   String nachname = "";
   String benutzername = "";
+  final List<String> hinzugefuegteSportarten = [];
 
   @override
   void initState() {
@@ -35,6 +36,13 @@ class _ProfilState extends State<Profil> {
 
   @override
   Widget build(BuildContext context) {
+    final List<String> sportarten = ['Laufen', 'Boxen', 'Tischtennis'];
+    final Map<String, String> sportIcons = {
+      'Laufen': 'assets/icons/journal/rest.png',
+      'Boxen': 'assets/icons/journal/boxen.png',
+      'Tischtennis': 'assets/icons/journal/tt.png',
+    };
+
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
@@ -53,9 +61,7 @@ class _ProfilState extends State<Profil> {
           children: [
             CircleAvatar(
               radius: 50,
-              backgroundImage: AssetImage(
-                'assets/profil/profilbild.png',
-              ), // Beispielbild
+              backgroundImage: AssetImage('assets/profil/profilbild.png'),
             ),
             SizedBox(height: 16),
             Text(
@@ -75,21 +81,105 @@ class _ProfilState extends State<Profil> {
                 IconButton(
                   icon: Icon(Icons.edit, color: Colors.white),
                   onPressed: () {
-                    // Bearbeiten-Funktion
+                    // Bearbeitenfunktion kommt noch
                   },
                 ),
                 IconButton(
                   icon: Icon(Icons.share, color: Colors.white),
                   onPressed: () {
-                    // Teilen-Funktion
+                    // Teilenfunktion kommt noch
                   },
                 ),
               ],
             ),
             SizedBox(height: 16),
+            Text(
+              "Deine Sportarten:",
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            SizedBox(height: 8),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: [_buildActivityIcon(context, "+")],
+              children: [
+                ...hinzugefuegteSportarten.map((sport) {
+                  return Container(
+                    width: 70,
+                    height: 70,
+                    margin: const EdgeInsets.symmetric(horizontal: 8),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surfaceContainer,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Image.asset(sportIcons[sport]!, width: 36, height: 36),
+                        SizedBox(height: 4),
+                        Text(
+                          sport,
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+                GestureDetector(
+                  onTap: () async {
+                    final verfuegbareSportarten = sportarten
+                        .where(
+                          (sport) => !hinzugefuegteSportarten.contains(sport),
+                        )
+                        .toList();
+
+                    await showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          backgroundColor: Theme.of(
+                            context,
+                          ).colorScheme.surfaceContainer,
+                          title: Text(
+                            "Sportart auswählen",
+                            style: Theme.of(context).textTheme.headlineSmall,
+                          ),
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: verfuegbareSportarten.map((sport) {
+                              return ListTile(
+                                leading: Image.asset(
+                                  sportIcons[sport]!,
+                                  width: 36,
+                                  height: 36,
+                                ),
+                                title: Text(
+                                  sport,
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                                onTap: () {
+                                  setState(() {
+                                    hinzugefuegteSportarten.add(sport);
+                                  });
+                                  Navigator.of(context).pop();
+                                },
+                              );
+                            }).toList(),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                  child: Container(
+                    width: 70,
+                    height: 70,
+                    margin: const EdgeInsets.symmetric(horizontal: 8),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surfaceContainer,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(Icons.add, color: Colors.white, size: 36),
+                  ),
+                ),
+              ],
             ),
             SizedBox(height: 16),
             Text(
@@ -104,7 +194,7 @@ class _ProfilState extends State<Profil> {
             Divider(color: Colors.grey),
             TextButton(
               onPressed: () {
-                // Abmelden-Funktion
+                // Abmeldenfunktion kommt noch
               },
               child: Text(
                 "Abmelden",
@@ -113,31 +203,11 @@ class _ProfilState extends State<Profil> {
                 ).textTheme.bodySmall?.copyWith(color: Colors.red),
               ),
             ),
+            SizedBox(height: 16),
           ],
         ),
       ),
       bottomNavigationBar: NavigationsLeiste(currentPage: 4),
-    );
-  }
-
-  Widget _buildActivityIcon(BuildContext context, String label) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: Column(
-        children: [
-          Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceContainer,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Center(
-              child: Text(label, style: Theme.of(context).textTheme.bodySmall),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
