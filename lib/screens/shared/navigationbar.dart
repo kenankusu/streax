@@ -18,10 +18,10 @@ class NavigationsLeiste extends StatelessWidget {
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        // Hauptnavigationsleiste
+        // Hauptnavigationsleiste - Container höher für BottomNavigationBar-Mindestanforderungen
         Container(
-          height: 60,
-          margin: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+          height: 65, // Erhöht von 55 auf 65 - Mindesthöhe für BottomNavigationBar ohne Overflow
+          margin: EdgeInsets.symmetric(horizontal: 20, vertical: 12), // Margin bleibt gleich
           decoration: BoxDecoration(
             color: colorScheme.surfaceContainer,
             borderRadius: BorderRadius.circular(50),
@@ -42,21 +42,24 @@ class NavigationsLeiste extends StatelessWidget {
               showUnselectedLabels: false,
               type: BottomNavigationBarType.fixed,
               currentIndex: currentPage,
-              iconSize: 30,
+              iconSize: 26, // Reduziert von 26 auf 24 für mehr Platz
+              elevation: 0, // Entfernt zusätzliche Schatten
               onTap: (index) {
                 switch (index) {
                   case 0:
                     if (currentPage != 0) {
-                      // ✅ Zurück zur Startseite
+                      // Navigation zurück zur Startseite
                       Navigator.of(context).popUntil((route) => route.isFirst);
                     }
                     break;
                   case 1:
+                    // Freunde-Funktion noch nicht implementiert
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text('Freunde-Seite kommt bald!')),
                     );
                     break;
                   case 2:
+                    // Plus-Button öffnet Aktivität-hinzufügen-Fenster
                     showModalBottomSheet(
                       context: context,
                       isScrollControlled: true,
@@ -66,7 +69,7 @@ class NavigationsLeiste extends StatelessWidget {
                     break;
                   case 3:
                     if (currentPage != 3) {
-                      // ✅ NORMALE Navigation zum Kalender!
+                      // Navigation zum Kalender
                       Navigator.of(context).push(
                         MaterialPageRoute(builder: (context) => kalender()),
                       );
@@ -74,7 +77,7 @@ class NavigationsLeiste extends StatelessWidget {
                     break;
                   case 4:
                     if (currentPage != 4) {
-                      // ✅ NORMALE Navigation zum Profil!
+                      // Navigation zum Profil
                       Navigator.of(context).push(
                         MaterialPageRoute(builder: (context) => Profil()),
                       );
@@ -92,7 +95,8 @@ class NavigationsLeiste extends StatelessWidget {
                   label: 'Freunde',
                 ),
                 BottomNavigationBarItem(
-                  icon: SizedBox(height: 50),
+                  // Leerer Platz für den schwebenden Plus-Button - reduzierte Höhe
+                  icon: SizedBox(height: 24), // Reduziert von 26 auf 24 passend zur Icon-Größe
                   label: 'Hinzufügen',
                 ),
                 BottomNavigationBarItem(
@@ -107,14 +111,15 @@ class NavigationsLeiste extends StatelessWidget {
             ),
           ),
         ),
-        // Plus-Button bleibt gleich...
+        // Plus-Button schwebt über der Navigationsleiste
         Positioned(
-          bottom: 35,
+          bottom: 30, // Erhöht von 20 auf 25 wegen höherem Container (65px)
           left: 0,
           right: 0,
           child: Center(
             child: GestureDetector(
               onTap: () {
+                // Aktivität-hinzufügen-Fenster öffnen
                 showModalBottomSheet(
                   context: context,
                   isScrollControlled: true,
@@ -123,9 +128,10 @@ class NavigationsLeiste extends StatelessWidget {
                 );
               },
               child: Container(
-                width: 85,
-                height: 85,
+                width: 75, // Leicht reduziert von 80 auf 75 für bessere Proportionen
+                height: 75, // Leicht reduziert von 80 auf 75 für bessere Proportionen
                 decoration: BoxDecoration(
+                  // Gradient für den Plus-Button
                   gradient: LinearGradient(
                     colors: [
                       Color(0xFF1C499E),
@@ -143,15 +149,11 @@ class NavigationsLeiste extends StatelessWidget {
                       offset: Offset(0, 6),
                     ),
                   ],
-                  border: Border.all(
-                    color: colorScheme.surfaceContainer,
-                    width: 5,
-                  ),
                 ),
                 child: Icon(
                   Icons.add,
                   color: Colors.white,
-                  size: 50,
+                  size: 40, // Reduziert von 45 auf 40 für kleineren Button
                 ),
               ),
             ),
