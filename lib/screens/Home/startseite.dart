@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'widgets/fortschrittsbalken.dart';
-import 'widgets/kopfzeile.dart';
-import 'widgets/journal.dart';
-import 'widgets/navigationsleiste.dart';
-import 'kalender.dart';
-import 'aktivitaet.dart';
-import 'profil.dart';
+import 'fortschrittsbalken.dart';
+import 'kopfzeile.dart';
+import 'journal.dart';
+import '../shared/navigationsleiste.dart';
+import '../Journal/kalender.dart';
 
 class startseite extends StatelessWidget {
   final int streakWert = 25;
@@ -60,7 +58,7 @@ class startseite extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Kopfzeile(username: "username", streakWert: streakWert),
+              Kopfzeile(streakWert: streakWert),
               SizedBox(height: 16),
               GestureDetector(
                 onTap: () {

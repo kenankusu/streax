@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'widgets/journal.dart';
+import '../Home/journal.dart';
 
 class AktivitaetHinzufuegen extends StatelessWidget {
   const AktivitaetHinzufuegen({super.key});

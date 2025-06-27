@@ -1,13 +1,15 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_application_1/models/user.dart';
+import 'package:flutter_application_1/services/database.dart';
+import 'package:provider/provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Kopfzeile extends StatefulWidget {
-  final String username;
   final int streakWert;
 
   const Kopfzeile({
-    required this.username,
     required this.streakWert,
     super.key,
   });
@@ -34,9 +36,9 @@ class _KopfzeileState extends State<Kopfzeile> {
     });
   }
 
-  Widget Willkommen() {
+  Widget Willkommen(String name) {
     return Text(
-      "Hallo,\n${widget.username}!",
+      "Hallo,\n$name!",
       style: Theme.of(context).textTheme.headlineMedium,
     );
   }
@@ -71,33 +73,49 @@ class _KopfzeileState extends State<Kopfzeile> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    final user = Provider.of<StreaxUser?>(context)!;
+
+    return StreamBuilder<DocumentSnapshot>(
+      stream: DatabaseService(uid: user.uid).userData,
+      builder: (context, snapshot) {
+        String name = "Benutzer";
+        
+        if (snapshot.hasData && snapshot.data!.exists) {
+          var userData = snapshot.data!.data() as Map<String, dynamic>;
+          String fullName = userData['name'] ?? 'Benutzer';
+          // ✅ Nur den ersten Teil (Vorname) nehmen
+          name = fullName.split(' ').first;
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Willkommen(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Willkommen(name),
+                Padding(
+                  padding: const EdgeInsets.only(top: 20, right: 30),
+                  child: streakAnzeige(widget.streakWert / 30),
+                ),
+              ],
+            ),
+            SizedBox(height: 40),
             Padding(
-              padding: const EdgeInsets.only(top: 20, right: 30),
-              child: streakAnzeige(widget.streakWert / 30),
+              padding: const EdgeInsets.symmetric(horizontal: 40),
+              child: Text(
+                zitat ??
+                    "Fall in love with the process, and the results will come.",
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  fontStyle: FontStyle.italic,
+                  color: Colors.grey[400],
+                ),
+                textAlign: TextAlign.center,
+              ),
             ),
           ],
-        ),
-        SizedBox(height: 40),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 40),
-          child: Text(
-            zitat ??
-                "Fall in love with the process, and the results will come.",
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              fontStyle: FontStyle.italic,
-              color: Colors.grey[400],
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ),
-      ],
+        );
+      },
     );
   }
 }
