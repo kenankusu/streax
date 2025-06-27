@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart'; // Grundlegende Flutter-Widgets und Material Design
 import 'package:image_picker/image_picker.dart'; // Für das Auswählen von Bildern aus Galerie oder Kamera
 import 'dart:io'; // Für Dateioperationen auf mobilen Plattformen (z.B. Image.file)
-import 'widgets/journal.dart'; // Zugriff auf das Journal für das Speichern der Aktivität
+import '../Home/journal.dart'; // Zugriff auf das Journal für das Speichern der Aktivität
 import 'package:flutter/foundation.dart'; // Für kIsWeb, um Web-spezifisches Verhalten zu steuern
 import 'package:flutter/cupertino.dart'; // Für CupertinoDatePicker
 
