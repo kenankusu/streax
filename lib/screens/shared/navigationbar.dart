@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import '../Home/homepage.dart';
+import '../Shared/addActivity.dart';
 import '../Journal/calendar.dart';
-import 'addActivity.dart';
 import '../Profile/profile.dart';
 
 class NavigationsLeiste extends StatelessWidget {
@@ -48,10 +47,8 @@ class NavigationsLeiste extends StatelessWidget {
                 switch (index) {
                   case 0:
                     if (currentPage != 0) {
-                      Navigator.of(context).pushAndRemoveUntil(
-                        MaterialPageRoute(builder: (context) => startseite()),
-                        (route) => false,
-                      );
+                      // ✅ Zurück zur Startseite
+                      Navigator.of(context).popUntil((route) => route.isFirst);
                     }
                     break;
                   case 1:
@@ -69,6 +66,7 @@ class NavigationsLeiste extends StatelessWidget {
                     break;
                   case 3:
                     if (currentPage != 3) {
+                      // ✅ NORMALE Navigation zum Kalender!
                       Navigator.of(context).push(
                         MaterialPageRoute(builder: (context) => kalender()),
                       );
@@ -76,6 +74,7 @@ class NavigationsLeiste extends StatelessWidget {
                     break;
                   case 4:
                     if (currentPage != 4) {
+                      // ✅ NORMALE Navigation zum Profil!
                       Navigator.of(context).push(
                         MaterialPageRoute(builder: (context) => Profil()),
                       );
@@ -93,7 +92,7 @@ class NavigationsLeiste extends StatelessWidget {
                   label: 'Freunde',
                 ),
                 BottomNavigationBarItem(
-                  icon: SizedBox(height: 50), // Platzhalter für den erhöhten Button
+                  icon: SizedBox(height: 50),
                   label: 'Hinzufügen',
                 ),
                 BottomNavigationBarItem(
@@ -108,7 +107,7 @@ class NavigationsLeiste extends StatelessWidget {
             ),
           ),
         ),
-        // Erhöhter Plus-Button
+        // Plus-Button bleibt gleich...
         Positioned(
           bottom: 35,
           left: 0,

@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/models/user.dart';
-import 'package:flutter_application_1/services/auth.dart';
+import 'package:flutter_application_1/Models/user.dart';
+import 'package:flutter_application_1/Services/auth.dart';
 import '../Shared/navigationbar.dart'; 
-import 'package:flutter_application_1/services/database.dart';
+import 'package:flutter_application_1/Services/database.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_application_1/screens/Welcome/welcome.dart'; // Import der Willkommens-Seite
-
 
 class Profil extends StatefulWidget {
   const Profil({super.key});
@@ -20,7 +18,16 @@ class _ProfilState extends State<Profil> {
 
   @override
   Widget build(BuildContext context) {
-    final user = Provider.of<StreaxUser?>(context)!; // ✅ ! weil User garantiert existiert
+    final user = Provider.of<StreaxUser?>(context);
+    
+    // Null-check
+    if (user == null) {
+      // Sofort zurück zum Wrapper
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      });
+      return Container();
+    }
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -40,46 +47,7 @@ class _ProfilState extends State<Profil> {
             return Center(child: CircularProgressIndicator());
           }
 
-          // ✅ Nur noch dieser Check: Profil-Daten erstellen falls sie nicht existieren
-          if (!snapshot.hasData || !snapshot.data!.exists) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.person_add, size: 64, color: Colors.grey),
-                  SizedBox(height: 16),
-                  Text(
-                    'Profil nicht gefunden',
-                    style: Theme.of(context).textTheme.headlineMedium,
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Es scheint als hätten Sie noch kein Profil erstellt',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: 20),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      foregroundColor: Colors.white,
-                    ),
-                    onPressed: () {
-                      // ✅ Navigation zur Willkommens-Seite
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => WillkommensSeite(uid: user.uid),
-                        ),
-                      );
-                    },
-                    child: Text('Jetzt Profil erstellen'),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          // ✅ User-Daten aus Firestore - guaranteed to exist
+          // ✅ Profil ist immer vorhanden → direkt anzeigen
           var userData = snapshot.data!.data() as Map<String, dynamic>;
           
           return Padding(
@@ -93,7 +61,7 @@ class _ProfilState extends State<Profil> {
                 ),
                 SizedBox(height: 16),
                 Text(
-                  userData['name'] ?? 'Unbekannter Name', // ✅ Einfacher fallback
+                  userData['name'] ?? 'Unbekannter Name',
                   style: Theme.of(context).textTheme.headlineMedium,
                 ),
                 Text(
@@ -137,7 +105,6 @@ class _ProfilState extends State<Profil> {
                 TextButton(
                   onPressed: () async {
                     await _auth.signOut();
-                    Navigator.of(context).popUntil((route) => route.isFirst);
                   },
                   child: Text(
                     "Abmelden",
@@ -153,57 +120,7 @@ class _ProfilState extends State<Profil> {
     );
   }
 
-  // ✅ Dialog für neue Profile
-  void _showCreateProfileDialog(BuildContext context, String uid) {
-    final nameController = TextEditingController();
-    final usernameController = TextEditingController();
-
-    showDialog(
-      context: context,
-      barrierDismissible: false, // Muss ausgefüllt werden
-      builder: (context) => AlertDialog(
-        title: Text('Profil erstellen'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: InputDecoration(
-                labelText: 'Dein Name',
-                hintText: 'z.B. Max Mustermann',
-              ),
-            ),
-            SizedBox(height: 16),
-            TextField(
-              controller: usernameController,
-              decoration: InputDecoration(
-                labelText: 'Username',
-                hintText: 'z.B. max_mustermann',
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () async {
-              if (nameController.text.isNotEmpty && usernameController.text.isNotEmpty) {
-                await DatabaseService(uid: uid).updateUserData(
-                  nameController.text,
-                  usernameController.text,
-                  freundeAnzahl: 0,
-                  laengsterStreak: 0,
-                );
-                Navigator.pop(context);
-              }
-            },
-            child: Text('Erstellen'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ✅ Dialog zum Bearbeiten - bleibt gleich
+  // ✅ Edit-Dialog für bestehende Profile
   void _showEditDialog(BuildContext context, String uid, Map<String, dynamic> currentData) {
     final nameController = TextEditingController(text: currentData['name'] ?? '');
     final usernameController = TextEditingController(text: currentData['username'] ?? '');

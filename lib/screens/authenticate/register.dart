@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/screens/Authenticate/inputFieldStyle.dart';
-import 'package:flutter_application_1/screens/Shared/loading.dart';
-import 'package:flutter_application_1/services/auth.dart';
-import 'package:flutter_application_1/screens/Welcome/welcome.dart'; // ✅ Import hinzufügen
+import 'package:flutter_application_1/Screens/Authenticate/inputFieldStyle.dart';
+import 'package:flutter_application_1/Screens/Shared/loading.dart';
+import 'package:flutter_application_1/Services/auth.dart';
+import 'package:flutter_application_1/Screens/Welcome/welcome.dart'; // ✅ Import hinzufügen
 
 class Register extends StatefulWidget {
   final Function toggleView;
