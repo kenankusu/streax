@@ -20,10 +20,10 @@ class startseite extends StatelessWidget {
         children: [
           // Hauptinhalt - scrollbar
           SafeArea(
-            bottom: false, // Wichtig: bottom: false für echte floating bar
+            bottom: false, // bottom: false für echte floating bar
             child: SingleChildScrollView(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 48, 20, 120), // Unten mehr Padding (120px)
+                padding: const EdgeInsets.fromLTRB(20, 48, 20, 120),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -99,7 +99,7 @@ class startseite extends StatelessWidget {
               ),
             ),
           ),
-          // Schwebende Navigation - schwebt über allem
+          // Schwebende Navigation
           Positioned(
             bottom: 0,
             left: 0,

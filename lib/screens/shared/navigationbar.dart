@@ -18,10 +18,10 @@ class NavigationsLeiste extends StatelessWidget {
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        // Hauptnavigationsleiste - Container höher für BottomNavigationBar-Mindestanforderungen
+        // Hauptnavigationsleiste
         Container(
-          height: 65, // Erhöht von 55 auf 65 - Mindesthöhe für BottomNavigationBar ohne Overflow
-          margin: EdgeInsets.symmetric(horizontal: 20, vertical: 12), // Margin bleibt gleich
+          height: 65,
+          margin: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           decoration: BoxDecoration(
             color: colorScheme.surfaceContainer,
             borderRadius: BorderRadius.circular(50),
@@ -42,7 +42,7 @@ class NavigationsLeiste extends StatelessWidget {
               showUnselectedLabels: false,
               type: BottomNavigationBarType.fixed,
               currentIndex: currentPage,
-              iconSize: 26, // Reduziert von 26 auf 24 für mehr Platz
+              iconSize: 26,
               elevation: 0, // Entfernt zusätzliche Schatten
               onTap: (index) {
                 switch (index) {
@@ -96,7 +96,7 @@ class NavigationsLeiste extends StatelessWidget {
                 ),
                 BottomNavigationBarItem(
                   // Leerer Platz für den schwebenden Plus-Button - reduzierte Höhe
-                  icon: SizedBox(height: 24), // Reduziert von 26 auf 24 passend zur Icon-Größe
+                  icon: SizedBox(height: 26),
                   label: 'Hinzufügen',
                 ),
                 BottomNavigationBarItem(
@@ -113,7 +113,7 @@ class NavigationsLeiste extends StatelessWidget {
         ),
         // Plus-Button schwebt über der Navigationsleiste
         Positioned(
-          bottom: 30, // Erhöht von 20 auf 25 wegen höherem Container (65px)
+          bottom: 30,
           left: 0,
           right: 0,
           child: Center(
@@ -128,8 +128,8 @@ class NavigationsLeiste extends StatelessWidget {
                 );
               },
               child: Container(
-                width: 75, // Leicht reduziert von 80 auf 75 für bessere Proportionen
-                height: 75, // Leicht reduziert von 80 auf 75 für bessere Proportionen
+                width: 75,
+                height: 75,
                 decoration: BoxDecoration(
                   // Gradient für den Plus-Button
                   gradient: LinearGradient(
@@ -153,7 +153,7 @@ class NavigationsLeiste extends StatelessWidget {
                 child: Icon(
                   Icons.add,
                   color: Colors.white,
-                  size: 40, // Reduziert von 45 auf 40 für kleineren Button
+                  size: 40,
                 ),
               ),
             ),
