@@ -8,9 +8,9 @@ class NavigationsLeiste extends StatelessWidget {
   final int currentPage;
 
   const NavigationsLeiste({
-    Key? key,
+    super.key,
     this.currentPage = 0,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
