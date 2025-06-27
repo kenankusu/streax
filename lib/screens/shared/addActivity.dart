@@ -94,7 +94,7 @@ class AktivitaetHinzufuegen extends StatelessWidget {
                     ),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white),
                     iconEnabledColor: Colors.white,
-                    dropdownColor: Theme.of(context).colorScheme.surfaceVariant, // Menü in Theme-Farbe
+                    dropdownColor: Theme.of(context).colorScheme.surfaceContainerHighest, // Menü in Theme-Farbe
                     items: sportarten
                         .map((sport) => DropdownMenuItem(
                               value: sport,
@@ -316,7 +316,7 @@ class _ZeitDatumAuswahlState extends State<ZeitDatumAuswahl> {
               constraints: const BoxConstraints(minHeight: 36, maxHeight: 44),
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceVariant,
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(16),
               ),
               alignment: Alignment.center, // Wert zentriert
@@ -348,6 +348,8 @@ class _ZeitDatumAuswahlState extends State<ZeitDatumAuswahl> {
 }
 
 class FotoHinzufuegen extends StatefulWidget {
+  const FotoHinzufuegen({super.key});
+
   @override
   State<FotoHinzufuegen> createState() => _FotoHinzufuegenState();
 }

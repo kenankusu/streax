@@ -18,10 +18,11 @@ class _KalenderState extends State<kalender> {
   final CalendarController _calendarController = CalendarController();
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
-      backgroundColor: Colors.grey[900],
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: Colors.grey[900],
+        backgroundColor: Theme.of(context).colorScheme.surface, 
         title: Text('Kalender', style: TextStyle(color: Colors.white)),
         iconTheme: IconThemeData(color: Colors.white),
         elevation: 0,
@@ -31,83 +32,112 @@ class _KalenderState extends State<kalender> {
         child: Column(
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                TextButton.icon(
-                  onPressed: () async {
-                    DateTime tempDate = _focusedDay;
-                    await showDialog(
-                      context: context,
-                      builder: (context) {
-                        return AlertDialog(
-                          backgroundColor: Theme.of(context).colorScheme.surface,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                          contentPadding: const EdgeInsets.all(0),
-                          content: SizedBox(
-                            width: 300,
-                            height: 300,
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Expanded(
-                                  child: CupertinoDatePicker(
-                                    mode: CupertinoDatePickerMode.monthYear,
-                                    initialDateTime: _focusedDay.isAfter(DateTime(DateTime.now().year, DateTime.now().month + 1, 0))
-                                        ? DateTime(DateTime.now().year, DateTime.now().month + 1, 0)
-                                        : _focusedDay,
-                                    minimumDate: DateTime(2000),
-                                    maximumDate: DateTime(DateTime.now().year, DateTime.now().month + 1, 0),
-                                    onDateTimeChanged: (DateTime newDate) {
-                                      tempDate = DateTime(newDate.year, newDate.month, 1);
-                                    },
-                                  ),
+                const SizedBox(width: 48), // Platzhalter für linke Seite, damit die Mitte stimmt
+                Expanded(
+                  child: Center(
+                    child: TextButton.icon(
+                      onPressed: () async {
+                        DateTime tempDate = _focusedDay;
+                        await showDialog(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              backgroundColor: Theme.of(context).colorScheme.surface,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                              contentPadding: const EdgeInsets.all(0),
+                              content: SizedBox(
+                                width: 300,
+                                height: 300,
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Expanded(
+                                      child: CupertinoDatePicker(
+                                        mode: CupertinoDatePickerMode.monthYear,
+                                        initialDateTime: _focusedDay.isAfter(DateTime(DateTime.now().year, DateTime.now().month + 1, 0))
+                                            ? DateTime(DateTime.now().year, DateTime.now().month + 1, 0)
+                                            : _focusedDay,
+                                        minimumDate: DateTime(2000),
+                                        maximumDate: DateTime(DateTime.now().year, DateTime.now().month + 1, 0),
+                                        onDateTimeChanged: (DateTime newDate) {
+                                          tempDate = DateTime(newDate.year, newDate.month, 1);
+                                        },
+                                      ),
+                                    ),
+                                    TextButton(
+                                      onPressed: () {
+                                        _calendarController.displayDate = tempDate;
+                                        setState(() {
+                                          _focusedDay = tempDate;
+                                        });
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: const Text('Übernehmen'),
+                                    ),
+                                  ],
                                 ),
-                                TextButton(
-                                  onPressed: () {
-                                    _calendarController.displayDate = tempDate; // Kalender springt sofort
-                                    setState(() {
-                                      _focusedDay = tempDate; // Button oben aktualisieren
-                                    });
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: const Text('Übernehmen'),
-                                ),
-                              ],
-                            ),
-                          ),
+                              ),
+                            );
+                          },
                         );
                       },
-                    );
-                  },
-                  icon: const Icon(Icons.calendar_today, color: Colors.white),
-                  label: Text(
-                    "${_focusedDay.month.toString().padLeft(2, '0')}.${_focusedDay.year}",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+                      icon: const Icon(Icons.calendar_today, color: Colors.white),
+                      label: Text(
+                        "${_focusedDay.month.toString().padLeft(2, '0')}.${_focusedDay.year}",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.white,
+                      ),
                     ),
                   ),
-                  style: TextButton.styleFrom(
+                ),
+                // "Heute"-Button oben rechts
+                ElevatedButton(
+                  onPressed: () {
+                    final DateTime today = DateTime.now();
+                    final DateTime thisMonth = DateTime(today.year, today.month, 1);
+                    _calendarController.displayDate = thisMonth;
+                    setState(() {
+                      _focusedDay = thisMonth;
+                    });
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
                     foregroundColor: Colors.white,
+                    side: const BorderSide(color: Colors.transparent, width: 2),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                    textStyle: const TextStyle(fontWeight: FontWeight.bold),
                   ),
+                  child: const Text('Heute'),
                 ),
               ],
             ),
             const SizedBox(height: 8),
-            Expanded(
+            SizedBox(
+              height: MediaQuery.of(context).size.height * 0.45,
               child: SfCalendar(
                 controller: _calendarController,
                 view: CalendarView.month,
                 viewNavigationMode: ViewNavigationMode.snap,
-                backgroundColor: Theme.of(context).colorScheme.surface,
-                todayHighlightColor: Theme.of(context).colorScheme.primary,
+                backgroundColor: Theme.of(context).colorScheme.surface,                
+                abtodayHighlightColor: Theme.of(context).colorScheme.primary,
                 selectionDecoration: const BoxDecoration(),
                 firstDayOfWeek: 1,
                 viewHeaderHeight: 10,
                 headerHeight: 0,
                 initialDisplayDate: _focusedDay,
-                minDate: DateTime(2000, 1, 1), // Frühestes Datum
+                minDate: DateTime(2000, 1, 1),
                 maxDate: DateTime(DateTime.now().year, DateTime.now().month, 31),
                 monthViewSettings: MonthViewSettings(
                   showTrailingAndLeadingDates: false,
@@ -153,36 +183,31 @@ class _KalenderState extends State<kalender> {
                 monthCellBuilder: (context, details) {
                   final eintrag = eintraege[_dateKey(details.date)];
                   final theme = Theme.of(context);
-                  return Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: eintrag != null ? theme.colorScheme.primary : null,
-                          shape: BoxShape.circle,
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          '${details.date.day}',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: eintrag != null ? FontWeight.bold : FontWeight.normal,
+
+                  return Align(
+                    alignment: Alignment.center,
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Container(
+                          width: 45,
+                          height: 45,
+                          decoration: BoxDecoration(
+                            color: eintrag != null ? theme.colorScheme.primary : null,
+                            shape: BoxShape.circle,
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            '${details.date.day}',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: eintrag != null ? FontWeight.bold : FontWeight.normal,
+                              fontSize: 18,
+                            ),
                           ),
                         ),
-                      ),
-                      if (eintrag != null && eintrag['icon'] != null && eintrag['icon'] != '')
-                        Positioned(
-                          top: -5,
-                          right: 12,
-                          child: Image.asset(
-                            eintrag['icon'],
-                            width: 18,
-                            height: 18,
-                          ),
-                        ),
-                    ],
+                      ],
+                    ),
                   );
                 },
                 initialSelectedDate: _focusedDay,
