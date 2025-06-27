@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 import '../Home/journal.dart';
-import '../shared/navigationsleiste.dart';
+import '../Shared/navigationbar.dart';
 import 'package:flutter/cupertino.dart'; 
 
 class kalender extends StatefulWidget {

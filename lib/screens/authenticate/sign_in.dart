@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/screens/authenticate/inputFeldStyle.dart';
-import 'package:flutter_application_1/screens/shared/loading.dart';
+import 'package:flutter_application_1/screens/Authenticate/inputFieldStyle.dart';
+import 'package:flutter_application_1/screens/Shared/loading.dart';
 import 'package:flutter_application_1/services/auth.dart';
 
 class SignIn extends StatefulWidget {

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/models/user.dart';
 import 'package:flutter_application_1/services/auth.dart';
-import '../shared/navigationsleiste.dart'; 
+import '../Shared/navigationbar.dart'; 
 import 'package:flutter_application_1/services/database.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_application_1/screens/authenticate/willkommen.dart'; // Import der Willkommens-Seite
+import 'package:flutter_application_1/screens/Welcome/welcome.dart'; // Import der Willkommens-Seite
 
 
 class Profil extends StatefulWidget {

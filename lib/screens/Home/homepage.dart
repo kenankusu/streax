@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'fortschrittsbalken.dart';
-import 'kopfzeile.dart';
+import 'progressbar.dart';
+import 'head.dart';
 import 'journal.dart';
-import '../shared/navigationsleiste.dart';
-import '../Journal/kalender.dart';
+import '../Shared/navigationbar.dart';
+import '../Journal/calendar.dart';
 
 class startseite extends StatelessWidget {
   final int streakWert = 25;
