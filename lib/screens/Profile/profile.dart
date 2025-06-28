@@ -20,103 +20,112 @@ class _ProfilState extends State<Profil> {
   Widget build(BuildContext context) {
     final user = Provider.of<StreaxUser?>(context);
     
-    // Null-check
     if (user == null) {
-      // Sofort zurück zum Wrapper
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Navigator.of(context).popUntil((route) => route.isFirst);
-      });
-      return Container();
+      return Scaffold(body: Center(child: Text('Nicht angemeldet')));
     }
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.surface,
-        title: Text(
-          "Dein Profil",
-          style: Theme.of(context).textTheme.headlineMedium,
-        ),
-        centerTitle: true,
+        title: Text('Profil', style: TextStyle(color: Colors.white)),
+        iconTheme: IconThemeData(color: Colors.white),
         elevation: 0,
       ),
-      body: StreamBuilder<DocumentSnapshot>(
-        stream: DatabaseService(uid: user.uid).userData,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          }
+      body: Stack( // Stack hinzugefügt
+        children: [
+          // Hauptinhalt in Positioned
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 100, // Platz für Navigation
+            child: StreamBuilder<DocumentSnapshot>(
+              stream: DatabaseService(uid: user.uid).userData,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                }
 
-          // ✅ Profil ist immer vorhanden → direkt anzeigen
-          var userData = snapshot.data!.data() as Map<String, dynamic>;
-          
-          return Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                CircleAvatar(
-                  radius: 50,
-                  backgroundImage: AssetImage('assets/profil/profilbild.png'),
-                ),
-                SizedBox(height: 16),
-                Text(
-                  userData['name'] ?? 'Unbekannter Name',
-                  style: Theme.of(context).textTheme.headlineMedium,
-                ),
-                Text(
-                  '@${userData['username'] ?? 'unbekannt'}',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
-                ),
-                SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    IconButton(
-                      icon: Icon(Icons.edit, color: Colors.white),
-                      onPressed: () {
-                        _showEditDialog(context, user.uid, userData);
-                      },
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.share, color: Colors.white),
-                      onPressed: () {
-                        // Teilen-Funktion
-                      },
-                    ),
-                  ],
-                ),
-                SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [_buildActivityIcon(context, "+")],
-                ),
-                SizedBox(height: 16),
-                Text(
-                  "Streax Freunde: ${userData['freunde_anzahl'] ?? 0}",
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-                Text(
-                  "Längster Streak: ${userData['laengster_streak'] ?? 0}",
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-                Spacer(),
-                Divider(color: Colors.grey),
-                TextButton(
-                  onPressed: () async {
-                    await _auth.signOut();
-                  },
-                  child: Text(
-                    "Abmelden",
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.red),
+                // ✅ Profil ist immer vorhanden → direkt anzeigen
+                var userData = snapshot.data!.data() as Map<String, dynamic>;
+                
+                return Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      CircleAvatar(
+                        radius: 50,
+                        backgroundImage: AssetImage('assets/profil/profilbild.png'),
+                      ),
+                      SizedBox(height: 16),
+                      Text(
+                        userData['name'] ?? 'Unbekannter Name',
+                        style: Theme.of(context).textTheme.headlineMedium,
+                      ),
+                      Text(
+                        '@${userData['username'] ?? 'unbekannt'}',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
+                      ),
+                      SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.edit, color: Colors.white),
+                            onPressed: () {
+                              _showEditDialog(context, user.uid, userData);
+                            },
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.share, color: Colors.white),
+                            onPressed: () {
+                              // Teilen-Funktion
+                            },
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [_buildActivityIcon(context, "+")],
+                      ),
+                      SizedBox(height: 16),
+                      Text(
+                        "Streax Freunde: ${userData['freunde_anzahl'] ?? 0}",
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      Text(
+                        "Längster Streak: ${userData['laengster_streak'] ?? 0}",
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      Spacer(),
+                      Divider(color: Colors.grey),
+                      TextButton(
+                        onPressed: () async {
+                          await _auth.signOut();
+                        },
+                        child: Text(
+                          "Abmelden",
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.red),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
+                );
+              },
             ),
-          );
-        },
+          ),
+          // Schwebende Navigation
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: NavigationsLeiste(currentPage: 4),
+          ),
+        ],
       ),
-      bottomNavigationBar: NavigationsLeiste(currentPage: 4),
     );
   }
 

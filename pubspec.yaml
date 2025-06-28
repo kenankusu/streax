@@ -67,7 +67,6 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/zitate.json
     - assets/icons/journal/rest.png
     - assets/icons/journal/gym.png
     - assets/icons/journal/tt.png

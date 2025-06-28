@@ -15,17 +15,21 @@ class startseite extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface, //Theme Hintergrundfarbe
-      body: SafeArea(
-        child: SingleChildScrollView( // Damit die Seite scrollen kann
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 48, 20, 16), // Oben mehr Platz
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Begrüßung und Streak-Wert
-                Kopfzeile(streakWert: streakWert),
-                SizedBox(height: 40), // Abstand zwischen Kopfzeile und Kalender
+      backgroundColor: Theme.of(context).colorScheme.surface, // Theme Hintergrundfarbe
+      body: Stack( // Stack verwenden für überlappende Widgets
+        children: [
+          // Hauptinhalt - scrollbar
+          SafeArea(
+            bottom: false, // bottom: false für echte floating bar
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 48, 20, 120),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Begrüßung und Streak-Wert
+                    Kopfzeile(streakWert: streakWert),
+                    SizedBox(height: 40), // Abstand zwischen Kopfzeile und Kalender
 
                 // Kalender
                 Padding(
@@ -56,46 +60,54 @@ class startseite extends StatelessWidget {
                 ),
 
 
-                // Feed
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 40),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Feed",
+                    // Feed
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 40),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Feed",
+                            style: Theme.of(context).textTheme.headlineMedium,
+                          ),
+                          SizedBox(height: 20),
+                          Text(
+                            "keine neuen Aktivitäten",
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey[500]), // Textfarbe für "keine neuen Aktivitäten"
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    SizedBox(height: 20),
+
+                    //Überschrift für Fortschritt-Bereich
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 40),
+                      child: Text(
+                        "Deine Ziele",
                         style: Theme.of(context).textTheme.headlineMedium,
                       ),
-                      SizedBox(height: 20),
-                      Text(
-                        "keine neuen Aktivitäten",
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey[500]), // Textfarbe für "keine neuen Aktivitäten"
-                      ),
-                    ],
-                  ),
+                    ),
+
+                    //Fortschrittsbalken
+                    Fortschrittsbalken(label: 'streax programmieren', fortschritt: 0.7),
+                    Fortschrittsbalken(label: '80kg bis Oktober', fortschritt: 0.2),
+                    Fortschrittsbalken(label: '10km laufen', fortschritt: 1),
+                  ],
                 ),
-
-                SizedBox(height: 20),
-
-                //Überschrift für Fortschritt-Bereich
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 40),
-                  child: Text(
-                    "Deine Ziele",
-                    style: Theme.of(context).textTheme.headlineMedium,
-                  ),
-                ),
-
-                //Klasse aus fortschrittsbalken.dart
-                Fortschrittsbalken(label: 'streax programmieren',fortschritt: 0.7,),
-                Fortschrittsbalken(label: '80kg bis Oktober', fortschritt: 0.2),
-                Fortschrittsbalken(label: '10km laufen', fortschritt: 1),
-              ],
+              ),
             ),
           ),
-        ),
+          // Schwebende Navigation
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: NavigationsLeiste(currentPage: 0),
+          ),
+        ],
       ),
-      bottomNavigationBar: NavigationsLeiste(currentPage: 0),
     );
   }
 }
