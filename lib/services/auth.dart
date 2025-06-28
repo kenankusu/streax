@@ -1,10 +1,23 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_application_1/models/user.dart';
+import 'package:flutter_application_1/Models/user.dart';
 
 class AuthService {
-
   final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  // Persistence nur setzen wenn der User es möchte
+  Future<void> _configurePersistence(bool stayLoggedIn) async {
+    if (kIsWeb) {
+      if (stayLoggedIn) {
+        await _auth.setPersistence(Persistence.LOCAL);
+        debugPrint('Auth Persistence aktiviert - User bleibt eingeloggt');
+      } else {
+        await _auth.setPersistence(Persistence.SESSION);
+        debugPrint('Session-only Persistence - Logout bei Browser-Schließung');
+      }
+    }
+    // Bei Android/iOS ist Persistence automatisch aktiv
+  }
 
   // create user obj based on FirebaseUser
   StreaxUser? _userFromFirebaseUser(User? user) {
@@ -16,11 +29,17 @@ class AuthService {
     return _auth.authStateChanges().map(_userFromFirebaseUser);
   }
 
-  // sign in with email & password
-  Future signInWithEmailAndPassword(String email, String password) async {
+  // sign in with email & password - jetzt mit optionaler Persistence
+  Future signInWithEmailAndPassword(String email, String password, {bool stayLoggedIn = false}) async {
     try {
-      UserCredential result = await _auth.signInWithEmailAndPassword(email: email, password: password);
+      await _configurePersistence(stayLoggedIn);
+      UserCredential result = await _auth.signInWithEmailAndPassword(
+        email: email, 
+        password: password
+      );
       User? user = result.user;
+      
+      debugPrint('Login erfolgreich${stayLoggedIn ? ' - bleibt eingeloggt' : ' - Session only'}');
       return _userFromFirebaseUser(user);
     } catch (e) {
       debugPrint('Anmelde-Fehler: ${e.toString()}');
@@ -28,13 +47,17 @@ class AuthService {
     }
   }
 
-  // register with email & password
-  Future<StreaxUser?> registerWithEmailAndPassword(String email, String password) async {
+  // register with email & password - auch mit optionaler Persistence
+  Future<StreaxUser?> registerWithEmailAndPassword(String email, String password, {bool stayLoggedIn = false}) async {
     try {
-      UserCredential result = await _auth.createUserWithEmailAndPassword(email: email, password: password);
+      await _configurePersistence(stayLoggedIn);
+      UserCredential result = await _auth.createUserWithEmailAndPassword(
+        email: email, 
+        password: password
+      );
       User? user = result.user;
-
-    
+      
+      debugPrint('Registrierung erfolgreich${stayLoggedIn ? ' - bleibt eingeloggt' : ' - Session only'}');
       return _userFromFirebaseUser(user);
     } catch (e) {
       debugPrint('Registrierungs-Fehler: ${e.toString()}');
@@ -45,7 +68,8 @@ class AuthService {
   // sign out
   Future signOut() async {
     try {
-      return await _auth.signOut();
+      await _auth.signOut();
+      debugPrint('Logout erfolgreich');
     } catch (e) {
       debugPrint('Logout Fehler: ${e.toString()}');
       return null;

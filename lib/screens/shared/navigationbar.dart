@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
-import '../Home/startseite.dart';
-import '../Journal/kalender.dart';
-import 'aktivitaet.dart';
-import '../Profil/profil.dart';
+import '../Shared/addActivity.dart';
+import '../Journal/calendar.dart';
+import '../Profile/profile.dart';
 
 class NavigationsLeiste extends StatelessWidget {
   final int currentPage;
 
   const NavigationsLeiste({
-    Key? key,
+    super.key,
     this.currentPage = 0,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -21,8 +20,8 @@ class NavigationsLeiste extends StatelessWidget {
       children: [
         // Hauptnavigationsleiste
         Container(
-          height: 60,
-          margin: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+          height: 65,
+          margin: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           decoration: BoxDecoration(
             color: colorScheme.surfaceContainer,
             borderRadius: BorderRadius.circular(50),
@@ -43,32 +42,39 @@ class NavigationsLeiste extends StatelessWidget {
               showUnselectedLabels: false,
               type: BottomNavigationBarType.fixed,
               currentIndex: currentPage,
-              iconSize: 30,
+              iconSize: 26,
+              elevation: 0, // Entfernt zusätzliche Schatten
               onTap: (index) {
                 switch (index) {
                   case 0:
                     if (currentPage != 0) {
-                      Navigator.of(context).pushAndRemoveUntil(
-                        MaterialPageRoute(builder: (context) => startseite()),
-                        (route) => false,
-                      );
+                      // Navigation zurück zur Startseite
+                      Navigator.of(context).popUntil((route) => route.isFirst);
                     }
                     break;
                   case 1:
+                    // Freunde-Funktion noch nicht implementiert
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text('Freunde-Seite kommt bald!')),
                     );
                     break;
                   case 2:
+                    // Plus-Button öffnet Aktivität-hinzufügen-Fenster
                     showModalBottomSheet(
                       context: context,
                       isScrollControlled: true,
                       backgroundColor: Colors.transparent,
-                      builder: (context) => AktivitaetHinzufuegen(),
+                      builder: (context) => AktivitaetHinzufuegen(
+                        onSaved: () {
+                          // Kein Navigator.of(context).pop() hier!
+                          // setState im Elternwidget (z.B. Home, Kalender, Journal) ausführen!
+                        },
+                      ),
                     );
                     break;
                   case 3:
                     if (currentPage != 3) {
+                      // Navigation zum Kalender
                       Navigator.of(context).push(
                         MaterialPageRoute(builder: (context) => kalender()),
                       );
@@ -76,6 +82,7 @@ class NavigationsLeiste extends StatelessWidget {
                     break;
                   case 4:
                     if (currentPage != 4) {
+                      // Navigation zum Profil
                       Navigator.of(context).push(
                         MaterialPageRoute(builder: (context) => Profil()),
                       );
@@ -93,7 +100,8 @@ class NavigationsLeiste extends StatelessWidget {
                   label: 'Freunde',
                 ),
                 BottomNavigationBarItem(
-                  icon: SizedBox(height: 50), // Platzhalter für den erhöhten Button
+                  // Leerer Platz für den schwebenden Plus-Button - reduzierte Höhe
+                  icon: SizedBox(height: 26),
                   label: 'Hinzufügen',
                 ),
                 BottomNavigationBarItem(
@@ -108,25 +116,29 @@ class NavigationsLeiste extends StatelessWidget {
             ),
           ),
         ),
-        // Erhöhter Plus-Button
+        // Plus-Button schwebt über der Navigationsleiste
         Positioned(
-          bottom: 35,
+          bottom: 30,
           left: 0,
           right: 0,
           child: Center(
             child: GestureDetector(
               onTap: () {
+                // Aktivität-hinzufügen-Fenster öffnen
                 showModalBottomSheet(
                   context: context,
                   isScrollControlled: true,
                   backgroundColor: Colors.transparent,
-                  builder: (context) => AktivitaetHinzufuegen(),
+                  builder: (context) => AktivitaetHinzufuegen(
+                    onSaved: () {},
+                  ),
                 );
               },
               child: Container(
-                width: 85,
-                height: 85,
+                width: 75,
+                height: 75,
                 decoration: BoxDecoration(
+                  // Gradient für den Plus-Button
                   gradient: LinearGradient(
                     colors: [
                       Color(0xFF1C499E),
@@ -144,15 +156,11 @@ class NavigationsLeiste extends StatelessWidget {
                       offset: Offset(0, 6),
                     ),
                   ],
-                  border: Border.all(
-                    color: colorScheme.surfaceContainer,
-                    width: 5,
-                  ),
                 ),
                 child: Icon(
                   Icons.add,
                   color: Colors.white,
-                  size: 50,
+                  size: 40,
                 ),
               ),
             ),

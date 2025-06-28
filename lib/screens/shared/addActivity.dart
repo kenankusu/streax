@@ -4,9 +4,12 @@ import 'dart:io'; // Für Dateioperationen auf mobilen Plattformen (z.B. Image.f
 import '../Home/journal.dart'; // Zugriff auf das Journal für das Speichern der Aktivität
 import 'package:flutter/foundation.dart'; // Für kIsWeb, um Web-spezifisches Verhalten zu steuern
 import 'package:flutter/cupertino.dart'; // Für CupertinoDatePicker
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class AktivitaetHinzufuegen extends StatelessWidget {
-  const AktivitaetHinzufuegen({super.key});
+  final VoidCallback? onSaved;
+  const AktivitaetHinzufuegen({super.key, this.onSaved});
 
   @override
   Widget build(BuildContext context) {
@@ -94,7 +97,7 @@ class AktivitaetHinzufuegen extends StatelessWidget {
                     ),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white),
                     iconEnabledColor: Colors.white,
-                    dropdownColor: Theme.of(context).colorScheme.surfaceVariant, // Menü in Theme-Farbe
+                    dropdownColor: Theme.of(context).colorScheme.surfaceContainerHighest, // Menü in Theme-Farbe
                     items: sportarten
                         .map((sport) => DropdownMenuItem(
                               value: sport,
@@ -154,9 +157,16 @@ class AktivitaetHinzufuegen extends StatelessWidget {
                 const SizedBox(height: 40),
                 SizedBox(
                   child: ElevatedButton(
-                    onPressed: () {
-                      String dateKey = "${datum.year.toString().padLeft(4, '0')}-${datum.month.toString().padLeft(2, '0')}-${datum.day.toString().padLeft(2, '0')}";
-                      eintraege[dateKey] = {
+                    onPressed: () async {
+                      final user = FirebaseAuth.instance.currentUser;
+                      if (user == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Nicht eingeloggt!')),
+                        );
+                        return;
+                      }
+
+                      final activityData = {
                         'option': ausgewaehlteSportart ?? '',
                         'text': notizenController.text,
                         'emoji': ausgewaehltesEmoji.toString(),
@@ -164,9 +174,21 @@ class AktivitaetHinzufuegen extends StatelessWidget {
                         'bis': bisZeit != null ? bisZeit!.format(context) : '',
                         'datum': datum.toIso8601String(),
                         'icon': sportartIcons[ausgewaehlteSportart ?? ''] ?? '',
+                        'createdAt': FieldValue.serverTimestamp(),
+                        'userId': user.uid,
                       };
+
+                      await FirebaseFirestore.instance
+                          .collection('users')
+                          .doc(user.uid)
+                          .collection('activities')
+                          .add(activityData);
+
                       Navigator.of(context).pop();
-                      // ggf. Callback für setState aufrufen, falls nötig
+                      if (onSaved != null) {
+                        // Nach dem Schließen des BottomSheets ausführen
+                        WidgetsBinding.instance.addPostFrameCallback((_) => onSaved!());
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
@@ -316,7 +338,7 @@ class _ZeitDatumAuswahlState extends State<ZeitDatumAuswahl> {
               constraints: const BoxConstraints(minHeight: 36, maxHeight: 44),
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceVariant,
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(16),
               ),
               alignment: Alignment.center, // Wert zentriert
@@ -348,6 +370,8 @@ class _ZeitDatumAuswahlState extends State<ZeitDatumAuswahl> {
 }
 
 class FotoHinzufuegen extends StatefulWidget {
+  const FotoHinzufuegen({super.key});
+
   @override
   State<FotoHinzufuegen> createState() => _FotoHinzufuegenState();
 }

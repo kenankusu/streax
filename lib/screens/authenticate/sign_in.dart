@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/screens/authenticate/inputFeldStyle.dart';
-import 'package:flutter_application_1/screens/shared/loading.dart';
-import 'package:flutter_application_1/services/auth.dart';
+import 'package:flutter_application_1/Screens/Authenticate/inputFieldStyle.dart';
+import 'package:flutter_application_1/Screens/Shared/loading.dart';
+import 'package:flutter_application_1/Services/auth.dart';
 
 class SignIn extends StatefulWidget {
-
   final Function toggleView;
   const SignIn({ required this.toggleView, super.key});
 
@@ -13,15 +12,17 @@ class SignIn extends StatefulWidget {
 }
 
 class _SignInState extends State<SignIn> {
-
   final AuthService _auth = AuthService();
   final _formKey = GlobalKey<FormState>();
   bool loading = false;
-
+  
   // text field state
   String email = '';
   String password = '';
   String error = '';
+  
+  // Checkbox state für "Eingeloggt bleiben"
+  bool stayLoggedIn = false;
 
   @override
   Widget build(BuildContext context) {
@@ -30,16 +31,14 @@ class _SignInState extends State<SignIn> {
       appBar: AppBar(
         backgroundColor: Colors.brown[400],
         elevation: 0.0,
-        title: const Text('Melde dich an'),
+        title: Text('Anmelden bei Streax'),
         actions: <Widget>[
           TextButton.icon(
             icon: Icon(Icons.person),
             label: Text('Registrieren'),
-            onPressed: () async {
-              widget.toggleView();
-            }
-          )
-        ]
+            onPressed: () => widget.toggleView(),
+          ),
+        ],
       ),
       body: Container(
         padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 50.0),
@@ -49,35 +48,67 @@ class _SignInState extends State<SignIn> {
             children: <Widget>[
               SizedBox(height: 20.0),
               TextFormField(
-                decoration: textInputDecoration.copyWith(hintText: 'E-Mail'),
-                validator: (val) => val?.isEmpty ?? true ? 'Gib eine E-Mail ein' : null,
+                decoration: textInputDecoration.copyWith(hintText: 'Email'),
+                validator: (val) => val!.isEmpty ? 'Email eingeben' : null,
                 onChanged: (val) {
                   setState(() => email = val);
-                }
+                },
               ),
               SizedBox(height: 20.0),
               TextFormField(
-                decoration: textInputDecoration.copyWith(hintText: 'Passwort'),
-                validator: (val) => (val?.length ?? 0) < 6 ? 'Gib ein Passwort mit mindestens 6 Zeichen ein' : null,
                 obscureText: true,
+                decoration: textInputDecoration.copyWith(hintText: 'Passwort'),
+                validator: (val) => val!.length < 6 ? 'Passwort muss mindestens 6 Zeichen lang sein' : null,
                 onChanged: (val) {
                   setState(() => password = val);
-                }
+                },
               ),
+              SizedBox(height: 15.0),
+              
+              // "Eingeloggt bleiben" Checkbox
+              Row(
+                children: [
+                  Checkbox(
+                    value: stayLoggedIn,
+                    onChanged: (value) {
+                      setState(() {
+                        stayLoggedIn = value ?? false;
+                      });
+                    },
+                    activeColor: Colors.brown[400],
+                  ),
+                  Expanded(
+                    child: Text(
+                      'Eingeloggt bleiben',
+                      style: TextStyle(
+                        color: Colors.grey[700],
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              
               SizedBox(height: 20.0),
               ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.pink[400],
-                  foregroundColor: Colors.white,
+                child: Text(
+                  'Anmelden',
+                  style: TextStyle(color: Colors.white),
                 ),
-                child: Text('Anmelden'),
                 onPressed: () async {
-                  if (_formKey.currentState?.validate() ?? false) {
+                  if(_formKey.currentState!.validate()){
                     setState(() => loading = true);
-                    dynamic result = await _auth.signInWithEmailAndPassword(email, password);
-                    if (result == null) {
+                    
+                    // Checkbox-Wert an Auth-Service übergeben
+                    dynamic result = await _auth.signInWithEmailAndPassword(
+                      email, 
+                      password, 
+                      stayLoggedIn: stayLoggedIn
+                    );
+                    
+                    if(result == null) {
                       setState(() {
-                        error = 'Ungültige Zugangsdaten. Bitte versuche es erneut.';
+                        error = 'Login fehlgeschlagen - Email/Passwort prüfen';
                         loading = false;
                       });
                     }
@@ -88,10 +119,10 @@ class _SignInState extends State<SignIn> {
               Text(
                 error,
                 style: TextStyle(color: Colors.red, fontSize: 14.0),
-              )
-            ]
-          )
-        )
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
