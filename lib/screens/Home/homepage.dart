@@ -50,7 +50,7 @@ class startseite extends StatelessWidget {
                       ),
                       SizedBox(height: 30), // Abstand zwischen Überschrift und Kalender
                       //tatsächliches Kalender Widget
-                      journal(),
+                      Journal(),
                     ],
                   ),
                 ),

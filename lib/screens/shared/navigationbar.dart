@@ -61,7 +61,12 @@ class NavigationsLeiste extends StatelessWidget {
                       context: context,
                       isScrollControlled: true,
                       backgroundColor: Colors.transparent,
-                      builder: (context) => AktivitaetHinzufuegen(),
+                      builder: (context) => AktivitaetHinzufuegen(
+                        onSaved: () {
+                          // Kein Navigator.of(context).pop() hier!
+                          // setState im Elternwidget (z.B. Home, Kalender, Journal) ausführen!
+                        },
+                      ),
                     );
                     break;
                   case 3:
@@ -119,7 +124,9 @@ class NavigationsLeiste extends StatelessWidget {
                   context: context,
                   isScrollControlled: true,
                   backgroundColor: Colors.transparent,
-                  builder: (context) => AktivitaetHinzufuegen(),
+                  builder: (context) => AktivitaetHinzufuegen(
+                    onSaved: () {},
+                  ),
                 );
               },
               child: Container(
