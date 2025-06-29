@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:streax/Models/user.dart';
 import 'package:streax/Screens/Home/homepage.dart';
-import 'package:streax/Screens/Authenticate/authenticate.dart';
+import 'package:streax/Screens/Authenticate/onBoarding.dart';
 import 'package:provider/provider.dart';
 
 class Wrapper extends StatefulWidget {
