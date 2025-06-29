@@ -2,32 +2,43 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class DatabaseService {
   final String uid;
-  DatabaseService({ required this.uid });
+  DatabaseService({required this.uid});
 
-  final CollectionReference userCollection = FirebaseFirestore.instance.collection('users');
-  final CollectionReference quoteCollection = FirebaseFirestore.instance.collection('quotes');
+  final CollectionReference userCollection = FirebaseFirestore.instance
+      .collection('users');
+  final CollectionReference quoteCollection = FirebaseFirestore.instance
+      .collection('quotes');
 
   // Userdaten anlegen oder aktualisieren
   Future updateUserData(
-    String name,
-    String username, {
-    int? freunde,
+    String firstName,
+    String lastName, {
+    String? username,
+    int? friends,
     int? maxStreak,
     int? streak,
-    String? profilBild,
+    String? profilePicture,
     String? lastStreakDate,
+    double? weight,
+    int? height,
+    String? gender,
   }) async {
     Map<String, dynamic> data = {
-      'name': name,
-      'username': username,
+      'firstName': firstName,
+      'lastName': lastName,
       'last_updated': FieldValue.serverTimestamp(),
     };
 
-    if (streak != null) data['streak'] = streak; // Nur setzen, wenn übergeben
-    if (freunde != null) data['freunde_anzahl'] = freunde;
-    if (maxStreak != null) data['laengster_streak'] = maxStreak;
-    if (profilBild != null) data['profil_bild'] = profilBild;
+    if (username != null) data['username'] = username;
+
+    if (streak != null) data['streak'] = streak;
+    if (friends != null) data['friends_count'] = friends;
+    if (maxStreak != null) data['longest_streak'] = maxStreak;
+    if (profilePicture != null) data['profile_picture'] = profilePicture;
     if (lastStreakDate != null) data['lastStreakDate'] = lastStreakDate;
+    if (weight != null) data['weight'] = weight;
+    if (height != null) data['height'] = height;
+    if (gender != null) data['gender'] = gender;
 
     return await userCollection.doc(uid).set(data, SetOptions(merge: true));
   }
@@ -68,10 +79,12 @@ class DatabaseService {
     final userRef = userCollection.doc(uid);
     final userDoc = await userRef.get();
     final today = DateTime.now();
-    final todayStr = "${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}";
+    final todayStr =
+        "${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}";
 
     // Nur für heute den Streak prüfen und ggf. erhöhen
-    if (activity['datum'] == null || !activity['datum'].startsWith(todayStr)) return;
+    if (activity['datum'] == null || !activity['datum'].startsWith(todayStr))
+      return;
 
     int streak = 1;
     String lastStreakDate = todayStr;
@@ -102,6 +115,5 @@ class DatabaseService {
       'lastStreakDate': lastStreakDate,
       'laengster_streak': maxStreak,
     });
-
   }
 }
