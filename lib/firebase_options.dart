@@ -10,6 +10,8 @@ class DefaultFirebaseOptions {
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
         return android;
+      case TargetPlatform.iOS:
+        return ios;
       default:
         throw UnsupportedError(
           'DefaultFirebaseOptions are not supported for this platform.',
@@ -35,5 +37,15 @@ class DefaultFirebaseOptions {
     messagingSenderId: "1418608495",
     projectId: "streax-38c3c",
     storageBucket: "streax-38c3c.firebasestorage.app",
+  );
+
+  // iOS-Konfiguration aus GoogleService-Info.plist:
+  static const FirebaseOptions ios = FirebaseOptions(
+    apiKey: "AIzaSyDCW2asFJq83IQBVVKwF2UWrRizt_I7Kog",
+    appId: "1:1418608495:ios:571635b22d68d6e969729a",
+    messagingSenderId: "1418608495",
+    projectId: "streax-38c3c",
+    storageBucket: "streax-38c3c.firebasestorage.app",
+    iosBundleId: "com.example.flutterApplication1",
   );
 }

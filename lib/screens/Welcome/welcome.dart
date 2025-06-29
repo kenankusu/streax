@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/Services/database.dart';
+import 'package:streax/Services/database.dart';
 
 class WillkommensSeite extends StatefulWidget {
   final String uid;
@@ -208,8 +208,6 @@ class _WillkommensSeiteState extends State<WillkommensSeite> {
       await DatabaseService(uid: widget.uid).updateUserData(
         name,
         username,
-        freundeAnzahl: 0,
-        laengsterStreak: 0,
       );
       
       // Zurück zur App - Wrapper wird automatisch zur startseite wechseln

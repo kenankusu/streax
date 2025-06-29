@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart'; // Grundlegende Flutter-Widgets und Material Design
 import 'package:image_picker/image_picker.dart'; // Für das Auswählen von Bildern aus Galerie oder Kamera
 import 'dart:io'; // Für Dateioperationen auf mobilen Plattformen (z.B. Image.file)
-import '../Home/journal.dart'; // Zugriff auf das Journal für das Speichern der Aktivität
+// Zugriff auf das Journal für das Speichern der Aktivität
 import 'package:flutter/foundation.dart'; // Für kIsWeb, um Web-spezifisches Verhalten zu steuern
 import 'package:flutter/cupertino.dart'; // Für CupertinoDatePicker
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../../services/database.dart';
 
 class AktivitaetHinzufuegen extends StatelessWidget {
   final VoidCallback? onSaved;
@@ -178,12 +179,17 @@ class AktivitaetHinzufuegen extends StatelessWidget {
                         'userId': user.uid,
                       };
 
+                      // 1. Aktivität speichern
                       await FirebaseFirestore.instance
                           .collection('users')
                           .doc(user.uid)
                           .collection('activities')
                           .add(activityData);
 
+                      // 2. Streak-Logik aufrufen
+                      await DatabaseService(uid: user.uid).saveActivityForToday(activityData);
+
+                      if (!context.mounted) return;
                       Navigator.of(context).pop();
                       if (onSaved != null) {
                         // Nach dem Schließen des BottomSheets ausführen
