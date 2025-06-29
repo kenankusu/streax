@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter_application_1/Models/user.dart';
-import 'package:flutter_application_1/Services/auth.dart';
+import 'package:streax/Models/user.dart';
+import 'package:streax/Services/auth.dart';
 import 'package:provider/provider.dart';
 import 'firebase_options.dart'; // Diese Datei wird von flutterfire configure erstellt
-import 'package:flutter_application_1/Screens/splashscreen.dart';
+import 'package:streax/Screens/splashscreen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,24 +29,53 @@ class streax extends StatelessWidget {
         theme: ThemeData(
           textTheme: TextTheme(
             headlineLarge: TextStyle(color: Colors.white, fontSize: 40),
-            headlineMedium: TextStyle(color: Colors.white,fontSize: 34, fontWeight: FontWeight.bold),
+            headlineMedium: TextStyle(
+              color: Colors.white,
+              fontSize: 34,
+              fontWeight: FontWeight.bold,
+            ),
             headlineSmall: TextStyle(color: Colors.white, fontSize: 28),
             bodySmall: TextStyle(color: Colors.white, fontSize: 16),
           ),
           colorScheme: ColorScheme(
             brightness: Brightness.dark,
-            primary: const Color.fromARGB(255, 0, 115, 255), //Zweite Akzentfarbe
+            primary: const Color.fromARGB(
+              255,
+              0,
+              115,
+              255,
+            ), //Zweite Akzentfarbe
             onPrimary: Colors.white,
-            secondary: const Color.fromARGB(255, 100, 223, 211), //Highlight Farbe
+            secondary: const Color.fromARGB(
+              255,
+              100,
+              223,
+              211,
+            ), //Highlight Farbe
             onSecondary: Colors.black,
             error: Colors.red,
             onError: Colors.white,
             tertiary: const Color.fromARGB(255, 22, 0, 147), //Hauptakzentfarbe
-            surface: const Color.fromARGB(255, 28, 32, 31), //Hintergrundfarbe aller Seiten
-            onSurface: const Color.fromARGB(255, 107, 109, 108), //Highlight Farbe
-            surfaceContainer: const Color.fromARGB(255, 43, 47, 46), //Hintergrundfarbe der Container, z.B. Navigation bar
+            surface: const Color.fromARGB(
+              255,
+              28,
+              32,
+              31,
+            ), //Hintergrundfarbe aller Seiten
+            onSurface: const Color.fromARGB(
+              255,
+              107,
+              109,
+              108,
+            ), //Highlight Farbe
+            surfaceContainer: const Color.fromARGB(
+              255,
+              43,
+              47,
+              46,
+            ), //Hintergrundfarbe der Container, z.B. Navigation bar
           ),
-        )
+        ),
       ),
     );
   }

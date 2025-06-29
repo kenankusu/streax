@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/Screens/Authenticate/inputFieldStyle.dart';
-import 'package:flutter_application_1/Screens/Shared/loading.dart';
-import 'package:flutter_application_1/Services/auth.dart';
+import 'package:streax/Screens/Authenticate/inputFieldStyle.dart';
+import 'package:streax/Screens/Shared/loading.dart';
+import 'package:streax/Services/auth.dart';
 
 class SignIn extends StatefulWidget {
   final Function toggleView;
