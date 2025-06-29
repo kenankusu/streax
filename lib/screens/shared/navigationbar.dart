@@ -2,19 +2,17 @@ import 'package:flutter/material.dart';
 import '../Shared/addActivity.dart';
 import '../Journal/calendar.dart';
 import '../Profile/profile.dart';
+import '../Friends/feed.dart';
 
 class NavigationsLeiste extends StatelessWidget {
   final int currentPage;
 
-  const NavigationsLeiste({
-    super.key,
-    this.currentPage = 0,
-  });
+  const NavigationsLeiste({super.key, this.currentPage = 0});
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    
+
     return Stack(
       clipBehavior: Clip.none,
       children: [
@@ -25,12 +23,7 @@ class NavigationsLeiste extends StatelessWidget {
           decoration: BoxDecoration(
             color: colorScheme.surfaceContainer,
             borderRadius: BorderRadius.circular(50),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black26,
-                blurRadius: 10,
-              ),
-            ],
+            boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 10)],
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(50),
@@ -53,10 +46,12 @@ class NavigationsLeiste extends StatelessWidget {
                     }
                     break;
                   case 1:
-                    // Freunde-Funktion noch nicht implementiert
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Freunde-Seite kommt bald!')),
-                    );
+                    if (currentPage != 1) {
+                      // Navigation zum Feed (Freunde-Seite)
+                      Navigator.of(
+                        context,
+                      ).push(MaterialPageRoute(builder: (context) => Feed()));
+                    }
                     break;
                   case 2:
                     // Plus-Button öffnet Aktivität-hinzufügen-Fenster
@@ -83,18 +78,15 @@ class NavigationsLeiste extends StatelessWidget {
                   case 4:
                     if (currentPage != 4) {
                       // Navigation zum Profil
-                      Navigator.of(context).push(
-                        MaterialPageRoute(builder: (context) => Profil()),
-                      );
+                      Navigator.of(
+                        context,
+                      ).push(MaterialPageRoute(builder: (context) => Profil()));
                     }
                     break;
                 }
               },
               items: [
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.home),
-                  label: 'Home',
-                ),
+                BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
                 BottomNavigationBarItem(
                   icon: Icon(Icons.group),
                   label: 'Freunde',
@@ -129,9 +121,7 @@ class NavigationsLeiste extends StatelessWidget {
                   context: context,
                   isScrollControlled: true,
                   backgroundColor: Colors.transparent,
-                  builder: (context) => AktivitaetHinzufuegen(
-                    onSaved: () {},
-                  ),
+                  builder: (context) => AktivitaetHinzufuegen(onSaved: () {}),
                 );
               },
               child: Container(
@@ -140,10 +130,7 @@ class NavigationsLeiste extends StatelessWidget {
                 decoration: BoxDecoration(
                   // Gradient für den Plus-Button
                   gradient: LinearGradient(
-                    colors: [
-                      Color(0xFF1C499E),
-                      Color(0xFFB1D43A),
-                    ],
+                    colors: [Color(0xFF1C499E), Color(0xFFB1D43A)],
                     stops: [0.35, 1.0],
                     begin: Alignment.bottomLeft,
                     end: Alignment.topRight,
@@ -157,11 +144,7 @@ class NavigationsLeiste extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: Icon(
-                  Icons.add,
-                  color: Colors.white,
-                  size: 40,
-                ),
+                child: Icon(Icons.add, color: Colors.white, size: 40),
               ),
             ),
           ),
