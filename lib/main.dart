@@ -3,14 +3,23 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:streax/Models/user.dart';
 import 'package:streax/Services/auth.dart';
 import 'package:provider/provider.dart';
-import 'firebase_options.dart'; // Diese Datei wird von flutterfire configure erstellt
+import 'firebase_options.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:streax/Screens/splashscreen.dart';
+import 'package:streax/services/database.dart'; // Services -> services (kleinbuchstabe)
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform, // Firebase initialisieren
   );
+  
+  // Streak-Status prüfen, falls User eingeloggt
+  final user = FirebaseAuth.instance.currentUser;
+  if (user != null) {
+    await DatabaseService(uid: user.uid).checkStreakStatus();
+  }
+  
   runApp(streax());
 }
 
@@ -35,6 +44,7 @@ class streax extends StatelessWidget {
               fontWeight: FontWeight.bold,
             ),
             headlineSmall: TextStyle(color: Colors.white, fontSize: 28),
+            bodyMedium: TextStyle(color: Colors.white, fontSize: 20), 
             bodySmall: TextStyle(color: Colors.white, fontSize: 16),
           ),
           colorScheme: ColorScheme(

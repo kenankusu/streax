@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
-import '../Home/journal.dart';
 import '../Shared/navigationbar.dart';
 import 'package:flutter/cupertino.dart'; 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -324,7 +323,8 @@ class _KalenderState extends State<kalender> {
                       } else if (logsThisMonth < logsLastMonth) {
                         trendIcon = Icon(Icons.arrow_downward, color: Colors.red, size: 22);
                       } else {
-                        trendIcon = Icon(Icons.remove, color: Colors.grey, size: 28, weight: 900);
+                        // Gleiche Größe und Ausrichtung wie die Pfeile
+                        trendIcon = Icon(Icons.remove, color: Colors.grey, size: 22); // size: 28 -> 22, weight entfernt
                       }
 
                       return Column(
@@ -336,15 +336,22 @@ class _KalenderState extends State<kalender> {
                                 Expanded(
                                   child: Text(
                                     "Aktivitäten dieser Monat:",
-                                    style: Theme.of(context).textTheme.bodySmall,
+                                    style: Theme.of(context).textTheme.bodyMedium, // bodySmall -> bodyMedium
                                     textAlign: TextAlign.left,
                                   ),
                                 ),
-                                trendIcon,
-                                const SizedBox(width: 8),
+                                // Container für einheitliche Icon-Ausrichtung
+                                SizedBox(
+                                  width: 35, // Etwas breiter: 30 -> 35
+                                  child: Align(
+                                    alignment: Alignment.center,
+                                    child: trendIcon,
+                                  ),
+                                ),
+                                const SizedBox(width: 12), // Mehr Abstand: 8 -> 12
                                 Text(
                                   logsThisMonth.toString(),
-                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
+                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold), // bodySmall -> bodyMedium
                                   textAlign: TextAlign.right,
                                 ),
                               ],
@@ -357,13 +364,17 @@ class _KalenderState extends State<kalender> {
                                 Expanded(
                                   child: Text(
                                     "Aktivitäten vorheriger Monat:",
-                                    style: Theme.of(context).textTheme.bodySmall,
+                                    style: Theme.of(context).textTheme.bodyMedium, // bodySmall -> bodyMedium
                                     textAlign: TextAlign.left,
                                   ),
                                 ),
+                                // Leerer Platz für Icon (damit beide Zeilen gleich ausgerichtet sind)
+                                SizedBox(width: 35),
+                                const SizedBox(width: 12),
+                                // Zahl des vorherigen Monats - richtig positioniert
                                 Text(
                                   logsLastMonth.toString(),
-                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
+                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold), // bodySmall -> bodyMedium
                                   textAlign: TextAlign.right,
                                 ),
                               ],

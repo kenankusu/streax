@@ -18,12 +18,10 @@ class Kopfzeile extends StatefulWidget {
 
 class _KopfzeileState extends State<Kopfzeile> with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
-  late Animation<double> _progressAnimation;
-
-  double _currentProgress = 0.0; // "Von"-Wert
-  double _targetProgress = 0.0;  // "Bis"-Wert
-
-  String? quote;
+  double _currentProgress = 0.0;
+  double _targetProgress = 0.0;
+  bool _milestoneActive = false;
+  double _lastKnownProgress = -1.0; // Tracking für Änderungen
 
   @override
   void initState() {
@@ -32,15 +30,6 @@ class _KopfzeileState extends State<Kopfzeile> with SingleTickerProviderStateMix
       vsync: this,
       duration: const Duration(milliseconds: 800),
     );
-
-    _progressAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeInOut,
-      ),
-    );
-
-    _loadQuote(); // Beim Starten Zitat laden
   }
 
   @override
@@ -49,100 +38,164 @@ class _KopfzeileState extends State<Kopfzeile> with SingleTickerProviderStateMix
     super.dispose();
   }
 
-  Future<void> _loadQuote() async {
-    // User UID holen damit wir DatabaseService benutzen können
-    final user = Provider.of<StreaxUser?>(context, listen: false);
-    if (user != null) {
-      // Zufälliges Zitat von DatabaseService abfragen
-      String randomQuote = await DatabaseService(uid: user.uid).getRandomQuote();
-      setState(() {
-        quote = randomQuote; // UI updaten mit dem neuen Zitat
-      });
-    }
-  }
-
-  /// Hier statt der alten 2-Phasen-Logik:
-  /// - Wenn newProgress < oldProgress, dann addiere +1.0,
-  ///   damit ein "Überlauf" im Uhrzeigersinn entsteht.
-  void _updateProgress(double newProgress) {
-    if (newProgress == _targetProgress) return;
-
-    double oldProgress = _currentProgress;
-    double effectiveTarget = newProgress;
-
-    // Falls wir ein neues Ziel haben (z.B. alter Fortschritt 0.8, neuer nur 0.2),
-    // drehen wir einmal weiter:
-    if (effectiveTarget < oldProgress) {
-      effectiveTarget += 1.0; 
+  void _updateProgress(double newProgress, int streak) {  // Parameter hinzufügen
+    if (_milestoneActive || newProgress == _lastKnownProgress) return;
+    
+    _lastKnownProgress = newProgress;
+    
+    double oldP = _currentProgress;
+    double newP = newProgress;
+    
+    // Falls wir "nach vorne überlappen"
+    if (newP < oldP) {
+      newP += 1.0;
     }
 
     setState(() {
-      _currentProgress = oldProgress;
-      _targetProgress = effectiveTarget;
+      _currentProgress = oldP;
+      _targetProgress = newP;
     });
-    _animationController.forward(from: 0.0);
+
+    _animationController.reset();
+    _animationController.forward().then((_) {
+      setState(() {
+        _currentProgress = _targetProgress % 1.0;
+      });
+      // Falls 100% und kein aktiver Meilenstein
+      if (_currentProgress >= 1.0 && !_milestoneActive) {
+        _startMilestoneAnimation(streak);  // streak übergeben
+      }
+    });
+  }
+
+  void _startMilestoneAnimation(int streak) {  // Parameter hinzufügen
+    _milestoneActive = true;
+    
+    // Nach kurzer Pause neues Ziel setzen
+    Future.delayed(const Duration(milliseconds: 800), () {
+      setState(() {
+        _currentProgress = 0.0;
+        
+        if (streak >= 365) {
+          _targetProgress = (streak % 365) / 365.0;
+        } else {
+          // Normaler Fall: neuer Meilenstein
+          final List<int> ziele = [3, 7, 14, 30, 60, 100, 365];
+          int naechstesZiel = ziele.firstWhere((ziel) => streak < ziel, orElse: () => 365);
+          _targetProgress = streak / naechstesZiel;
+        }
+      });
+      
+      _animationController.reset();
+      _animationController.forward().then((_) {
+        setState(() {
+          _currentProgress = _targetProgress;
+          _milestoneActive = false;
+        });
+      });
+    });
   }
 
   Widget Willkommen(String name) {
-    return Text(
-      "Hallo,\n$name!",
-      style: Theme.of(context).textTheme.headlineMedium,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // "Hallo," in bisheriger Größe
+        Text(
+          "Hallo,",
+          style: Theme.of(context).textTheme.headlineMedium,
+        ),
+        // Name größer mit Gradient-Unterstrich
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              name,
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                fontSize: 40, // Größer als bisherige Größe
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            // Gradient-Unterstrich
+            Container(
+              height: 4, // Dicker: 3 -> 4
+              width: name.length * 22.50, // Länger: 18.0 -> 24.0
+              margin: EdgeInsets.only(top: 2), // Kleiner Abstand zum Text
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF1C499E), Color(0xFFB1D43A)],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+                borderRadius: BorderRadius.circular(2.0), // Angepasst an neue Höhe
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
   Widget streakAnzeige(int streak) {
-    final List<int> ziele = [3, 7, 14, 30, 60, 100, 365];
-    int naechstesZiel = ziele.firstWhere((ziel) => streak < ziel, orElse: () => ziele.last + 365);
-
-    // Neuer Fortschritt: 0.0 .. 1.0
-    double rawProgress = streak / naechstesZiel;
+    final List<int> ziele = [3, 7, 14, 30, 60, 100, 365, 500, 1000]; // zunächst werden nur Streax bis 1000 behandelt (Was danach passiert schauen wir wenn es einer erreicht)
+    int naechstesZiel;
+    double rawProgress;
+    
+    if (streak >= 1000) {
+      naechstesZiel = 1000;
+      rawProgress = (streak % 1000) / 1000.0;
+    } else {
+      // Normaler Fall: nächstes Ziel finden
+      naechstesZiel = ziele.firstWhere((ziel) => streak < ziel, orElse: () => 1000);
+      rawProgress = streak / naechstesZiel;
+    }
+    
     if (rawProgress > 1.0) rawProgress = 1.0;
 
-    // Damit das Update nur ausgeführt wird, wenn sich rawProgress ändert:
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _updateProgress(rawProgress);
-    });
+    // NUR bei Änderung aktualisieren
+    if (rawProgress != _lastKnownProgress) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _updateProgress(rawProgress, streak);
+      });
+    }
 
-    // Überschrift für das Ziel in Schriftgröße 25
     final zielText = Text(
       '$naechstesZiel',
-      style: TextStyle(fontSize: 25, color: Colors.white),
+      style: TextStyle(fontSize: 20, color: Colors.white),
       textAlign: TextAlign.center,
     );
 
     double getFontSize(int value) {
       int digits = value.toString().length;
       switch (digits) {
-        case 1: return 32.0;
-        case 2: return 28.0;
-        case 3: return 24.0;
-        case 4: return 20.0;
-        default: return 18.0;
+        case 1: return 50.0; 
+        case 2: return 46.0; 
+        case 3: return 42.0; 
+        case 4: return 38.0; 
+        default: return 34.0; 
       }
     }
 
     return AnimatedBuilder(
-      animation: _progressAnimation,
+      animation: _animationController,
       builder: (context, child) {
-        // Animation in [0..1], Interpolation zwischen _currentProgress und _targetProgress
         double animatedValue = _currentProgress +
-            (_targetProgress - _currentProgress) * _progressAnimation.value;
+            (_targetProgress - _currentProgress) * _animationController.value;
 
-        // Wir übergeben dem Painter nur (animatedValue % 1.0),
-        // sodass z.B. 1.2 => 0.2 (einmal "rum")
         double displayValue = animatedValue % 1.0;
 
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            zielText, // Aktuelles Ziel oben anzeigen
+            zielText,
             const SizedBox(height: 8),
             Stack(
               alignment: Alignment.center,
               children: [
                 GradientCircularProgress(
                   progress: displayValue,
-                  size: 100,
+                  size: 120,
                 ),
                 Text(
                   '$streak',
@@ -174,29 +227,28 @@ class _KopfzeileState extends State<Kopfzeile> with SingleTickerProviderStateMix
           var userData = snapshot.data!.data() as Map<String, dynamic>;
           streak = userData['streak'] ?? 0;
           String fullName = userData['name'] ?? 'Benutzer';
-          // Nur Vorname anzeigen
           name = fullName.split(' ').first;
         }
 
         return Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start, // Links ausrichten
           children: [
+            const SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Willkommen(name),
                 Padding(
-                  padding: const EdgeInsets.only(top: 20, right: 30),
+                  padding: const EdgeInsets.only(top: 10, right: 20), // Weniger Padding: top: 20->10, right: 30->20
                   child: streakAnzeige(streak),
                 ),
               ],
             ),
-            SizedBox(height: 40),
+            SizedBox(height: 20),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 40),
               child: Text(
-                // Falls das Zitat noch lädt, Fallback anzeigen
-                quote ?? "Fall in love with the process, and the results will come.",
+                "Fall in love with the process, and the results will come.",
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   fontStyle: FontStyle.italic,
                   color: Colors.grey[400],
