@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/main.dart';
+import 'package:streax/main.dart';
 
-class IntroPage1 extends StatelessWidget{
-  
+class IntroPage1 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -19,7 +18,7 @@ class IntroPage1 extends StatelessWidget{
             Text(
               'Hier kannst du deine Lieblingssportarten verfolgen und dich mit anderen Sportbegeisterten austauschen.',
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.headlineSmall
+              style: Theme.of(context).textTheme.headlineSmall,
             ),
           ],
         ),
