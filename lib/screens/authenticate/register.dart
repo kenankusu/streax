@@ -3,6 +3,7 @@ import 'package:streax/Screens/Authenticate/inputFieldStyle.dart';
 import 'package:streax/Screens/Shared/loading.dart';
 import 'package:streax/Services/auth.dart';
 import 'package:streax/Services/database.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class Register extends StatefulWidget {
   final Function toggleView;
@@ -100,24 +101,44 @@ class _RegisterState extends State<Register> {
                   if(_formKey.currentState!.validate()){
                     setState(() => loading = true);
                     
-                    // Checkbox-Wert an Auth-Service übergeben
-                    dynamic result = await _auth.registerWithEmailAndPassword(
-                      email, 
-                      password, 
-                      stayLoggedIn: stayLoggedIn
-                    );
-                    
-                    if(result == null) {
+                    try {
+                      // Checkbox-Wert an Auth-Service übergeben
+                      dynamic result = await _auth.registerWithEmailAndPassword(
+                        email, 
+                        password, 
+                        stayLoggedIn: stayLoggedIn
+                      );
+                      
+                      if(result != null) {
+                        // Profil erstellen nach erfolgreicher Registrierung
+                        await DatabaseService(uid: result.uid).updateUserData(
+                          'Neuer User',
+                          'user${DateTime.now().millisecondsSinceEpoch}',
+                        );
+                      }
+                    } on FirebaseAuthException catch (e) {
                       setState(() {
-                        error = 'Registrierung fehlgeschlagen - Email bereits vergeben?';
+                        loading = false;
+                        // Spezifische Fehlermeldungen basierend auf Firebase-Fehlercodes
+                        switch (e.code) {
+                          case 'email-already-in-use':
+                            error = 'Diese Email-Adresse ist bereits vergeben';
+                            break;
+                          case 'invalid-email':
+                            error = 'Ungültige Email-Adresse';
+                            break;
+                          case 'operation-not-allowed':
+                            error = 'Registrierung ist derzeit nicht möglich';
+                            break;
+                          default:
+                            error = 'Registrierung fehlgeschlagen: ${e.message}';
+                        }
+                      });
+                    } catch (e) {
+                      setState(() {
+                        error = 'Ein unerwarteter Fehler ist aufgetreten';
                         loading = false;
                       });
-                    } else {
-                      // Profil erstellen nach erfolgreicher Registrierung
-                      await DatabaseService(uid: result.uid).updateUserData(
-                        'Neuer User',
-                        'user${DateTime.now().millisecondsSinceEpoch}',
-                      );
                     }
                   }
                 }

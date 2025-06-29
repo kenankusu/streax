@@ -47,9 +47,12 @@ class AuthService {
         'Login erfolgreich${stayLoggedIn ? ' - bleibt eingeloggt' : ' - Session only'}',
       );
       return _userFromFirebaseUser(user);
+    } on FirebaseAuthException catch (e) {
+      debugPrint('Anmelde-Fehler: ${e.code} - ${e.message}');
+      rethrow;
     } catch (e) {
       debugPrint('Anmelde-Fehler: ${e.toString()}');
-      return null;
+      rethrow;
     }
   }
 
@@ -71,9 +74,13 @@ class AuthService {
         'Registrierung erfolgreich${stayLoggedIn ? ' - bleibt eingeloggt' : ' - Session only'}',
       );
       return _userFromFirebaseUser(user);
+    } on FirebaseAuthException catch (e) {
+      debugPrint('Registrierungs-Fehler: ${e.code} - ${e.message}');
+      // Spezifische Fehlercodes zurückgeben
+      rethrow;
     } catch (e) {
       debugPrint('Registrierungs-Fehler: ${e.toString()}');
-      return null;
+      rethrow;
     }
   }
 
@@ -88,7 +95,7 @@ class AuthService {
     }
   }
 
-  // Account löschen - Vereinfacht
+  // Account löschen
   Future<bool> deleteAccount() async {
     try {
       User? user = _auth.currentUser;
@@ -108,6 +115,24 @@ class AuthService {
     } catch (e) {
       debugPrint('Account-Löschung fehlgeschlagen: ${e.toString()}');
       return false;
+    }
+  }
+
+  // Passwort zurücksetzen
+  Future<bool> sendPasswordResetEmail(String email) async {
+    try {
+      // Deutsche Sprache für Firebase Auth setzen
+      await _auth.setLanguageCode('de');
+      
+      await _auth.sendPasswordResetEmail(email: email);
+      debugPrint('Passwort-Reset-Email erfolgreich gesendet an: $email');
+      return true;
+    } on FirebaseAuthException catch (e) {
+      debugPrint('Passwort-Reset-Fehler: ${e.code} - ${e.message}');
+      rethrow;
+    } catch (e) {
+      debugPrint('Passwort-Reset-Fehler: ${e.toString()}');
+      rethrow;
     }
   }
 }
