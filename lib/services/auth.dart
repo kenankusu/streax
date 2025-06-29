@@ -75,4 +75,27 @@ class AuthService {
       return null;
     }
   }
+
+  // Account löschen - Vereinfacht
+  Future<bool> deleteAccount() async {
+    try {
+      User? user = _auth.currentUser;
+      if (user == null) {
+        debugPrint('Kein User eingeloggt');
+        return false;
+      }
+
+      // Account löschen
+      await user.delete();
+      
+      // Explizit ausloggen
+      await _auth.signOut();
+      
+      debugPrint('Account erfolgreich gelöscht und ausgeloggt');
+      return true;
+    } catch (e) {
+      debugPrint('Account-Löschung fehlgeschlagen: ${e.toString()}');
+      return false;
+    }
+  }
 }

@@ -15,13 +15,41 @@ class Profil extends StatefulWidget {
 
 class _ProfilState extends State<Profil> {
   final AuthService _auth = AuthService();
+  bool _isDeleting = false; // Flag für Account-Löschung
 
   @override
   Widget build(BuildContext context) {
     final user = Provider.of<StreaxUser?>(context);
     
     if (user == null) {
-      return Scaffold(body: Center(child: Text('Nicht angemeldet')));
+      // Navigation zurück zum Wrapper nach dem Frame
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      });
+      return Scaffold(
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        body: Container(), // Leer - Wrapper übernimmt
+      );
+    }
+
+    // Während der Account-Löschung nur Loading anzeigen
+    if (_isDeleting) {
+      return Scaffold(
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 20),
+              Text(
+                'Account wird gelöscht...',
+                style: TextStyle(color: Colors.white, fontSize: 18),
+              ),
+            ],
+          ),
+        ),
+      );
     }
 
     return Scaffold(
@@ -32,7 +60,7 @@ class _ProfilState extends State<Profil> {
         iconTheme: IconThemeData(color: Colors.white),
         elevation: 0,
       ),
-      body: Stack( // Stack hinzugefügt
+      body: Stack(
         children: [
           // Hauptinhalt in Positioned
           Positioned(
@@ -45,6 +73,11 @@ class _ProfilState extends State<Profil> {
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(child: CircularProgressIndicator());
+                }
+
+                // Fehler während Account-Löschung ignorieren
+                if (snapshot.hasError && _isDeleting) {
+                  return Container();
                 }
 
                 // ✅ Profil ist immer vorhanden → direkt anzeigen
@@ -111,6 +144,16 @@ class _ProfilState extends State<Profil> {
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.red),
                         ),
                       ),
+                      SizedBox(height: 8),
+                      TextButton(
+                        onPressed: () {
+                          _showDeleteAccountDialog(context, user.uid);
+                        },
+                        child: Text(
+                          "Account löschen",
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.red),
+                        ),
+                      ),
                     ],
                   ),
                 );
@@ -165,6 +208,121 @@ class _ProfilState extends State<Profil> {
               Navigator.pop(context);
             },
             child: Text('Speichern'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Account-Löschung Dialog
+  void _showDeleteAccountDialog(BuildContext context, String uid) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        title: Text(
+          'Account löschen',
+          style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+        ),
+        content: Text(
+          'Bist du sicher, dass du deinen Account unwiderruflich löschen möchtest?\n\nAlle deine Daten, Aktivitäten und dein Fortschritt gehen dabei verloren.',
+          style: TextStyle(color: Colors.white),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Abbrechen', style: TextStyle(color: Colors.grey)),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _showFinalDeleteConfirmation(context, uid);
+            },
+            child: Text('Löschen', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Finale Bestätigung
+  void _showFinalDeleteConfirmation(BuildContext context, String uid) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        title: Text(
+          'Letzte Bestätigung',
+          style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+        ),
+        content: Text(
+          'Dies ist deine letzte Chance!\n\nWenn du auf "Endgültig löschen" klickst, wird dein Account sofort und unwiderruflich gelöscht.',
+          style: TextStyle(color: Colors.white),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Doch nicht löschen', style: TextStyle(color: Colors.grey)),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await _deleteAccount(context, uid);
+            },
+            child: Text(
+              'Endgültig löschen',
+              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Account tatsächlich löschen - Überarbeitet
+  Future<void> _deleteAccount(BuildContext context, String uid) async {
+    // Sofort _isDeleting auf true setzen um UI zu ändern
+    setState(() {
+      _isDeleting = true;
+    });
+
+    try {
+      // 1. Alle Firestore-Daten löschen
+      bool firestoreDeleted = await DatabaseService(uid: uid).deleteAllUserData();
+      
+      // 2. Firebase Auth Account löschen
+      bool authDeleted = await _auth.deleteAccount();
+
+      // Da der Account gelöscht ist, wird automatisch der Wrapper aktiviert
+      // und zur Login-Seite navigiert. Kein manueller Dialog nötig.
+
+      if (!firestoreDeleted || !authDeleted) {
+        // Nur bei Fehlern Dialog anzeigen
+        setState(() {
+          _isDeleting = false;
+        });
+        _showErrorDialog(context, 'Beim Löschen des Accounts ist ein Fehler aufgetreten.');
+      }
+    } catch (e) {
+      setState(() {
+        _isDeleting = false;
+      });
+      _showErrorDialog(context, 'Unerwarteter Fehler: $e');
+    }
+  }
+
+  // Fehler-Dialog
+  void _showErrorDialog(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        title: Text('Fehler', style: TextStyle(color: Colors.red)),
+        content: Text(message, style: TextStyle(color: Colors.white)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('OK', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),

@@ -58,7 +58,7 @@ class _SignInState extends State<SignIn> {
               TextFormField(
                 obscureText: true,
                 decoration: textInputDecoration.copyWith(hintText: 'Passwort'),
-                validator: (val) => val!.length < 6 ? 'Passwort muss mindestens 6 Zeichen lang sein' : null,
+                validator: (val) => val!.length < 10 ? 'Passwort muss mindestens 10 Zeichen lang sein' : null,
                 onChanged: (val) {
                   setState(() => password = val);
                 },
