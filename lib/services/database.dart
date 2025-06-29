@@ -117,18 +117,29 @@ class DatabaseService {
     });
   }
 
+  // Sportarten des Users aktualisieren
+  Future updateUserSports(List<String> sports) async {
+    return await userCollection.doc(uid).set({
+      'sports': sports,
+      'last_updated': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+  }
+
   // Alle User-Daten löschen (User-Dokument und alle Activities)
   Future<bool> deleteAllUserData() async {
     try {
       // 1. Alle Activities des Users löschen
-      final activitiesQuery = await userCollection.doc(uid).collection('activities').get();
+      final activitiesQuery = await userCollection
+          .doc(uid)
+          .collection('activities')
+          .get();
       for (var doc in activitiesQuery.docs) {
         await doc.reference.delete();
       }
 
       // 2. User-Dokument löschen
       await userCollection.doc(uid).delete();
-      
+
       print('Alle User-Daten erfolgreich gelöscht');
       return true;
     } catch (e) {
