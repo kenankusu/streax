@@ -134,10 +134,10 @@ class _KalenderState extends State<kalender> {
                                         onPressed: () {
                                           Navigator.of(context).pop(tempDate); // <--- gibt das Datum zurück!
                                         },
-                                        child: const Text('Übernehmen'),
                                         style: TextButton.styleFrom(
                                           foregroundColor: Colors.white,
                                         ),
+                                        child: const Text('Übernehmen'),
                                       ),
                                     ],
                                   ),

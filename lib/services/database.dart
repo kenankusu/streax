@@ -7,11 +7,15 @@ class DatabaseService {
   final CollectionReference userCollection = FirebaseFirestore.instance.collection('users');
   final CollectionReference quoteCollection = FirebaseFirestore.instance.collection('quotes');
 
-  // updateUserData Methode
-  Future updateUserData(String name, String username, {
-    int? freundeAnzahl,
-    int? laengsterStreak,
+  // Userdaten anlegen oder aktualisieren
+  Future updateUserData(
+    String name,
+    String username, {
+    int? freunde,
+    int? maxStreak,
+    int? streak,
     String? profilBild,
+    String? lastStreakDate,
   }) async {
     Map<String, dynamic> data = {
       'name': name,
@@ -19,48 +23,85 @@ class DatabaseService {
       'last_updated': FieldValue.serverTimestamp(),
     };
 
-    // Optionale Felder nur hinzufügen wenn sie übergeben werden
-    if (freundeAnzahl != null) data['freunde_anzahl'] = freundeAnzahl;
-    if (laengsterStreak != null) data['laengster_streak'] = laengsterStreak;
+    if (streak != null) data['streak'] = streak; // Nur setzen, wenn übergeben
+    if (freunde != null) data['freunde_anzahl'] = freunde;
+    if (maxStreak != null) data['laengster_streak'] = maxStreak;
     if (profilBild != null) data['profil_bild'] = profilBild;
+    if (lastStreakDate != null) data['lastStreakDate'] = lastStreakDate;
 
     return await userCollection.doc(uid).set(data, SetOptions(merge: true));
   }
 
-  // aktuelle User-Daten streamen
+  // Aktuelle User-Daten streamen
   Stream<DocumentSnapshot> get userData {
     return userCollection.doc(uid).snapshots();
   }
 
-  // Alle Users (für andere Zwecke)
+  // Alle User-Dokumente streamen
   Stream<QuerySnapshot> get users {
     return userCollection.snapshots();
   }
 
-  // Funktion für die Zitate
+  // Zufälliges Zitat holen
   Future<String> getRandomQuote() async {
     try {
-      // Alle Zitate aus Firebase holen
       QuerySnapshot querySnapshot = await quoteCollection.get();
-      
       if (querySnapshot.docs.isNotEmpty) {
-        // Alle Zitate in eine Liste packen (nur der Text)
         List<String> quotes = querySnapshot.docs
             .map((doc) => doc.data() as Map<String, dynamic>)
             .map((data) => data['text'] as String)
             .toList();
-        
-        // Zufällig mischen und das erste nehmen - easy!
         quotes.shuffle();
         return quotes.first;
       } else {
-        // Falls Firebase mal leer ist - Fallback damit nicht alles crasht
         return "Fall in love with the process, and the results will come.";
       }
     } catch (e) {
-      // Error handling falls Internet weg ist oder so
       print('Zitate laden fehlgeschlagen: $e');
       return "Fall in love with the process, and the results will come.";
     }
+  }
+
+  /// Streak-Mechanismus: Erhöhe den Streak nur, wenn heute eine Aktivität gespeichert wird.
+  /// Einträge für vergangene Tage erhöhen den Streak NICHT.
+  Future<void> saveActivityForToday(Map<String, dynamic> activity) async {
+    final userRef = userCollection.doc(uid);
+    final userDoc = await userRef.get();
+    final today = DateTime.now();
+    final todayStr = "${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}";
+
+    // Nur für heute den Streak prüfen und ggf. erhöhen
+    if (activity['datum'] == null || !activity['datum'].startsWith(todayStr)) return;
+
+    int streak = 1;
+    String lastStreakDate = todayStr;
+    int maxStreak = 1;
+
+    if (userDoc.exists) {
+      final data = userDoc.data() as Map<String, dynamic>;
+      final prevStreak = data['streak'] ?? 0;
+      final prevMaxStreak = data['laengster_streak'] ?? 0;
+      final prevDate = data['lastStreakDate'];
+
+      if (prevDate != null) {
+        final prev = DateTime.parse(prevDate);
+        final diff = today.difference(prev).inDays;
+        if (diff == 1) {
+          streak = prevStreak + 1;
+        } else if (diff == 0) {
+          streak = prevStreak;
+        }
+      }
+      // Maximalen Streak aktualisieren
+      maxStreak = streak > prevMaxStreak ? streak : prevMaxStreak;
+    }
+
+    // User-Dokument aktualisieren
+    await userRef.update({
+      'streak': streak,
+      'lastStreakDate': lastStreakDate,
+      'laengster_streak': maxStreak,
+    });
+
   }
 }
