@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/Models/user.dart';
-import 'package:flutter_application_1/Services/auth.dart';
+import 'package:streax/Models/user.dart';
+import 'package:streax/Services/auth.dart';
 import '../Shared/navigationbar.dart'; 
-import 'package:flutter_application_1/Services/database.dart';
+import 'package:streax/Services/database.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
