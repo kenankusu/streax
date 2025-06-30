@@ -79,7 +79,7 @@ class _PasswordResetDialogState extends State<PasswordResetDialog> {
       backgroundColor: Colors.brown[100],
       title: Text(
         'Passwort zurücksetzen',
-        style: TextStyle(color: Colors.brown[800]),
+        style: TextStyle(color: Theme.of(context).colorScheme.primary, fontSize: 24, fontWeight: FontWeight.bold),
       ),
       content: SingleChildScrollView(
         child: Column(
@@ -89,7 +89,7 @@ class _PasswordResetDialogState extends State<PasswordResetDialog> {
             if (!_isSuccess) ...[
               Text(
                 'Gib deine Email-Adresse ein, um einen Link zum Zurücksetzen deines Passworts zu erhalten:',
-                style: TextStyle(color: Colors.brown[700]),
+                style: TextStyle(color: Theme.of(context).colorScheme.primary, fontSize: 16),
               ),
               SizedBox(height: 16),
               TextField(
@@ -126,19 +126,20 @@ class _PasswordResetDialogState extends State<PasswordResetDialog> {
           ],
         ),
       ),
+
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
           child: Text(
             _isSuccess ? 'Schließen' : 'Abbrechen',
-            style: TextStyle(color: Colors.brown[600]),
+            style: TextStyle(color: Theme.of(context).colorScheme.primary),
           ),
         ),
         if (!_isSuccess)
           ElevatedButton(
             onPressed: _isLoading ? null : _sendResetEmail,
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.brown[400],
+              backgroundColor: Theme.of(context).colorScheme.primary,
             ),
             child: _isLoading
                 ? SizedBox(

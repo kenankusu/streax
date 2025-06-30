@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:streax/Screens/Shared/loading.dart';
 import 'package:streax/Services/auth.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'password_reset_dialog.dart';
+import 'email_verification_screen.dart';
 
 class SignIn extends StatefulWidget {
   final Function toggleView;
@@ -28,24 +31,24 @@ class _SignInState extends State<SignIn> {
     return loading ? Loading() : Scaffold(
       body: Column(
         children: [
-          SizedBox(height: 40),
+          
           Center(
+            child: Padding(
+            padding: const EdgeInsets.only(top: 24.0, bottom: 16.0),
             child: GestureDetector(
               onTap: () {
                 widget.toggleView();
               },
               child: Text(
-                'Du hast noch keinen Account? Jetzt registrieren!',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.primary,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
+                'Neu hier? Registrier dich hier!',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurface,
                   decoration: TextDecoration.underline,
                 ),
                 textAlign: TextAlign.center,
+                ),
               ),
-            ),
-          ),
+          ),),
           SizedBox(height: 10),
           Expanded(
             child: Center(
@@ -60,6 +63,7 @@ class _SignInState extends State<SignIn> {
                         Text(
                           'Willkommen zurück!',
                           style: Theme.of(context).textTheme.headlineLarge,
+                          textAlign: TextAlign.center,
                         ),
                         SizedBox(height: 20.0),
                         TextFormField(
@@ -95,7 +99,7 @@ class _SignInState extends State<SignIn> {
                               borderSide: BorderSide.none,
                             ),
                           ),
-                          validator: (val) => val!.length < 6 ? 'Passwort muss mindestens 6 Zeichen lang sein' : null,
+                          validator: (val) => val!.length < 10 ? 'Passwort muss mindestens 10 Zeichen lang sein' : null,
                           onChanged: (val) {
                             setState(() => password = val);
                           },
@@ -111,7 +115,7 @@ class _SignInState extends State<SignIn> {
                                   stayLoggedIn = value ?? false;
                                 });
                               },
-                              activeColor: Colors.brown[400],
+                              activeColor: Theme.of(context).colorScheme.primary,
                             ),
                             Text(
                               'Eingeloggt bleiben',

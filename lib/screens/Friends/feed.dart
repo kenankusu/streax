@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../shared/navigationbar.dart';
+import '../Shared/navigationbar.dart';
 
 class Feed extends StatefulWidget {
   const Feed({super.key});

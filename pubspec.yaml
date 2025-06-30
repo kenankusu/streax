@@ -76,8 +76,11 @@ flutter:
     - assets/icons/journal/boxen.png
     - assets/icons/journal/laufen.png
     - assets/icons/journal/fussball.png
-    - assets/icons/app_icon.png
+    - assets/images/app-icon.png
+    - assets/images/streax-type.png
     - assets/animations/streax-splash-animation.gif
+    - assets/animations/streax-loading.gif
+    - assets/images/streaxpresi.png
     
   # To add assets to your application, add an assets section, like this:
   # assets:
@@ -124,6 +127,6 @@ flutter_launcher_icons:
     icon_size: 48
   macos:
     generate: true
-  image_path: "assets/icons/app_icon.png"
+  image_path: "assets/images/app-icon.png"
   min_sdk_android: 21
   remove_alpha_ios: true
