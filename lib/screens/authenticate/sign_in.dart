@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:streax/Screens/Authenticate/inputFieldStyle.dart';
 import 'package:streax/Screens/Shared/loading.dart';
 import 'package:streax/Services/auth.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'password_reset_dialog.dart';
 
 class SignIn extends StatefulWidget {
   final Function toggleView;

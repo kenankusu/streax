@@ -120,7 +120,7 @@ class _KopfzeileState extends State<Kopfzeile> with SingleTickerProviderStateMix
             // Gradient-Unterstrich
             Container(
               height: 4, // Dicker: 3 -> 4
-              width: name.length * 22.50, // Länger: 18.0 -> 24.0
+              width: name.length * 20, 
               margin: EdgeInsets.only(top: 2), // Kleiner Abstand zum Text
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -220,13 +220,12 @@ class _KopfzeileState extends State<Kopfzeile> with SingleTickerProviderStateMix
     return StreamBuilder<DocumentSnapshot>(
       stream: DatabaseService(uid: user.uid).userData,
       builder: (context, snapshot) {
-        String name = "Benutzer";
+        String name = "Gaynan";
         int streak = 0;
-        
         if (snapshot.hasData && snapshot.data!.exists) {
           var userData = snapshot.data!.data() as Map<String, dynamic>;
           streak = userData['streak'] ?? 0;
-          String fullName = userData['name'] ?? 'Benutzer';
+          String fullName = userData['name'] ?? 'Gaynan';
           name = fullName.split(' ').first;
         }
 

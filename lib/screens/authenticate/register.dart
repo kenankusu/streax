@@ -29,7 +29,7 @@ class _RegisterState extends State<Register> {
   bool stayLoggedIn = false;
 
   //Controller für den PageView
-  PageController _controller = PageController();
+  final PageController _controller = PageController();
 
   @override
   Widget build(BuildContext context) {
