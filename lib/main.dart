@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:streax/Screens/splashscreen.dart';
-import 'package:streax/services/database.dart'; // Services -> services (kleinbuchstabe)
+import 'package:streax/Services/database.dart';
 
 void main() async {
   // Flutter-Engine initialisieren für Firebase

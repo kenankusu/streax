@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:streax/Models/user.dart';
 import 'package:streax/Screens/Home/homepage.dart';
-import 'package:streax/Screens/Authenticate/authenticate.dart';
 import 'package:streax/Screens/Authenticate/email_verification_screen.dart';
 import 'package:streax/Services/auth.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
+import 'package:streax/Screens/Authenticate/authenticate.dart';
 
 class Wrapper extends StatefulWidget {
   const Wrapper({super.key});
