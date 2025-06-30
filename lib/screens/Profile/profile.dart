@@ -5,6 +5,7 @@ import '../Shared/navigationbar.dart';
 import 'package:streax/Services/database.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class Profil extends StatefulWidget {
   const Profil({super.key});
@@ -124,9 +125,41 @@ class _ProfilState extends State<Profil> {
                         ],
                       ),
                       SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [_buildActivityIcon(context, "+")],
+                      // "Deine Sportarten" Label über der horizontalen Liste
+                      Text(
+                        "Deine Sportarten:",
+                        style: Theme.of(context).textTheme.bodySmall
+                            ?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(height: 8),
+                      // Horizontale scrollbare Liste mit Sportarten und Plus-Button
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            SizedBox(width: 16),
+                            // Ausgewählte Sportarten
+                            if (userData['sports'] != null &&
+                                (userData['sports'] as List).isNotEmpty)
+                              ...((userData['sports'] as List<dynamic>)
+                                  .cast<String>()
+                                  .map(
+                                    (sport) => _buildSportIcon(context, sport),
+                                  )
+                                  .toList()),
+                            // Plus-Button
+                            GestureDetector(
+                              onTap: () => _showSportSelectionDialog(
+                                context,
+                                user.uid,
+                                userData,
+                              ),
+                              child: _buildActivityIcon(context, "+"),
+                            ),
+                            SizedBox(width: 16),
+                          ],
+                        ),
                       ),
                       SizedBox(height: 16),
                       Text(
@@ -173,7 +206,9 @@ class _ProfilState extends State<Profil> {
                         },
                         child: Text(
                           "Account löschen",
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.red),
+                          style: Theme.of(
+                            context,
+                          ).textTheme.bodySmall?.copyWith(color: Colors.red),
                         ),
                       ),
                     ],
@@ -411,7 +446,10 @@ class _ProfilState extends State<Profil> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Doch nicht löschen', style: TextStyle(color: Colors.grey)),
+            child: Text(
+              'Doch nicht löschen',
+              style: TextStyle(color: Colors.grey),
+            ),
           ),
           TextButton(
             onPressed: () async {
@@ -437,8 +475,10 @@ class _ProfilState extends State<Profil> {
 
     try {
       // 1. Alle Firestore-Daten löschen
-      bool firestoreDeleted = await DatabaseService(uid: uid).deleteAllUserData();
-      
+      bool firestoreDeleted = await DatabaseService(
+        uid: uid,
+      ).deleteAllUserData();
+
       // 2. Firebase Auth Account löschen
       bool authDeleted = await _auth.deleteAccount();
 
@@ -450,7 +490,10 @@ class _ProfilState extends State<Profil> {
         setState(() {
           _isDeleting = false;
         });
-        _showErrorDialog(context, 'Beim Löschen des Accounts ist ein Fehler aufgetreten.');
+        _showErrorDialog(
+          context,
+          'Beim Löschen des Accounts ist ein Fehler aufgetreten.',
+        );
       }
     } catch (e) {
       setState(() {
@@ -484,15 +527,247 @@ class _ProfilState extends State<Profil> {
       child: Column(
         children: [
           Container(
-            width: 50,
-            height: 50,
+            width: 60,
+            height: 60,
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceContainer,
-              borderRadius: BorderRadius.circular(8),
+              color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Theme.of(context).colorScheme.primary,
+                width: 2,
+              ),
             ),
             child: Center(
-              child: Text(label, style: Theme.of(context).textTheme.bodySmall),
+              child: Icon(
+                Icons.add,
+                color: Theme.of(context).colorScheme.primary,
+                size: 30,
+              ),
             ),
+          ),
+          SizedBox(height: 4),
+          Text(
+            'Sportarten',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              fontSize: 12,
+              color: Colors.grey[400],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Sportarten-Auswahl Dialog
+  void _showSportSelectionDialog(
+    BuildContext context,
+    String uid,
+    Map<String, dynamic> currentData,
+  ) {
+    List<String> availableSports = [
+      'Laufen',
+      'Radfahren',
+      'Schwimmen',
+      'Krafttraining',
+      'Yoga',
+      'Pilates',
+      'Tennis',
+      'Fußball',
+      'Basketball',
+      'Volleyball',
+      'Wandern',
+      'Klettern',
+      'Boxen',
+      'Martial Arts',
+      'Crossfit',
+      'Tanzen',
+      'Golf',
+      'Badminton',
+      'Skifahren',
+      'Snowboarden',
+      'Surfen',
+      'Reiten',
+      'Rudern',
+      'Calisthenics',
+      'Andere',
+    ];
+
+    List<String> selectedSports = currentData['sports'] != null
+        ? List<String>.from(currentData['sports'])
+        : [];
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          title: Text(
+            'Sportarten auswählen',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+          content: Container(
+            width: double.maxFinite,
+            height: 400,
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  Text(
+                    'Wähle deine Lieblingssportarten aus:',
+                    style: TextStyle(color: Colors.grey[300]),
+                  ),
+                  SizedBox(height: 16),
+                  ...availableSports
+                      .map(
+                        (sport) => CheckboxListTile(
+                          title: Text(
+                            sport,
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          value: selectedSports.contains(sport),
+                          onChanged: (bool? value) {
+                            setState(() {
+                              if (value == true) {
+                                selectedSports.add(sport);
+                              } else {
+                                selectedSports.remove(sport);
+                              }
+                            });
+                          },
+                          activeColor: Theme.of(context).colorScheme.primary,
+                          checkColor: Colors.white,
+                        ),
+                      )
+                      .toList(),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Abbrechen', style: TextStyle(color: Colors.grey)),
+            ),
+            TextButton(
+              onPressed: () async {
+                try {
+                  await DatabaseService(
+                    uid: uid,
+                  ).updateUserSports(selectedSports);
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Sportarten erfolgreich gespeichert!'),
+                    ),
+                  );
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Fehler beim Speichern: $e')),
+                  );
+                }
+              },
+              child: Text(
+                'Speichern',
+                style: TextStyle(color: Theme.of(context).colorScheme.primary),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSportIcon(BuildContext context, String sportName) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: GestureDetector(
+        onLongPress: () => _showRemoveSportDialog(context, sportName),
+        child: Column(
+          children: [
+            Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.primary,
+                  width: 2,
+                ),
+              ),
+              child: Center(
+                child: Text(
+                  sportName.substring(0, 1).toUpperCase(),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.primary,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: 4),
+            Text(
+              sportName,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                fontSize: 10,
+                color: Colors.grey[400],
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Dialog zum Entfernen einer Sportart
+  void _showRemoveSportDialog(BuildContext context, String sportName) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Sportart entfernen'),
+        content: Text('Möchten Sie "$sportName" aus Ihren Sportarten entfernen?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Abbrechen'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+
+              // Aktuelle Sportarten laden
+              final user = FirebaseAuth.instance.currentUser;
+              if (user != null) {
+                final userDoc = await FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(user.uid)
+                    .get();
+
+                if (userDoc.exists) {
+                  List<String> currentSports =
+                      (userDoc.data()?['sports'] as List<dynamic>?)
+                          ?.cast<String>() ?? [];
+
+                  // Sportart entfernen
+                  currentSports.remove(sportName);
+
+                  // Aktualisierte Liste speichern
+                  await DatabaseService(uid: user.uid)
+                      .updateUserSports(currentSports);
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('$sportName wurde entfernt'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+              }
+            },
+            child: Text('Entfernen', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
