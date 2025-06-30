@@ -4,6 +4,7 @@ import 'package:streax/Screens/Shared/loading.dart';
 import 'package:streax/Services/auth.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'password_reset_dialog.dart';
+import 'email_verification_screen.dart';
 
 class SignIn extends StatefulWidget {
   final Function toggleView;
@@ -114,12 +115,30 @@ class _SignInState extends State<SignIn> {
                           error = 'Login fehlgeschlagen - Email/Passwort prüfen';
                           loading = false;
                         });
+                      } else {
+                        // WICHTIG: Loading State zurücksetzen bei erfolgreichem Login
+                        setState(() {
+                          loading = false;
+                          error = ''; // Error auch clearen
+                        });
+                        
+                        // DEBUGGING: Was gibt der AuthService zurück?
+                        debugPrint('Login erfolgreich, result: $result');
+                        debugPrint('Provider Stream sollte jetzt reagieren...');
                       }
                     } on FirebaseAuthException catch (e) {
                       setState(() {
                         loading = false;
                         // Spezifische Fehlermeldungen für Login
                         switch (e.code) {
+                          case 'email-not-verified':
+                            // Navigation zur Email-Verifizierung
+                            Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(
+                                builder: (context) => EmailVerificationScreen(email: email),
+                              ),
+                            );
+                            return; // Wichtig; früh returnen
                           case 'invalid-credential':
                             error = 'Email oder Passwort ist falsch';
                             break;
@@ -156,7 +175,7 @@ class _SignInState extends State<SignIn> {
               ),
               SizedBox(height: 12.0),
               
-              // ✅ Neuer "Passwort vergessen" Link
+              // "Passwort vergessen" Link
               TextButton(
                 onPressed: () {
                   showDialog(

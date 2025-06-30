@@ -4,6 +4,7 @@ import 'package:streax/Screens/Shared/loading.dart';
 import 'package:streax/Services/auth.dart';
 import 'package:streax/Services/database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'email_verification_screen.dart';
 
 class Register extends StatefulWidget {
   final Function toggleView;
@@ -102,18 +103,28 @@ class _RegisterState extends State<Register> {
                     setState(() => loading = true);
                     
                     try {
-                      // Checkbox-Wert an Auth-Service übergeben
-                      dynamic result = await _auth.registerWithEmailAndPassword(
+                      // Registrierung mit Email-Verifizierung
+                      Map<String, dynamic> result = await _auth.registerWithEmailAndPassword(
                         email, 
                         password, 
                         stayLoggedIn: stayLoggedIn
                       );
                       
-                      if(result != null) {
-                        // Profil erstellen nach erfolgreicher Registrierung
-                        await DatabaseService(uid: result.uid).updateUserData(
+                      if(result['success'] == true && result['needsVerification'] == true) {
+                        // User-Profil trotzdem erstellen (wird später aktiviert nach Verifizierung)
+                        User user = result['user'];
+                        await DatabaseService(uid: user.uid).updateUserData(
                           'Neuer User',
                           'user${DateTime.now().millisecondsSinceEpoch}',
+                        );
+                        
+                        // Zur Email-Verifizierungs-Seite navigieren
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(
+                            builder: (context) => EmailVerificationScreen(
+                              email: result['email'],
+                            ),
+                          ),
                         );
                       }
                     } on FirebaseAuthException catch (e) {
