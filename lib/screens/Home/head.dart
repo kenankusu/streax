@@ -96,44 +96,64 @@ class _KopfzeileState extends State<Kopfzeile> with SingleTickerProviderStateMix
     });
   }
 
-  Widget Willkommen(String name) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // "Hallo," in bisheriger Größe
-        Text(
-          "Hallo,",
-          style: Theme.of(context).textTheme.headlineMedium,
-        ),
-        // Name größer mit Gradient-Unterstrich
-        Column(
+  Widget Willkommen(String firstName) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Schriftstil definieren
+        final textStyle = Theme.of(context).textTheme.headlineMedium?.copyWith(
+          fontSize: 40,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        );
+
+        // TextPainter zum Messen der exakten Textbreite
+        final textSpan = TextSpan(
+          text: firstName,
+          style: textStyle,
+        );
+        final textPainter = TextPainter(
+          text: textSpan,
+          maxLines: 1,
+          textDirection: TextDirection.ltr,
+        )..layout();
+
+        final textWidth = textPainter.size.width;
+
+        return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // "Hallo," in bisheriger Größe
             Text(
-              name,
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                fontSize: 40, // Größer als bisherige Größe
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
+              "Hallo,",
+              style: Theme.of(context).textTheme.headlineMedium,
             ),
-            // Gradient-Unterstrich
-            Container(
-              height: 4, // Dicker: 3 -> 4
-              width: name.length * 22.50, // Länger: 18.0 -> 24.0
-              margin: EdgeInsets.only(top: 2), // Kleiner Abstand zum Text
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xFF1C499E), Color(0xFFB1D43A)],
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
+            // Name mit exakt passenden Unterstrich
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  firstName,
+                  style: textStyle,
                 ),
-                borderRadius: BorderRadius.circular(2.0), // Angepasst an neue Höhe
-              ),
+                // Unterstrich mit exakter Textbreite
+                Container(
+                  height: 4,
+                  width: textWidth, // Exakte Breite des Textes
+                  margin: EdgeInsets.only(top: 2),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Color(0xFF1C499E), Color(0xFFB1D43A)],
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                    ),
+                    borderRadius: BorderRadius.circular(2.0),
+                  ),
+                ),
+              ],
             ),
           ],
-        ),
-      ],
+        );
+      },
     );
   }
 
@@ -220,24 +240,22 @@ class _KopfzeileState extends State<Kopfzeile> with SingleTickerProviderStateMix
     return StreamBuilder<DocumentSnapshot>(
       stream: DatabaseService(uid: user.uid).userData,
       builder: (context, snapshot) {
-        String name = "Benutzer";
+        String firstName = "Unbekannt";
         int streak = 0;
-        
+
         if (snapshot.hasData && snapshot.data!.exists) {
-          var userData = snapshot.data!.data() as Map<String, dynamic>;
+          final userData = snapshot.data!.data() as Map<String, dynamic>;
           streak = userData['streak'] ?? 0;
-          String fullName = userData['name'] ?? 'Benutzer';
-          name = fullName.split(' ').first;
+          firstName = userData['firstName'] ?? 'Unbekannt'; // Nur Vorname laden
         }
 
         return Column(
-          crossAxisAlignment: CrossAxisAlignment.start, // Links ausrichten
           children: [
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Willkommen(name),
+                Willkommen(firstName), 
                 Padding(
                   padding: const EdgeInsets.only(top: 10, right: 20), // Weniger Padding: top: 20->10, right: 30->20
                   child: streakAnzeige(streak),

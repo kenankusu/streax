@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:streax/main.dart';
 
 class IntroPage1 extends StatelessWidget {
+  const IntroPage1({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
