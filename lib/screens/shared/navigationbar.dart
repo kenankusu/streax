@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../Shared/addActivity.dart';
+import 'addActivity.dart';
 import '../Journal/calendar.dart';
 import '../Profile/profile.dart';
 import '../Friends/feed.dart';

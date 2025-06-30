@@ -67,8 +67,8 @@ class IntroPage2 extends StatelessWidget{
               Padding(
                 padding: const EdgeInsets.only(top: 24.0),
                 child: Image.asset(
-                  'assets/images/streax-type.png',
-                  height: 30,
+                  'assets/images/streaxpresi.png',
+                  height: 300,
                   fit: BoxFit.contain,
                 ),
               ),

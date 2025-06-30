@@ -63,6 +63,7 @@ class _SignInState extends State<SignIn> {
                         Text(
                           'Willkommen zurück!',
                           style: Theme.of(context).textTheme.headlineLarge,
+                          textAlign: TextAlign.center,
                         ),
                         SizedBox(height: 20.0),
                         TextFormField(

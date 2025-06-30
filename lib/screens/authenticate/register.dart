@@ -5,8 +5,6 @@ import 'package:streax/Screens/Welcome/welcome.dart';
 import 'package:streax/screens/introscreens/introPage1.dart';
 import 'package:streax/screens/introscreens/introPage2.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-import '../introscreens/introPage1.dart';
-import '../introscreens/introPage2.dart';
 
 class Register extends StatefulWidget {
   final Function toggleView;
@@ -123,7 +121,7 @@ class _RegisterState extends State<Register> {
                                               borderSide: BorderSide.none,
                                             ),
                                           ),
-                                          validator: (val) => val!.length < 6 ? 'Passwort muss mindestens 6 Zeichen lang sein' : null,
+                                          validator: (val) => val!.length < 6 ? 'Passwort muss mindestens 10 Zeichen lang sein' : null,
                                           onChanged: (val) {
                                             setState(() => password = val);
                                           },

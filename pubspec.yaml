@@ -80,6 +80,7 @@ flutter:
     - assets/profil/profilbild.png
     - assets/animations/streax-splash-animation.gif
     - assets/animations/streax-loading.gif
+    - assets/images/streaxpresi.png
     
   # To add assets to your application, add an assets section, like this:
   # assets:
