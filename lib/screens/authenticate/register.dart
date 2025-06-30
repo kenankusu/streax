@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:streax/Services/auth.dart';
 import 'package:streax/Services/database.dart';
@@ -6,6 +5,8 @@ import 'package:streax/Screens/Welcome/welcome.dart';
 import 'package:streax/screens/introscreens/introPage1.dart';
 import 'package:streax/screens/introscreens/introPage2.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import '../introscreens/introPage1.dart';
+import '../introscreens/introPage2.dart';
 
 class Register extends StatefulWidget {
   final Function toggleView;
@@ -29,7 +30,7 @@ class _RegisterState extends State<Register> {
   bool stayLoggedIn = false;
 
   //Controller für den PageView
-  PageController _controller = PageController();
+  final PageController _controller = PageController();
 
   @override
   Widget build(BuildContext context) {

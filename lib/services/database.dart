@@ -74,17 +74,27 @@ class DatabaseService {
   }
 
   /// Streak-Mechanismus: Erhöhe den Streak nur, wenn heute eine Aktivität gespeichert wird.
-  /// Einträge für vergangene Tage erhöhen den Streak NICHT.
   Future<void> saveActivityForToday(Map<String, dynamic> activity) async {
     final userRef = userCollection.doc(uid);
     final userDoc = await userRef.get();
-    final today = DateTime.now();
-    final todayStr =
-        "${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}";
+    final now = DateTime.now();
+    final todayStr = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
 
-    // Nur für heute den Streak prüfen und ggf. erhöhen
-    if (activity['datum'] == null || !activity['datum'].startsWith(todayStr))
-      return;
+    // WICHTIG: Sowohl das eingegebene Datum als auch der Erstellungszeitpunkt müssen "heute" sein
+    final activityDate = activity['datum'];
+    final createdAt = activity['createdAt']; // Firestore ServerTimestamp
+    
+    // 1. Prüfung: Das eingegebene Datum muss heute sein
+    if (activityDate == null || !activityDate.startsWith(todayStr)) return;
+    
+    // 2. Prüfung: Die Aktivität muss auch heute erstellt worden sein
+    if (createdAt != null && createdAt is Timestamp) {
+      final createdDate = createdAt.toDate();
+      final createdDateStr = "${createdDate.year}-${createdDate.month.toString().padLeft(2, '0')}-${createdDate.day.toString().padLeft(2, '0')}";
+      
+      // Wenn Erstellungsdatum != eingegebenes Datum, Streak nicht erhöhen
+      if (createdDateStr != todayStr) return;
+    }
 
     int streak = 1;
     String lastStreakDate = todayStr;
@@ -93,19 +103,22 @@ class DatabaseService {
     if (userDoc.exists) {
       final data = userDoc.data() as Map<String, dynamic>;
       final prevStreak = data['streak'] ?? 0;
-      final prevMaxStreak = data['laengster_streak'] ?? 0;
+      final prevMaxStreak = data['streak_max'] ?? 0;
       final prevDate = data['lastStreakDate'];
 
       if (prevDate != null) {
         final prev = DateTime.parse(prevDate);
-        final diff = today.difference(prev).inDays;
+        final diff = now.difference(prev).inDays;
         if (diff == 1) {
           streak = prevStreak + 1;
         } else if (diff == 0) {
+          // Bereits heute eine Aktivität geloggt
           streak = prevStreak;
+        } else {
+          // Mehr als 1 Tag Unterschied → Streak unterbrochen
+          streak = 1;
         }
       }
-      // Maximalen Streak aktualisieren
       maxStreak = streak > prevMaxStreak ? streak : prevMaxStreak;
     }
 
@@ -113,22 +126,67 @@ class DatabaseService {
     await userRef.update({
       'streak': streak,
       'lastStreakDate': lastStreakDate,
-      'laengster_streak': maxStreak,
+      'streak_max': maxStreak,
     });
+  }
+
+  /// Prüft beim App-Start, ob der Streak unterbrochen wurde
+  Future<void> checkStreakStatus() async {
+    final userRef = userCollection.doc(uid);
+    final userDoc = await userRef.get();
+    
+    if (!userDoc.exists) return;
+    
+    final data = userDoc.data() as Map<String, dynamic>;
+    final lastStreakDate = data['lastStreakDate'];
+    final currentStreak = data['streak'] ?? 0;
+    
+    // Wenn noch nie eine Aktivität geloggt wurde oder Streak bereits 0
+    if (lastStreakDate == null || currentStreak == 0) return;
+    
+    final now = DateTime.now();
+    final todayStr = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+    final yesterdayStr = "${now.subtract(Duration(days: 1)).year}-${now.subtract(Duration(days: 1)).month.toString().padLeft(2, '0')}-${now.subtract(Duration(days: 1)).day.toString().padLeft(2, '0')}";
+    
+    try {
+      // Prüfung basiert nur auf Kalendertagen, nicht auf Stunden
+      // Streak bleibt bestehen wenn letzter Log heute oder gestern war
+      if (lastStreakDate != todayStr && lastStreakDate != yesterdayStr) {
+        // Mehr als 1 Kalendertag ohne Log → Streak zurücksetzen
+        await userRef.update({
+          'streak': 0,
+          'lastStreakDate': null,
+        });
+        // Nachricht entfernt
+      }
+    } catch (e) {
+      // Fehler-Log entfernt oder stumm gemacht
+    }
+  }
+
+  // Sportarten des Users aktualisieren
+  Future updateUserSports(List<String> sports) async {
+    return await userCollection.doc(uid).set({
+      'sports': sports,
+      'last_updated': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
   }
 
   // Alle User-Daten löschen (User-Dokument und alle Activities)
   Future<bool> deleteAllUserData() async {
     try {
       // 1. Alle Activities des Users löschen
-      final activitiesQuery = await userCollection.doc(uid).collection('activities').get();
+      final activitiesQuery = await userCollection
+          .doc(uid)
+          .collection('activities')
+          .get();
       for (var doc in activitiesQuery.docs) {
         await doc.reference.delete();
       }
 
       // 2. User-Dokument löschen
       await userCollection.doc(uid).delete();
-      
+
       print('Alle User-Daten erfolgreich gelöscht');
       return true;
     } catch (e) {

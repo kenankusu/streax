@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:streax/Models/user.dart';
 import 'package:streax/Screens/Home/homepage.dart';
+import 'package:streax/Screens/Authenticate/authenticate.dart';
+import 'package:streax/Screens/Authenticate/email_verification_screen.dart';
+import 'package:streax/Services/auth.dart';
 import 'package:streax/Screens/Authenticate/onBoarding.dart';
 import 'package:provider/provider.dart';
+import 'dart:async';
 
 class Wrapper extends StatefulWidget {
   const Wrapper({super.key});
@@ -13,10 +17,13 @@ class Wrapper extends StatefulWidget {
 
 class _WrapperState extends State<Wrapper> {
   bool _showSplash = true;
+  final AuthService _auth = AuthService();
 
   @override
   void initState() {
     super.initState();
+    
+    // Splash-Animation für kurze Zeit anzeigen
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) {
         setState(() {
@@ -28,29 +35,92 @@ class _WrapperState extends State<Wrapper> {
 
   @override
   Widget build(BuildContext context) {
+    // Während Splash-Phase nur Animation zeigen
     if (_showSplash) {
-      return Scaffold(
-        backgroundColor: Colors.black,
-        body: Center(
-          child: SizedBox(
-            width: 400,
-            height: 400,
-            child: Image.asset(
-              'assets/animations/streax-splash-animation.gif',
-              fit: BoxFit.contain,
+      return MaterialApp(
+        home: Scaffold(
+          backgroundColor: Colors.black,
+          body: Center(
+            child: SizedBox(
+              width: 400,
+              height: 400,
+              child: Image.asset(
+                'assets/animations/streax-splash-animation.gif',
+                fit: BoxFit.contain,
+              ),
             ),
           ),
         ),
+        debugShowCheckedModeBanner: false,
       );
     }
 
-    final user = Provider.of<StreaxUser?>(context);
-    // return entweder Home oder Authenticate widget
-    // wenn user null = nicht eingeloggt, dann Authenticate
-    if (user == null) {
-      return Authenticate();
-    } else {
-      return startseite();
-    }
+    // Nach Splash: StreamProvider für gesamte App mit derselben AuthService-Instanz
+    return StreamProvider<StreaxUser?>.value(
+      value: _auth.user,
+      initialData: null,
+      child: Consumer<StreaxUser?>(
+        builder: (context, user, child) {
+
+          // Fall 1: User ist eingeloggt aber Email noch nicht verifiziert
+          if (user == null && _auth.isUserLoggedInButNotVerified) {
+            final currentUser = _auth.currentUser;
+            if (currentUser != null) {
+              return MaterialApp(
+                home: EmailVerificationScreen(email: currentUser.email ?? ''),
+                debugShowCheckedModeBanner: false,
+                theme: _buildAppTheme(),
+              );
+            }
+          }
+          
+          // Fall 2: User nicht eingeloggt -> Anmelde-/Registrierungsseite
+          if (user == null) {
+            return MaterialApp(
+              home: Authenticate(),
+              debugShowCheckedModeBanner: false,
+              theme: _buildAppTheme(),
+            );
+          } else {
+            // Fall 3: User eingeloggt und verifiziert -> Hauptapp mit Navigation
+            return MaterialApp(
+              title: 'streax',
+              debugShowCheckedModeBanner: false,
+              theme: _buildAppTheme(),
+              home: startseite(), // Startseite mit Navigationsleiste
+            );
+          }
+        },
+      ),
+    );
+  }
+
+  // App-Theme ausgelagert für bessere Wartbarkeit
+  ThemeData _buildAppTheme() {
+    return ThemeData(
+      textTheme: TextTheme(
+        headlineLarge: TextStyle(color: Colors.white, fontSize: 40),
+        headlineMedium: TextStyle(
+          color: Colors.white,
+          fontSize: 34,
+          fontWeight: FontWeight.bold,
+        ),
+        headlineSmall: TextStyle(color: Colors.white, fontSize: 28),
+        bodySmall: TextStyle(color: Colors.white, fontSize: 16),
+      ),
+      colorScheme: ColorScheme(
+        brightness: Brightness.dark,
+        primary: const Color.fromARGB(255, 0, 115, 255),
+        onPrimary: Colors.white,
+        secondary: const Color.fromARGB(255, 100, 223, 211),
+        onSecondary: Colors.black,
+        error: Colors.red,
+        onError: Colors.white,
+        tertiary: const Color.fromARGB(255, 22, 0, 147),
+        surface: const Color.fromARGB(255, 28, 32, 31),
+        onSurface: const Color.fromARGB(255, 107, 109, 108),
+        surfaceContainer: const Color.fromARGB(255, 43, 47, 46),
+      ),
+    );
   }
 }
