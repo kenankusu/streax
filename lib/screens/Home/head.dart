@@ -22,6 +22,9 @@ class _KopfzeileState extends State<Kopfzeile> with SingleTickerProviderStateMix
   double _targetProgress = 0.0;
   bool _milestoneActive = false;
   double _lastKnownProgress = -1.0; // Tracking für Änderungen
+  
+  // Zitat-State hinzufügen
+  String? quote;
 
   @override
   void initState() {
@@ -30,12 +33,27 @@ class _KopfzeileState extends State<Kopfzeile> with SingleTickerProviderStateMix
       vsync: this,
       duration: const Duration(milliseconds: 800),
     );
+    
+    _loadQuote(); // Beim Starten Zitat laden
   }
 
   @override
   void dispose() {
     _animationController.dispose();
     super.dispose();
+  }
+
+  // Zitat aus Firebase laden
+  Future<void> _loadQuote() async {
+    final user = Provider.of<StreaxUser?>(context, listen: false);
+    if (user != null) {
+      final loadedQuote = await DatabaseService(uid: user.uid).getRandomQuote();
+      if (mounted) {
+        setState(() {
+          quote = loadedQuote;
+        });
+      }
+    }
   }
 
   void _updateProgress(double newProgress, int streak) {  // Parameter hinzufügen
@@ -257,7 +275,7 @@ class _KopfzeileState extends State<Kopfzeile> with SingleTickerProviderStateMix
               children: [
                 Willkommen(firstName), 
                 Padding(
-                  padding: const EdgeInsets.only(top: 10, right: 20), // Weniger Padding: top: 20->10, right: 30->20
+                  padding: const EdgeInsets.only(top: 10, right: 20),
                   child: streakAnzeige(streak),
                 ),
               ],
@@ -266,7 +284,8 @@ class _KopfzeileState extends State<Kopfzeile> with SingleTickerProviderStateMix
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 40),
               child: Text(
-                "Fall in love with the process, and the results will come.",
+                // Falls das Zitat noch lädt, Fallback anzeigen
+                quote ?? "Fall in love with the process, and the results will come.",
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   fontStyle: FontStyle.italic,
                   color: Colors.grey[400],
