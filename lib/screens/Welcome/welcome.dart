@@ -1,16 +1,18 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:streax/Services/database.dart';
 
-class WillkommensSeite extends StatefulWidget {
+class WelcomePage extends StatefulWidget {
   final String uid;
 
-  const WillkommensSeite({required this.uid, super.key});
+  const WelcomePage({required this.uid, super.key});
 
   @override
-  State<WillkommensSeite> createState() => _WillkommensSeiteState();
+  State<WelcomePage> createState() => _WelcomePageState();
 }
 
-class _WillkommensSeiteState extends State<WillkommensSeite> {
+class _WelcomePageState extends State<WelcomePage> {
   final nameController = TextEditingController();
   final usernameController = TextEditingController();
   bool isLoading = false;
