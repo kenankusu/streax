@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:streax/Screens/Authenticate/inputFieldStyle.dart';
 import 'package:streax/Screens/Shared/loading.dart';
 import 'package:streax/Services/auth.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -31,24 +30,24 @@ class _SignInState extends State<SignIn> {
     return loading ? Loading() : Scaffold(
       body: Column(
         children: [
-          SizedBox(height: 40),
+          
           Center(
+            child: Padding(
+            padding: const EdgeInsets.only(top: 24.0, bottom: 16.0),
             child: GestureDetector(
               onTap: () {
                 widget.toggleView();
               },
               child: Text(
-                'Du hast noch keinen Account? Jetzt registrieren!',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.primary,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
+                'Neu hier? Registrier dich hier!',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurface,
                   decoration: TextDecoration.underline,
                 ),
                 textAlign: TextAlign.center,
+                ),
               ),
-            ),
-          ),
+          ),),
           SizedBox(height: 10),
           Expanded(
             child: Center(
@@ -114,7 +113,7 @@ class _SignInState extends State<SignIn> {
                                   stayLoggedIn = value ?? false;
                                 });
                               },
-                              activeColor: Colors.brown[400],
+                              activeColor: Theme.of(context).colorScheme.primary,
                             ),
                             Text(
                               'Eingeloggt bleiben',
