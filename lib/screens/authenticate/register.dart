@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:streax/Services/auth.dart';
 import 'package:streax/Services/database.dart';
 import 'package:streax/Screens/Welcome/welcome.dart';
-import 'package:streax/screens/introscreens/introPage1.dart';
-import 'package:streax/screens/introscreens/introPage2.dart';
+import 'package:streax/screens/Introscreens/introPage1.dart';
+import 'package:streax/screens/Introscreens/introPage2.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-import '../introscreens/introPage1.dart';
-import '../introscreens/introPage2.dart';
 
 class Register extends StatefulWidget {
   final Function toggleView;
