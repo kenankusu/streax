@@ -80,7 +80,7 @@ class AuthService {
   }) async {
     try {
       await _configurePersistence(stayLoggedIn);
-      await _auth.setLanguageCode('de'); // Deutsche Verifizierungs-Emails
+      await _auth.setLanguageCode('de');
       
       UserCredential result = await _auth.createUserWithEmailAndPassword(
         email: email,
@@ -94,19 +94,20 @@ class AuthService {
         
         return {
           'success': true,
-          'user': user,
+          'user': user,  
           'needsVerification': true,
-          'email': email
+          'email': email,
+          'uid': user.uid, 
         };
       } else {
         throw Exception('User-Erstellung fehlgeschlagen');
       }
-    } on FirebaseAuthException catch (e) {
-      debugPrint('Registrierungs-Fehler: ${e.code} - ${e.message}');
-      rethrow;
     } catch (e) {
-      debugPrint('Registrierungs-Fehler: ${e.toString()}');
-      rethrow;
+      debugPrint('Registrierungs-Fehler: $e');
+      return {
+        'success': false,
+        'error': e.toString(),
+      };
     }
   }
 

@@ -5,6 +5,9 @@ import 'package:streax/Services/auth.dart';
 import 'package:streax/Services/database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'email_verification_screen.dart';
+import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import '../introscreens/introPage1.dart';
+import '../introscreens/introPage2.dart';
 
 class Register extends StatefulWidget {
   final Function toggleView;
@@ -182,21 +185,44 @@ class _RegisterState extends State<Register> {
                                   onPressed: () async {
                                     if(_formKey.currentState!.validate()){
                                       setState(() => loading = true);
-                                      dynamic result = await _auth.registerWithEmailAndPassword(
-                                        email, 
-                                        password, 
-                                        stayLoggedIn: stayLoggedIn
-                                      );
-                                      if(result == null) {
+                                      
+                                      try {
+                                        // ✅ Korrekte Verarbeitung der Registrierung:
+                                        Map<String, dynamic> result = await _auth.registerWithEmailAndPassword(
+                                          email, 
+                                          password, 
+                                          stayLoggedIn: stayLoggedIn
+                                        );
+                                        
+                                        if(result['success'] == true && result['user'] != null) {
+                                          // User-Profil erstellen
+                                          await DatabaseService(uid: result['user'].uid).updateUserData(
+                                            'Neuer', // Vorname
+                                            'User',  // Nachname
+                                            username: 'user${DateTime.now().millisecondsSinceEpoch}',
+                                          );
+                                          
+                                          // Zur Email-Verifizierung weiterleiten
+                                          if (mounted) {
+                                            Navigator.of(context).pushReplacement(
+                                              MaterialPageRoute(
+                                                builder: (context) => EmailVerificationScreen(
+                                                  email: result['email'],
+                                                ),
+                                              ),
+                                            );
+                                          }
+                                        } else {
+                                          setState(() {
+                                            error = 'Registrierung fehlgeschlagen - Email bereits vergeben?';
+                                            loading = false;
+                                          });
+                                        }
+                                      } catch (e) {
                                         setState(() {
-                                          error = 'Registrierung fehlgeschlagen - Email bereits vergeben?';
+                                          error = 'Registrierung fehlgeschlagen: $e';
                                           loading = false;
                                         });
-                                      } else {
-                                        await DatabaseService(uid: result.uid).updateUserData(
-                                          'Neuer User',
-                                          'user${DateTime.now().millisecondsSinceEpoch}',
-                                        );
                                       }
                                     }
                                   }
