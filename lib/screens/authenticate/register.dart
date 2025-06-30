@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:streax/Services/auth.dart';
 import 'package:streax/Services/database.dart';
-import 'package:streax/Screens/Welcome/welcome.dart';
 import 'package:streax/screens/Introscreens/introPage1.dart';
 import 'package:streax/screens/Introscreens/introPage2.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import 'email_verification_screen.dart'; // ✅ Diesen Import hinzufügen
+
 
 class Register extends StatefulWidget {
   final Function toggleView;
@@ -195,39 +196,43 @@ class _RegisterState extends State<Register> {
                                                 onPressed: () async {
                                                   if(_formKey.currentState!.validate()){
                                                     setState(() => loading = true);
-                                                    dynamic result = await _auth.registerWithEmailAndPassword(
-                                                      email, 
-                                                      password, 
-                                                      stayLoggedIn: stayLoggedIn
-                                                    );
-                                                    if(result == null) {
+                                                    
+                                                    try {
+                                                      // ✅ Korrekte Verarbeitung der neuen Map-Struktur:
+                                                      Map<String, dynamic> result = await _auth.registerWithEmailAndPassword(
+                                                        email, 
+                                                        password, 
+                                                        stayLoggedIn: stayLoggedIn
+                                                      );
+                                                      
+                                                      if(result['success'] == true && result['user'] != null) {
+                                                        // User-Profil erstellen mit der UID aus der Map
+                                                        await DatabaseService(uid: result['uid']).updateUserData(
+                                                          'Neuer',
+                                                          'User',
+                                                        );
+                                                        
+                                                        // Zur Email-Verifizierung weiterleiten
+                                                        if (mounted) {
+                                                          Navigator.of(context).pushReplacement(
+                                                            MaterialPageRoute(
+                                                              builder: (context) => EmailVerificationScreen(
+                                                                email: result['email'],
+                                                              ),
+                                                            ),
+                                                          );
+                                                        }
+                                                      } else {
+                                                        setState(() {
+                                                          error = result['error'] ?? 'Registrierung fehlgeschlagen';
+                                                          loading = false;
+                                                        });
+                                                      }
+                                                    } catch (e) {
                                                       setState(() {
-                                                        error = 'Registrierung fehlgeschlagen - Email bereits vergeben?';
+                                                        error = 'Registrierung fehlgeschlagen: $e';
                                                         loading = false;
                                                       });
-                                                    } else if(result.uid == null) {
-                                                      setState(() {
-                                                        error = 'Fehler: UID ist null!';
-                                                        loading = false;
-                                                      });
-                                                      // ignore: avoid_print
-                                                      print('Registrierung fehlgeschlagen: UID ist null im Resultat!');
-                                                      return;
-                                                    } else {
-                                                      // Terminalausgabe zur Bestätigung, dass der else-Zweig erreicht wurde
-                                                      // ignore: avoid_print
-                                                      print('Registrierung erfolgreich: else-Zweig erreicht, UID: \'${result.uid}\'');
-                                                      await DatabaseService(uid: result.uid).updateUserData(
-                                                        'Neuer User',
-                                                        'user${DateTime.now().millisecondsSinceEpoch}',
-                                                      );
-                                                      // Nach erfolgreicher Registrierung zur WillkommensSeite navigieren
-                                                      Navigator.pushReplacement(
-                                                        context,
-                                                        MaterialPageRoute(
-                                                          builder: (context) => WelcomePage(uid: result.uid),
-                                                        ),
-                                                      );
                                                     }
                                                   }
                                                 }
