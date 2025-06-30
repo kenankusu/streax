@@ -1,29 +1,233 @@
 import 'package:flutter/material.dart';
 import 'profile_editing.dart';
+import '../../services/image_service.dart';
+import '../../utils/snackbar.dart';
+import 'package:image_picker/image_picker.dart';
 
 // Profil Header (Avatar, Name, Edit/Share buttons)
 
-class ProfileHeader extends StatelessWidget {
+class ProfileHeader extends StatefulWidget {
   final Map<String, dynamic> userData;
   final String uid;
 
   const ProfileHeader({super.key, required this.userData, required this.uid});
 
   @override
+  State<ProfileHeader> createState() => _ProfileHeaderState();
+}
+
+class _ProfileHeaderState extends State<ProfileHeader> {
+  final ImageService _imageService = ImageService();
+  bool _isUploading = false;
+
+  // Funktion zum Anzeigen der Bildauswahl-Optionen
+  void _showImageSourceDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Profilbild ändern'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: const Text('Kamera'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _updateProfileImage(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Galerie'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _updateProfileImage(ImageSource.gallery);
+                },
+              ),
+              if (widget.userData['profileImageUrl'] != null &&
+                  widget.userData['profileImageUrl'].toString().isNotEmpty)
+                ListTile(
+                  leading: const Icon(Icons.delete, color: Colors.red),
+                  title: const Text(
+                    'Profilbild löschen',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _deleteProfileImage();
+                  },
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // Profilbild aktualisieren
+  Future<void> _updateProfileImage(ImageSource source) async {
+    setState(() {
+      _isUploading = true;
+    });
+
+    try {
+      final String? newImageUrl = await _imageService.updateProfileImage(
+        widget.uid,
+        source: source,
+      );
+
+      if (newImageUrl != null) {
+        // UI wird automatisch aktualisiert wenn userData aktualisiert wird
+        SnackBarUtils.showSuccess(
+          context,
+          'Profilbild erfolgreich aktualisiert!',
+        );
+      } else {
+        // Fehler
+        SnackBarUtils.showError(
+          context,
+          'Fehler beim Aktualisieren des Profilbildes',
+        );
+      }
+    } catch (e) {
+      SnackBarUtils.showError(context, 'Fehler: $e');
+    } finally {
+      setState(() {
+        _isUploading = false;
+      });
+    }
+  }
+
+  // Profilbild löschen
+  Future<void> _deleteProfileImage() async {
+    setState(() {
+      _isUploading = true;
+    });
+
+    try {
+      // Bild aus Firebase Storage löschen
+      await _imageService.deleteProfileImage(widget.uid);
+
+      // URL aus Firestore entfernen
+      await _imageService.updateProfileImageUrl(widget.uid, '');
+
+      SnackBarUtils.showSuccess(context, 'Profilbild erfolgreich gelöscht!');
+    } catch (e) {
+      SnackBarUtils.showError(context, 'Fehler beim Löschen: $e');
+    } finally {
+      setState(() {
+        _isUploading = false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    // Profilbild-URL aus userData oder fallback zu Asset
+    final String? profileImageUrl = widget.userData['profileImageUrl'];
+
     return Column(
       children: [
-        CircleAvatar(
-          radius: 50,
-          backgroundImage: AssetImage('assets/profil/profilbild.png'),
+        GestureDetector(
+          onTap: _isUploading ? null : _showImageSourceDialog,
+          child: Stack(
+            children: [
+              CircleAvatar(
+                radius: 50,
+                child: profileImageUrl != null && profileImageUrl.isNotEmpty
+                    ? ClipOval(
+                        child: Image.network(
+                          profileImageUrl,
+                          width: 100,
+                          height: 100,
+                          fit: BoxFit.cover,
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return CircularProgressIndicator(
+                              value: loadingProgress.expectedTotalBytes != null
+                                  ? loadingProgress.cumulativeBytesLoaded /
+                                        loadingProgress.expectedTotalBytes!
+                                  : null,
+                            );
+                          },
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              height: 100,
+                              width: 100,
+                              decoration: const BoxDecoration(
+                                color: Colors.grey,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Center(
+                                child: Icon(
+                                  Icons.person_rounded,
+                                  color: Colors.black38,
+                                  size: 35,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      )
+                    : Container(
+                        height: 100,
+                        width: 100,
+                        decoration: const BoxDecoration(
+                          color: Colors.grey,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Center(
+                          child: Icon(
+                            Icons.person_rounded,
+                            color: Colors.black38,
+                            size: 35,
+                          ),
+                        ),
+                      ),
+              ),
+              if (_isUploading)
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.5),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    ),
+                  ),
+                ),
+              if (!_isUploading)
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: Colors.blue,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.camera_alt,
+                      color: Colors.white,
+                      size: 16,
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
         const SizedBox(height: 16),
         Text(
-          '${userData['firstName'] ?? 'Unbekannter'} ${userData['lastName'] ?? 'Name'}',
+          '${widget.userData['firstName'] ?? 'Unbekannter'} ${widget.userData['lastName'] ?? 'Name'}',
           style: Theme.of(context).textTheme.headlineMedium,
         ),
         Text(
-          '@${userData['username'] ?? 'unbekannt'}',
+          '@${widget.userData['username'] ?? 'unbekannt'}',
           style: Theme.of(
             context,
           ).textTheme.bodySmall?.copyWith(color: Colors.grey),
@@ -35,7 +239,7 @@ class ProfileHeader extends StatelessWidget {
             IconButton(
               icon: const Icon(Icons.edit, color: Colors.white),
               onPressed: () {
-                EditProfileDialog.show(context, uid, userData);
+                EditProfileDialog.show(context, widget.uid, widget.userData);
               },
             ),
             IconButton(

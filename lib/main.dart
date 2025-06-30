@@ -13,13 +13,13 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform, // Firebase initialisieren
   );
-  
+
   // Streak-Status prüfen, falls User eingeloggt
   final user = FirebaseAuth.instance.currentUser;
   if (user != null) {
     await DatabaseService(uid: user.uid).checkStreakStatus();
   }
-  
+
   runApp(streax());
 }
 
@@ -44,7 +44,7 @@ class streax extends StatelessWidget {
               fontWeight: FontWeight.bold,
             ),
             headlineSmall: TextStyle(color: Colors.white, fontSize: 28),
-            bodyMedium: TextStyle(color: Colors.white, fontSize: 20), 
+            bodyMedium: TextStyle(color: Colors.white, fontSize: 20),
             bodySmall: TextStyle(color: Colors.white, fontSize: 16),
           ),
           colorScheme: ColorScheme(
