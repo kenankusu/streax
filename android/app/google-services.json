@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1418608495",
+    "project_id": "streax-38c3c",
+    "storage_bucket": "streax-38c3c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1418608495:android:c0b62209919c175c69729a",
+        "android_client_info": {
+          "package_name": "com.streax.flutter_application_1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB-_YD1ldlwKVkBIWi28Wd0xatECHs-23U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

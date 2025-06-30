@@ -31,12 +31,12 @@ class Fortschrittsbalken extends StatelessWidget {
                 borderRadius: BorderRadius.circular(100), //Rundung des Balkens
                 valueColor: AlwaysStoppedAnimation<Color>(
                   fortschritt == 1.0 //if else um die Farbe des Fortschrittsbalkens zu bestimmen
-                      ? Colors.green
+                      ? const Color.fromARGB(255, 133, 209, 40)
                       : fortschritt > 0.6
-                          ? const Color.fromRGBO(33, 150, 243, 1)
+                          ? const Color.fromARGB(255, 66, 181, 212)
                           : fortschritt >= 0.3
-                              ? Colors.yellow
-                              : Colors.red,
+                              ? const Color.fromARGB(255, 220, 177, 33)
+                              : const Color.fromARGB(255, 221, 91, 52),
                 ),
                 minHeight: 40, //Höhe des Fortschrittsbalkens
               ),
@@ -51,7 +51,7 @@ class Fortschrittsbalken extends StatelessWidget {
         Center( //Zentrierung vom Text
           child: Text(
               label,
-              style: Theme.of(context).textTheme.headlineSmall,
+              style: Theme.of(context).textTheme.bodySmall
             ),
         ),
         SizedBox(height: 30), // Padding unter dem Widget
