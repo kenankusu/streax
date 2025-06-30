@@ -16,13 +16,13 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  
+
   // Streak-Status prüfen, falls User eingeloggt
   final user = FirebaseAuth.instance.currentUser;
   if (user != null) {
     await DatabaseService(uid: user.uid).checkStreakStatus();
   }
-  
+
   runApp(streax());
 }
 

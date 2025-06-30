@@ -58,6 +58,7 @@ class _ProfilState extends State<Profil> {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: Theme.of(context).colorScheme.surface,
         title: const Text('Profil', style: TextStyle(color: Colors.white)),
         iconTheme: const IconThemeData(color: Colors.white),
@@ -83,7 +84,7 @@ class _ProfilState extends State<Profil> {
 
                 var userData = snapshot.data!.data() as Map<String, dynamic>;
 
-                return Padding(
+                return SingleChildScrollView(
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -101,11 +102,16 @@ class _ProfilState extends State<Profil> {
                       // Profil Info (Streak, Gewicht, Größe, etc.)
                       ProfileInfo(userData: userData),
 
-                      const Spacer(),
+                      const SizedBox(height: 32),
 
-                      // Linie unten
-                      Divider(color: Colors.grey),
+                      // Linie oben
+                      const Divider(color: Colors.grey),
+
+                      // Bottom Actions
                       _buildBottomActions(context, user.uid),
+
+                      // Extra Abstand für die Navigation Bar
+                      const SizedBox(height: 20),
                     ],
                   ),
                 );

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:streax/Services/database.dart';
+import '../../utils/snackbar.dart';
 
 // Profil bearbeiten
 
@@ -130,17 +131,17 @@ class EditProfileDialog {
   ) async {
     // Validierung
     if (firstNameController.text.trim().isEmpty) {
-      _showSnackBar(context, 'Vorname darf nicht leer sein');
+      SnackBarUtils.showError(context, 'Vorname darf nicht leer sein');
       return false;
     }
 
     if (lastNameController.text.trim().isEmpty) {
-      _showSnackBar(context, 'Nachname darf nicht leer sein');
+      SnackBarUtils.showError(context, 'Nachname darf nicht leer sein');
       return false;
     }
 
     if (usernameController.text.trim().isEmpty) {
-      _showSnackBar(context, 'Username darf nicht leer sein');
+      SnackBarUtils.showError(context, 'Username darf nicht leer sein');
       return false;
     }
 
@@ -149,7 +150,10 @@ class EditProfileDialog {
     if (weightController.text.isNotEmpty) {
       weight = double.tryParse(weightController.text);
       if (weight == null || weight <= 0 || weight > 500) {
-        _showSnackBar(context, 'Bitte gültiges Gewicht eingeben (1-500 kg)');
+        SnackBarUtils.showError(
+          context,
+          'Bitte gültiges Gewicht eingeben (1-500 kg)',
+        );
         return false;
       }
     }
@@ -159,7 +163,10 @@ class EditProfileDialog {
     if (heightController.text.isNotEmpty) {
       height = int.tryParse(heightController.text);
       if (height == null || height <= 0 || height > 300) {
-        _showSnackBar(context, 'Bitte gültige Größe eingeben (1-300 cm)');
+        SnackBarUtils.showError(
+          context,
+          'Bitte gültige Größe eingeben (1-300 cm)',
+        );
         return false;
       }
     }
@@ -174,17 +181,11 @@ class EditProfileDialog {
         gender: selectedGender != 'Nicht angegeben' ? selectedGender : null,
       );
 
-      _showSnackBar(context, 'Profil erfolgreich aktualisiert!');
+      SnackBarUtils.showSuccess(context, 'Profil erfolgreich aktualisiert!');
       return true;
     } catch (e) {
-      _showSnackBar(context, 'Fehler beim Speichern: $e');
+      SnackBarUtils.showError(context, 'Fehler beim Speichern: $e');
       return false;
     }
-  }
-
-  static void _showSnackBar(BuildContext context, String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
   }
 }

@@ -122,7 +122,7 @@ class _RegisterState extends State<Register> {
                                               borderSide: BorderSide.none,
                                             ),
                                           ),
-                                          validator: (val) => val!.length < 6 ? 'Passwort muss mindestens 6 Zeichen lang sein' : null,
+                                          validator: (val) => val!.length < 6 ? 'Passwort muss mindestens 10 Zeichen lang sein' : null,
                                           onChanged: (val) {
                                             setState(() => password = val);
                                           },

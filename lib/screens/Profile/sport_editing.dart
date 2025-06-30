@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:streax/Services/database.dart';
+import '../../utils/snackbar.dart';
 
 // Sportart auswählen
 
@@ -99,15 +100,12 @@ class SportSelectionDialog {
                     uid: uid,
                   ).updateUserSports(selectedSports);
                   Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Sportarten erfolgreich gespeichert!'),
-                    ),
+                  SnackBarUtils.showSuccess(
+                    context,
+                    'Sportarten erfolgreich gespeichert!',
                   );
                 } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Fehler beim Speichern: $e')),
-                  );
+                  SnackBarUtils.showError(context, 'Fehler beim Speichern: $e');
                 }
               },
               child: Text(
@@ -121,7 +119,6 @@ class SportSelectionDialog {
     );
   }
 }
-
 
 // Sport icons widget
 
@@ -266,12 +263,7 @@ class SportIcon extends StatelessWidget {
 
         await DatabaseService(uid: user.uid).updateUserSports(currentSports);
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('$sportName wurde entfernt'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        SnackBarUtils.showSuccess(context, '$sportName wurde entfernt');
       }
     }
   }
