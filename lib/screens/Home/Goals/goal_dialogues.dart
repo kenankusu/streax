@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../../../Services/database.dart';
 import 'goal_data.dart';
 
 class GoalDialogs {
   // Ziel hinzufügen Dialog
   static void showAddGoalDialog(
     BuildContext context,
-    Function(Map<String, String>) onGoalAdded,
+    Function() onGoalAdded, // Nur Callback ohne Parameter
   ) {
     String? selectedArt;
     String name = '';
@@ -64,11 +66,11 @@ class GoalDialogs {
             ),
           ),
           actions: [
-            _buildActions(context, () {
+            _buildActions(context, () async {
               if (_validate(context, selectedArt, name, eventDatum)) {
-                String goalName = _createGoalName(selectedArt!, name, gewichtWert, trainingsWert, schritteWert, eventDatum);
-                onGoalAdded({'art':? selectedArt, 'name': goalName});
+                await _saveGoal(context, selectedArt!, name, gewichtWert, trainingsWert, schritteWert, eventDatum);
                 Navigator.pop(context);
+                onGoalAdded(); // Callback aufrufen
               }
             }),
           ],
@@ -80,25 +82,18 @@ class GoalDialogs {
   // Ziel bearbeiten Dialog
   static void showEditGoalDialog(
     BuildContext context,
-    int index,
-    Map<String, String> goal,
-    Function(Map<String, String>) onGoalUpdated,
+    String goalId,
+    Map<String, dynamic> goalData,
+    Function() onGoalUpdated,
   ) {
-    String selectedArt = goal['art']!;
-    String name = '';
-    double gewichtWert = 70.0;
-    double trainingsWert = 3.0;
-    double schritteWert = 10000.0;
-    DateTime eventDatum = DateTime.now().add(Duration(days: 30));
-
-    // Werte aus bestehendem Ziel extrahieren
-    _extractValues(goal, selectedArt, (n, g, t, s, e) {
-      name = n;
-      gewichtWert = g;
-      trainingsWert = t;
-      schritteWert = s;
-      eventDatum = e;
-    });
+    String selectedArt = goalData['type'];
+    String name = goalData['name'] ?? '';
+    double gewichtWert = goalData['targetWeight']?.toDouble() ?? 70.0;
+    double trainingsWert = goalData['targetTrainings']?.toDouble() ?? 3.0;
+    double schritteWert = goalData['targetSteps']?.toDouble() ?? 10000.0;
+    DateTime eventDatum = goalData['eventDate'] != null 
+        ? DateTime.parse(goalData['eventDate']) 
+        : DateTime.now().add(Duration(days: 30));
 
     showDialog(
       context: context,
@@ -147,17 +142,163 @@ class GoalDialogs {
             ),
           ),
           actions: [
-            _buildActions(context, () {
+            _buildActions(context, () async {
               if (_validate(context, selectedArt, name, eventDatum)) {
-                String goalName = _createGoalName(selectedArt, name, gewichtWert, trainingsWert, schritteWert, eventDatum);
-                onGoalUpdated({'art': selectedArt, 'name': goalName});
+                await _updateGoal(context, goalId, selectedArt, name, gewichtWert, trainingsWert, schritteWert, eventDatum);
                 Navigator.pop(context);
+                onGoalUpdated();
               }
             }),
           ],
         ),
       ),
     );
+  }
+
+  // Ziel löschen Dialog hinzufügen
+  static void showDeleteGoalDialog(
+    BuildContext context,
+    String goalId,
+    String goalName,
+    Function() onGoalDeleted,
+  ) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
+        title: Text(
+          'Ziel löschen',
+          style: TextStyle(color: Colors.white),
+        ),
+        content: Text(
+          'Möchtest du "$goalName" wirklich löschen?',
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Abbrechen', style: TextStyle(color: Colors.grey)),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await _deleteGoal(context, goalId, onGoalDeleted);
+            },
+            child: Text('Löschen', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Ziel in Firebase speichern
+  static Future<void> _saveGoal(BuildContext context, String type, String name, 
+      double weight, double trainings, double steps, DateTime eventDate) async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+
+      Map<String, dynamic> goalData = {
+        'type': type,
+        'name': name,
+      };
+
+      // Typ-spezifische Daten hinzufügen
+      switch (type) {
+        case 'Event':
+          goalData['eventDate'] = eventDate.toIso8601String();
+          break;
+        case 'Gewicht':
+          goalData['targetWeight'] = weight;
+          break;
+        case 'Training':
+          goalData['targetTrainings'] = trainings;
+          break;
+        case 'Schritte':
+          goalData['targetSteps'] = steps;
+          break;
+      }
+
+      await DatabaseService(uid: user.uid).addGoal(goalData);
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Ziel erfolgreich erstellt!'), backgroundColor: Colors.green),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Fehler beim Speichern: $e'), backgroundColor: Colors.red),
+      );
+    }
+  }
+
+  // Ziel in Firebase aktualisieren
+  static Future<void> _updateGoal(BuildContext context, String goalId, String type, 
+      String name, double weight, double trainings, double steps, DateTime eventDate) async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+
+      Map<String, dynamic> goalData = {
+        'type': type,
+        'name': name,
+      };
+
+      // Typ-spezifische Daten hinzufügen
+      switch (type) {
+        case 'Event':
+          goalData['eventDate'] = eventDate.toIso8601String();
+          break;
+        case 'Gewicht':
+          goalData['targetWeight'] = weight;
+          break;
+        case 'Training':
+          goalData['targetTrainings'] = trainings;
+          break;
+        case 'Schritte':
+          goalData['targetSteps'] = steps;
+          break;
+      }
+
+      await DatabaseService(uid: user.uid).updateGoal(goalId, goalData);
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Ziel erfolgreich aktualisiert!'), backgroundColor: Colors.green),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Fehler beim Aktualisieren: $e'), backgroundColor: Colors.red),
+      );
+    }
+  }
+
+  // Ziel löschen
+  static Future<void> _deleteGoal(
+    BuildContext context,
+    String goalId,
+    Function() onGoalDeleted,
+  ) async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+
+      await DatabaseService(uid: user.uid).deleteGoal(goalId);
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Ziel erfolgreich gelöscht!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      
+      onGoalDeleted();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Fehler beim Löschen: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   // UI Komponenten

@@ -219,7 +219,16 @@ class DatabaseService {
         await doc.reference.delete();
       }
 
-      // 2. User-Dokument löschen
+      // 2. Alle Goals des Users löschen
+      final goalsQuery = await userCollection
+          .doc(uid)
+          .collection('goals')
+          .get();
+      for (var doc in goalsQuery.docs) {
+        await doc.reference.delete();
+      }
+
+      // 3. User-Dokument löschen
       await userCollection.doc(uid).delete();
 
       print('Alle User-Daten erfolgreich gelöscht');
@@ -275,5 +284,108 @@ class DatabaseService {
     } catch (e) {
       return false;
     }
+  }
+  // Goals Collection Reference
+  CollectionReference get goalsCollection {
+    return userCollection.doc(uid).collection('goals');
+  }
+
+  // Ziel hinzufügen
+  Future<void> addGoal(Map<String, dynamic> goalData) async {
+    try {
+      // Aktuelle Anzahl von Zielen holen für ordering
+      final existingGoals = await goalsCollection.get();
+      final orderIndex = existingGoals.docs.length;
+      
+      await goalsCollection.add({
+        ...goalData,
+        'orderIndex': orderIndex,
+        'createdAt': FieldValue.serverTimestamp(),
+        'userId': uid,
+      });
+    } catch (e) {
+      print('Fehler beim Hinzufügen des Ziels: $e');
+      throw e;
+    }
+  }
+
+  // Ziel aktualisieren
+  Future<void> updateGoal(String goalId, Map<String, dynamic> goalData) async {
+    try {
+      await goalsCollection.doc(goalId).update({
+        ...goalData,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      print('Fehler beim Aktualisieren des Ziels: $e');
+      throw e;
+    }
+  }
+
+  // Ziel löschen (OPTIMIERT)
+  Future<void> deleteGoal(String goalId) async {
+    try {
+      // Hole alle Ziele in der richtigen Reihenfolge
+      final goals = await goalsCollection.orderBy('orderIndex').get();
+      
+      // Finde das zu löschende Ziel
+      int deletedIndex = -1;
+      for (int i = 0; i < goals.docs.length; i++) {
+        if (goals.docs[i].id == goalId) {
+          deletedIndex = i;
+          break;
+        }
+      }
+      
+      if (deletedIndex == -1) {
+        throw Exception('Ziel nicht gefunden');
+      }
+      
+      // EINE einzige Batch-Operation für Löschen + Neu-Sortieren
+      final batch = FirebaseFirestore.instance.batch();
+      
+      // 1. Ziel löschen
+      batch.delete(goalsCollection.doc(goalId));
+      
+      // 2. Alle nachfolgenden Ziele neu nummerieren (in derselben Batch)
+      for (int i = deletedIndex + 1; i < goals.docs.length; i++) {
+        batch.update(goals.docs[i].reference, {
+          'orderIndex': i - 1, // Index um 1 reduzieren
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+      }
+      
+      // Nur EIN batch.commit() statt zwei
+      await batch.commit();
+      
+    } catch (e) {
+      print('Fehler beim Löschen des Ziels: $e');
+      throw e;
+    }
+  }
+
+  // Ziele neu sortieren (für Drag & Drop) - OPTIMIERT
+  Future<void> reorderGoals(List<String> goalIds) async {
+    try {
+      final batch = FirebaseFirestore.instance.batch();
+      
+      for (int i = 0; i < goalIds.length; i++) {
+        final goalRef = goalsCollection.doc(goalIds[i]);
+        batch.update(goalRef, {
+          'orderIndex': i,
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+      }
+      
+      await batch.commit();
+    } catch (e) {
+      print('Fehler beim Neu-Sortieren der Ziele: $e');
+      throw e;
+    }
+  }
+
+  // Alle Ziele des Users streamen
+  Stream<QuerySnapshot> get userGoals {
+    return goalsCollection.orderBy('orderIndex', descending: false).snapshots();
   }
 }
