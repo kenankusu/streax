@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'progressbar.dart';
+import 'package:streax/screens/Home/Goals/goals.dart'; 
 import 'head.dart';
 import 'journal.dart';
 import '../Shared/navigationbar.dart';
@@ -81,19 +81,33 @@ class startseite extends StatelessWidget {
 
                     SizedBox(height: 20),
 
-                    //Überschrift für Fortschritt-Bereich
+                    //Überschrift für Ziele-Bereich - JETZT KLICKBAR
                     Padding(
                       padding: const EdgeInsets.only(bottom: 40),
-                      child: Text(
-                        "Deine Ziele",
-                        style: Theme.of(context).textTheme.headlineMedium,
+                      child: GestureDetector(
+                        onTap: () {
+                          // Ziele-Popup öffnen
+                          showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            backgroundColor: Colors.transparent,
+                            builder: (context) => ZielePopup(),
+                          );
+                        },
+                        child: Row(
+                          children: [
+                            Text(
+                              "Deine Ziele",
+                              style: Theme.of(context).textTheme.headlineMedium,
+                            ),
+                            SizedBox(width: 2),
+                            Icon(Icons.chevron_right, color: Colors.white, size: 32), // Pfeil-Icon hinzugefügt
+                          ],
+                        ),
                       ),
                     ),
 
-                    //Fortschrittsbalken
-                    Fortschrittsbalken(label: 'streax programmieren', fortschritt: 0.7),
-                    Fortschrittsbalken(label: '80kg bis Oktober', fortschritt: 0.2),
-                    Fortschrittsbalken(label: '10km laufen', fortschritt: 1),
+                    //Fortschrittssektion - kann später entfernt werden
                   ],
                 ),
               ),

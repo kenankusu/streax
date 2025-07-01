@@ -23,7 +23,6 @@ class _KopfzeileState extends State<Kopfzeile> with SingleTickerProviderStateMix
   bool _milestoneActive = false;
   double _lastKnownProgress = -1.0; // Tracking für Änderungen
   
-  // Zitat-State hinzufügen
   String? quote;
 
   @override

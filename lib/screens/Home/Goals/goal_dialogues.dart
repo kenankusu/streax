@@ -1,0 +1,434 @@
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'goal_data.dart';
+
+class GoalDialogs {
+  // Ziel hinzufügen Dialog
+  static void showAddGoalDialog(
+    BuildContext context,
+    Function(Map<String, String>) onGoalAdded,
+  ) {
+    String? selectedArt;
+    String name = '';
+    double gewichtWert = 70.0;
+    double trainingsWert = 3.0;
+    double schritteWert = 10000.0;
+    DateTime eventDatum = DateTime.now().add(Duration(days: 30));
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Center(
+            child: Text(
+              'Ziel hinzufügen',
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Dropdown für Zieltyp
+                _buildDropdown(context, selectedArt, (value) {
+                  setState(() => selectedArt = value);
+                }),
+                SizedBox(height: 20),
+                
+                // Felder basierend auf Zieltyp
+                if (selectedArt == 'Event') ...[
+                  _buildTextField(context, 'Name des Events', name, (value) => name = value),
+                  SizedBox(height: 20),
+                  _buildDatePicker(context, eventDatum, (date) {
+                    setState(() => eventDatum = date);
+                  }),
+                ] else if (selectedArt == 'Gewicht') ...[
+                  _buildSlider(context, 'Zielgewicht: ${gewichtWert.toInt()} kg', 
+                    gewichtWert, 40.0, 150.0, 110, (value) {
+                    setState(() => gewichtWert = value);
+                  }),
+                ] else if (selectedArt == 'Training') ...[
+                  _buildSlider(context, 'Trainingseinheiten: ${trainingsWert.toInt()}x pro Woche', 
+                    trainingsWert, 1.0, 7.0, 6, (value) {
+                    setState(() => trainingsWert = value);
+                  }),
+                ] else if (selectedArt == 'Schritte') ...[
+                  _buildSlider(context, 'Tägliches Schrittziel: ${_formatNumber(schritteWert.toInt())} Schritte', 
+                    schritteWert, 3000.0, 30000.0, 27, (value) {
+                    setState(() => schritteWert = value);
+                  }),
+                ],
+              ],
+            ),
+          ),
+          actions: [
+            _buildActions(context, () {
+              if (_validate(context, selectedArt, name, eventDatum)) {
+                String goalName = _createGoalName(selectedArt!, name, gewichtWert, trainingsWert, schritteWert, eventDatum);
+                onGoalAdded({'art':? selectedArt, 'name': goalName});
+                Navigator.pop(context);
+              }
+            }),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Ziel bearbeiten Dialog
+  static void showEditGoalDialog(
+    BuildContext context,
+    int index,
+    Map<String, String> goal,
+    Function(Map<String, String>) onGoalUpdated,
+  ) {
+    String selectedArt = goal['art']!;
+    String name = '';
+    double gewichtWert = 70.0;
+    double trainingsWert = 3.0;
+    double schritteWert = 10000.0;
+    DateTime eventDatum = DateTime.now().add(Duration(days: 30));
+
+    // Werte aus bestehendem Ziel extrahieren
+    _extractValues(goal, selectedArt, (n, g, t, s, e) {
+      name = n;
+      gewichtWert = g;
+      trainingsWert = t;
+      schritteWert = s;
+      eventDatum = e;
+    });
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Center(
+            child: Text(
+              'Ziel bearbeiten',
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Gesperrter Zieltyp
+                _buildLockedType(context, selectedArt),
+                SizedBox(height: 20),
+                
+                // Felder basierend auf Zieltyp
+                if (selectedArt == 'Event') ...[
+                  _buildTextField(context, 'Name des Events', name, (value) => name = value),
+                  SizedBox(height: 20),
+                  _buildDatePicker(context, eventDatum, (date) {
+                    setState(() => eventDatum = date);
+                  }),
+                ] else if (selectedArt == 'Gewicht') ...[
+                  _buildSlider(context, 'Zielgewicht: ${gewichtWert.toInt()} kg', 
+                    gewichtWert, 40.0, 150.0, 110, (value) {
+                    setState(() => gewichtWert = value);
+                  }),
+                ] else if (selectedArt == 'Training') ...[
+                  _buildSlider(context, 'Trainingseinheiten: ${trainingsWert.toInt()}x pro Woche', 
+                    trainingsWert, 1.0, 7.0, 6, (value) {
+                    setState(() => trainingsWert = value);
+                  }),
+                ] else if (selectedArt == 'Schritte') ...[
+                  _buildSlider(context, 'Tägliches Schrittziel: ${_formatNumber(schritteWert.toInt())} Schritte', 
+                    schritteWert, 3000.0, 30000.0, 27, (value) {
+                    setState(() => schritteWert = value);
+                  }),
+                ],
+              ],
+            ),
+          ),
+          actions: [
+            _buildActions(context, () {
+              if (_validate(context, selectedArt, name, eventDatum)) {
+                String goalName = _createGoalName(selectedArt, name, gewichtWert, trainingsWert, schritteWert, eventDatum);
+                onGoalUpdated({'art': selectedArt, 'name': goalName});
+                Navigator.pop(context);
+              }
+            }),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // UI Components
+  static Widget _buildDropdown(BuildContext context, String? selectedArt, Function(String?) onChanged) {
+    return Container(
+      width: 280,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white, width: 1.5),
+      ),
+      child: DropdownButtonFormField<String>(
+        value: selectedArt,
+        decoration: InputDecoration(
+          labelText: 'Art des Ziels',
+          labelStyle: TextStyle(color: Colors.white70),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(20),
+            borderSide: BorderSide.none,
+          ),
+          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        ),
+        dropdownColor: Theme.of(context).colorScheme.surfaceContainer,
+        style: TextStyle(color: Colors.white),
+        iconEnabledColor: Colors.white,
+        items: goalTypes.map((type) => DropdownMenuItem(
+          value: type,
+          child: Text(type, style: TextStyle(color: Colors.white)),
+        )).toList(),
+        onChanged: onChanged,
+      ),
+    );
+  }
+
+  static Widget _buildTextField(BuildContext context, String label, String value, Function(String) onChanged) {
+    return SizedBox(
+      width: 280,
+      child: TextField(
+        controller: TextEditingController(text: value),
+        onChanged: onChanged,
+        style: TextStyle(color: Colors.white),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: TextStyle(color: Colors.white70),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(20),
+            borderSide: BorderSide(color: Colors.white30),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(20),
+            borderSide: BorderSide(color: Colors.white30),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(20),
+            borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2),
+          ),
+          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        ),
+      ),
+    );
+  }
+
+  static Widget _buildDatePicker(BuildContext context, DateTime date, Function(DateTime) onChanged) {
+    return Container(
+      width: 280,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white, width: 1.5),
+      ),
+      child: TextButton(
+        onPressed: () async {
+          final DateTime? picked = await showDatePicker(
+            context: context,
+            initialDate: date,
+            firstDate: DateTime.now(),
+            lastDate: DateTime(2030),
+            builder: (context, child) => Theme(
+              data: Theme.of(context).copyWith(
+                colorScheme: Theme.of(context).colorScheme.copyWith(
+                  primary: Theme.of(context).colorScheme.primary,
+                  surface: Theme.of(context).colorScheme.surfaceContainer,
+                  onSurface: Colors.white,
+                ),
+                dialogTheme: DialogThemeData(
+                  backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
+                ),
+              ),
+              child: child!,
+            ),
+          );
+          if (picked != null) onChanged(picked);
+        },
+        style: TextButton.styleFrom(
+          padding: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              DateFormat('dd.MM.yyyy').format(date),
+              style: TextStyle(color: Colors.white, fontSize: 16),
+            ),
+            Icon(Icons.calendar_today, color: Colors.white70, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  static Widget _buildSlider(BuildContext context, String label, double value, 
+      double min, double max, int divisions, Function(double) onChanged) {
+    return Column(
+      children: [
+        Text(label, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        SizedBox(height: 10),
+        SliderTheme(
+          data: SliderTheme.of(context).copyWith(
+            activeTrackColor: Theme.of(context).colorScheme.primary,
+            inactiveTrackColor: Colors.white.withOpacity(0.3),
+            thumbColor: Colors.white,
+            overlayColor: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+            thumbShape: RoundSliderThumbShape(enabledThumbRadius: 12),
+            trackHeight: 4,
+            valueIndicatorColor: Theme.of(context).colorScheme.primary,
+            valueIndicatorTextStyle: TextStyle(color: Colors.white),
+          ),
+          child: Slider(
+            value: value,
+            min: min,
+            max: max,
+            divisions: divisions,
+            onChanged: onChanged,
+            label: value.round().toString(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  static Widget _buildLockedType(BuildContext context, String type) {
+    return Container(
+      width: 280,
+      padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white30, width: 1.5),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.lock_outline, color: Colors.white30, size: 20),
+          SizedBox(width: 8),
+          Text(type, style: TextStyle(color: Colors.white70, fontSize: 16)),
+        ],
+      ),
+    );
+  }
+
+  static Widget _buildActions(BuildContext context, VoidCallback onSave) {
+    return SizedBox(
+      width: 280,
+      child: Row(
+        children: [
+          Expanded(
+            child: TextButton(
+              onPressed: () => Navigator.pop(context),
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                side: BorderSide(color: Colors.white30),
+              ),
+              child: Text('Abbrechen', style: TextStyle(color: Colors.white)),
+            ),
+          ),
+          SizedBox(width: 12),
+          Expanded(
+            child: ElevatedButton(
+              onPressed: onSave,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                padding: EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              ),
+              child: Text('Speichern', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Helper Functions
+  static void _extractValues(Map<String, String> goal, String type, 
+      Function(String, double, double, double, DateTime) callback) {
+    String name = '';
+    double gewicht = 70.0;
+    double training = 3.0;
+    double schritte = 10000.0;
+    DateTime datum = DateTime.now().add(Duration(days: 30));
+
+    String goalName = goal['name']!;
+    
+    switch (type) {
+      case 'Event':
+        if (goalName.contains('(')) {
+          name = goalName.split(' (')[0].trim();
+          try {
+            String dateStr = goalName.split('(')[1].split(')')[0];
+            datum = DateFormat('dd/MM/yyyy').parse(dateStr);
+          } catch (e) {}
+        }
+        break;
+      case 'Gewicht':
+        RegExp regExp = RegExp(r'(\d+)\s*kg');
+        var match = regExp.firstMatch(goalName);
+        if (match != null) gewicht = double.tryParse(match.group(1)!) ?? 70.0;
+        break;
+      case 'Training':
+        RegExp regExp = RegExp(r'(\d+)x');
+        var match = regExp.firstMatch(goalName);
+        if (match != null) training = double.tryParse(match.group(1)!) ?? 3.0;
+        break;
+      case 'Schritte':
+        RegExp regExp = RegExp(r'([\d.]+)\s*Schritte');
+        var match = regExp.firstMatch(goalName);
+        if (match != null) {
+          String numberStr = match.group(1)!.replaceAll('.', '');
+          schritte = double.tryParse(numberStr) ?? 10000.0;
+        }
+        break;
+    }
+    
+    callback(name, gewicht, training, schritte, datum);
+  }
+
+  static bool _validate(BuildContext context, String? type, String name, DateTime date) {
+    if (type == null) return false;
+    
+    if (type == 'Event') {
+      if (name.isEmpty) {
+        _showError(context, 'Bitte geben Sie einen Event-Namen ein.');
+        return false;
+      }
+      if (date.isBefore(DateTime.now().subtract(Duration(days: 1)))) {
+        _showError(context, 'Das Event-Datum muss heute oder in der Zukunft liegen.');
+        return false;
+      }
+    }
+    return true;
+  }
+
+  static void _showError(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
+    );
+  }
+
+  static String _createGoalName(String type, String name, double gewicht, 
+      double training, double schritte, DateTime datum) {
+    switch (type) {
+      case 'Gewicht': return 'Zielgewicht ${gewicht.toInt()} kg';
+      case 'Training': return '${training.toInt()}x Training pro Woche';
+      case 'Schritte': return '${_formatNumber(schritte.toInt())} Schritte täglich';
+      case 'Event': return '$name (${DateFormat('dd/MM/yyyy').format(datum)})';
+      default: return '';
+    }
+  }
+
+  static String _formatNumber(int number) {
+    return number.toString().replaceAllMapped(
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), 
+      (match) => '${match[1]}.',
+    );
+  }
+}

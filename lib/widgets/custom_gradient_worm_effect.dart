@@ -25,6 +25,7 @@ class CustomGradientWormEffect extends IndicatorEffect {
   });
 
   //
+  @override
   Size calculateSize(int count) {
     return Size(
       (dotWidth + spacing) * count - spacing,
@@ -61,6 +62,7 @@ class CustomGradientWormEffect extends IndicatorEffect {
 }
 
 class _GradientWormPainter extends IndicatorPainter {
+  @override
   final double offset;
   final int count;
   final CustomGradientWormEffect effect;

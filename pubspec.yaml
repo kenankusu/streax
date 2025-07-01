@@ -45,6 +45,9 @@ dependencies:
   syncfusion_flutter_calendar: 30.1.37
   syncfusion_flutter_core: 30.1.37
   image_picker: ^1.1.2
+  intl: 0.20.2
+  flutter_localizations:
+    sdk: flutter
 
 dev_dependencies:
   flutter_test:
@@ -114,7 +117,7 @@ flutter:
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
 
-# Flutter Launcher Icons Konfiguration
+  # Flutter Launcher Icons Konfiguration
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
@@ -130,3 +133,5 @@ flutter_launcher_icons:
   image_path: "assets/images/app-icon.png"
   min_sdk_android: 21
   remove_alpha_ios: true
+
+  generate: true

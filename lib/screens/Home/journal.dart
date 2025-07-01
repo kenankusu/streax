@@ -50,7 +50,7 @@ class Journal extends StatelessWidget {
 
             Color borderColor = hasEntry
                 ? Theme.of(context).colorScheme.primary
-                : const Color.fromARGB(255, 75, 73, 73);
+                : Theme.of(context).colorScheme.surfaceContainer; 
 
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 2.0),
@@ -104,7 +104,7 @@ class Journal extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: Colors.transparent,
                         border: Border.all(
-                          color: borderColor,
+                          color: borderColor, // Nutzt jetzt surfaceContainer für leere Tage
                           width: 4,
                         ),
                         borderRadius: BorderRadius.circular(10),
