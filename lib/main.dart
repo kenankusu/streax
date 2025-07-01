@@ -31,7 +31,6 @@ class streax extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Wrapper übernimmt komplette App-Logik inkl. StreamProvider und MaterialApp
     return Wrapper();
   }
 }

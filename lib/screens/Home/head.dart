@@ -201,7 +201,7 @@ class _KopfzeileState extends State<Kopfzeile> with SingleTickerProviderStateMix
   }
 
   Widget streakAnzeige(int streak) {
-    final List<int> ziele = [3, 7, 14, 30, 60, 100, 365, 500, 1000]; // zunächst werden nur Streax bis 1000 behandelt (Was danach passiert schauen wir wenn es einer erreicht)
+    final List<int> ziele = [3, 7, 14, 30, 60, 100, 365, 500, 1000];
     int naechstesZiel;
     double rawProgress;
     
@@ -209,25 +209,17 @@ class _KopfzeileState extends State<Kopfzeile> with SingleTickerProviderStateMix
       naechstesZiel = 1000;
       rawProgress = (streak % 1000) / 1000.0;
     } else {
-      // Normaler Fall: nächstes Ziel finden
       naechstesZiel = ziele.firstWhere((ziel) => streak < ziel, orElse: () => 1000);
       rawProgress = streak / naechstesZiel;
     }
     
     if (rawProgress > 1.0) rawProgress = 1.0;
 
-    // NUR bei Änderung aktualisieren
     if (rawProgress != _lastKnownProgress) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _updateProgress(rawProgress, streak);
       });
     }
-
-    final zielText = Text(
-      '$naechstesZiel',
-      style: TextStyle(fontSize: 20, color: Colors.white),
-      textAlign: TextAlign.center,
-    );
 
     double getFontSize(int value) {
       int digits = value.toString().length;
@@ -251,8 +243,6 @@ class _KopfzeileState extends State<Kopfzeile> with SingleTickerProviderStateMix
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            zielText,
-            const SizedBox(height: 8),
             Stack(
               alignment: Alignment.center,
               children: [
@@ -260,12 +250,31 @@ class _KopfzeileState extends State<Kopfzeile> with SingleTickerProviderStateMix
                   progress: displayValue,
                   size: 120,
                 ),
-                Text(
-                  '$streak',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: getFontSize(streak),
+                // Streak-Zahl und Ziel zusammen zentriert
+                Positioned(
+                  top: 35, 
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '$streak',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: getFontSize(streak),
+                          height: 1.0,
+                        ),
+                      ),
+                      Text(
+                        '/ $naechstesZiel',
+                        style: TextStyle(
+                          color: Colors.grey[400],
+                          fontSize: 16, 
+                          fontWeight: FontWeight.normal,
+                          height: 1.0,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
