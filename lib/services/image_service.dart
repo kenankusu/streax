@@ -10,7 +10,7 @@ class ImageService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final ImagePicker _picker = ImagePicker();
 
-  // Bild aus Galerie oder Kamera auswählen
+  // Bild aus Galerie oder Kamera auswählen (nur .jpeg/.jpg oder .png möglich)
   Future<XFile?> pickImage({ImageSource source = ImageSource.gallery}) async {
     try {
       final XFile? image = await _picker.pickImage(
@@ -18,13 +18,23 @@ class ImageService {
         imageQuality: 80, // Komprimierung für bessere Performance
         maxWidth: 800,
         maxHeight: 800,
+        requestFullMetadata: false, // Metadaten werden nicht speichern
       );
+
+      // Zusätzliche Validierung des Dateiformats
+      if (image != null) {
+        final String extension = image.name.split('.').last.toLowerCase();
+        if (!_isAllowedImageFormat(extension)) {
+          throw Exception('Nur JPEG und PNG Dateien sind erlaubt');
+        }
+      }
+
       return image;
     } catch (e) {
       return null;
     }
-  }
-
+  } 
+  
   // Profilbild zu Firebase Storage hochladen
 
   Future<String?> uploadProfileImage(String uid, XFile imageFile) async {
@@ -33,6 +43,11 @@ class ImageService {
       String extension = 'jpg'; // Fallback
       if (imageFile.name.contains('.')) {
         extension = imageFile.name.split('.').last.toLowerCase();
+      }
+
+      // Prüfe ob das Dateiformat erlaubt ist (nur JPEG und PNG)
+      if (!_isAllowedImageFormat(extension)) {
+        throw Exception('Nur JPEG und PNG Dateien sind als Profilbild erlaubt');
       }
 
       // Erstelle Pfad OHNE Dateiendung (passend zu Firebase Rule)
@@ -69,7 +84,7 @@ class ImageService {
     }
   }
 
-  // Helper: Content-Type basierend auf Dateiendung
+  // Content-Type basierend auf Dateiendung
   String _getContentType(String extension) {
     switch (extension.toLowerCase()) {
       case 'jpg':
@@ -80,6 +95,12 @@ class ImageService {
       default:
         return 'image/jpeg'; // Fallback
     }
+  }
+
+  // Prüft ob das Bildformat für Profilbilder erlaubt ist
+  bool _isAllowedImageFormat(String extension) {
+    final allowedFormats = ['jpg', 'jpeg', 'png'];
+    return allowedFormats.contains(extension.toLowerCase());
   }
 
   // Profilbild-URL in Firestore speichern
