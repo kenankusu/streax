@@ -160,33 +160,47 @@ class GoalDialogs {
     );
   }
 
-  // UI Components
+  // UI Komponenten
   static Widget _buildDropdown(BuildContext context, String? selectedArt, Function(String?) onChanged) {
     return Container(
       width: 280,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white, width: 1.5),
-      ),
-      child: DropdownButtonFormField<String>(
-        value: selectedArt,
-        decoration: InputDecoration(
-          labelText: 'Art des Ziels',
-          labelStyle: TextStyle(color: Colors.white70),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(20),
-            borderSide: BorderSide.none,
-          ),
-          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        gradient: LinearGradient(
+          colors: [
+            Theme.of(context).colorScheme.primary,
+            Theme.of(context).colorScheme.secondary,
+          ],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
         ),
-        dropdownColor: Theme.of(context).colorScheme.surfaceContainer,
-        style: TextStyle(color: Colors.white),
-        iconEnabledColor: Colors.white,
-        items: goalTypes.map((type) => DropdownMenuItem(
-          value: type,
-          child: Text(type, style: TextStyle(color: Colors.white)),
-        )).toList(),
-        onChanged: onChanged,
+      ),
+      child: Container(
+        margin: EdgeInsets.all(1.5), // Border width
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(18.5),
+          color: Theme.of(context).colorScheme.surfaceContainer,
+        ),
+        child: DropdownButtonFormField<String>(
+          value: selectedArt,
+          decoration: InputDecoration(
+            labelText: 'Art des Ziels',
+            labelStyle: TextStyle(color: Colors.white),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(18.5),
+              borderSide: BorderSide.none,
+            ),
+            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          ),
+          dropdownColor: Theme.of(context).colorScheme.surfaceContainer,
+          style: TextStyle(color: Colors.white),
+          iconEnabledColor: Colors.white,
+          items: goalTypes.map((type) => DropdownMenuItem(
+            value: type,
+            child: Text(type, style: TextStyle(color: Colors.white)),
+          )).toList(),
+          onChanged: onChanged,
+        ),
       ),
     );
   }
@@ -321,26 +335,72 @@ class GoalDialogs {
       child: Row(
         children: [
           Expanded(
-            child: TextButton(
-              onPressed: () => Navigator.pop(context),
-              style: TextButton.styleFrom(
-                padding: EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                side: BorderSide(color: Colors.white30),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                gradient: LinearGradient(
+                  colors: [
+                    Theme.of(context).colorScheme.primary,
+                    Theme.of(context).colorScheme.secondary,
+                  ],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
               ),
-              child: Text('Abbrechen', style: TextStyle(color: Colors.white)),
+              child: Container(
+                margin: EdgeInsets.all(1.5), // Border width
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(18.5),
+                  color: Theme.of(context).colorScheme.surfaceContainer,
+                ),
+                child: TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18.5)
+                    ),
+                    backgroundColor: Colors.transparent,
+                  ),
+                  child: Text(
+                    'Abbrechen', 
+                    style: TextStyle(color: Colors.white)
+                  ),
+                ),
+              ),
             ),
           ),
           SizedBox(width: 12),
           Expanded(
-            child: ElevatedButton(
-              onPressed: onSave,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                padding: EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                gradient: LinearGradient(
+                  colors: [
+                    Theme.of(context).colorScheme.primary,
+                    Theme.of(context).colorScheme.secondary,
+                  ],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
               ),
-              child: Text('Speichern', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              child: TextButton(
+                onPressed: onSave,
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20)
+                  ),
+                  backgroundColor: Colors.transparent,
+                ),
+                child: Text(
+                  'Speichern', 
+                  style: TextStyle(
+                    color: Colors.white, 
+                    fontWeight: FontWeight.bold
+                  )
+                ),
+              ),
             ),
           ),
         ],
