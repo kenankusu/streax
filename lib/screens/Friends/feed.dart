@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../Shared/navigationbar.dart';
+import 'friends.dart';
 
 class Feed extends StatefulWidget {
   const Feed({super.key});
@@ -9,63 +10,51 @@ class Feed extends StatefulWidget {
 }
 
 class _FeedState extends State<Feed> {
-  final TextEditingController _searchController = TextEditingController();
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    
+
     return Scaffold(
       backgroundColor: colorScheme.surface,
       body: SafeArea(
         child: Column(
           children: [
-            // Header mit Suchleiste und Nachrichten-Icon
+            // Header mit "Freunde" Button
             Container(
               padding: const EdgeInsets.all(20),
               child: Row(
                 children: [
-                  // Suchleiste
                   Expanded(
-                    child: Container(
-                      height: 50,
-                      decoration: BoxDecoration(
-                        color: colorScheme.surfaceContainer,
-                        borderRadius: BorderRadius.circular(25),
-                        border: Border.all(
-                          color: colorScheme.outline,
-                          width: 1,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => FriendsPage(),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: colorScheme.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(25),
                         ),
+                        elevation: 3,
                       ),
-                      child: TextField(
-                        controller: _searchController,
-                        style: TextStyle(
-                          color: colorScheme.onSurface,
-                          fontSize: 16,
-                        ),
-                        decoration: InputDecoration(
-                          hintText: 'Profile finden',
-                          hintStyle: TextStyle(
-                            color: colorScheme.onSurface.withOpacity(0.6),
-                            fontSize: 16,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.group, size: 24),
+                          const SizedBox(width: 12),
+                          Text(
+                            'Freunde',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                          prefixIcon: Icon(
-                            Icons.search,
-                            color: colorScheme.onSurface.withOpacity(0.6),
-                            size: 22,
-                          ),
-                          border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 15,
-                          ),
-                        ),
+                        ],
                       ),
                     ),
                   ),

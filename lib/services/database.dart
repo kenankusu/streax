@@ -388,4 +388,251 @@ class DatabaseService {
   Stream<QuerySnapshot> get userGoals {
     return goalsCollection.orderBy('orderIndex', descending: false).snapshots();
   }
+
+// FREUNDSCHAFTS-SYSTEM 
+
+// Collection für Freundschaften
+CollectionReference get friendsCollection {
+  return userCollection.doc(uid).collection('friends');
+}
+
+CollectionReference get friendRequestsCollection {
+  return userCollection.doc(uid).collection('friendRequests');
+}
+
+// Freundschaftsanfrage senden
+Future<bool> sendFriendRequest(String targetUserId) async {
+  try {
+    final currentTime = FieldValue.serverTimestamp();
+    
+    // 1. Prüfen ob bereits Freunde oder Anfrage existiert
+    final existingFriendship = await friendsCollection.doc(targetUserId).get();
+    if (existingFriendship.exists) {
+      return false; // Bereits Freunde
+    }
+    
+    final existingRequest = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(targetUserId)
+        .collection('friendRequests')
+        .doc(uid)
+        .get();
+    
+    if (existingRequest.exists) {
+      return false; // Anfrage bereits gesendet
+    }
+    
+    // 2. Freundschaftsanfrage beim Empfänger speichern
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(targetUserId)
+        .collection('friendRequests')
+        .doc(uid)
+        .set({
+      'senderId': uid,
+      'receiverId': targetUserId,
+      'status': 'pending',
+      'sentAt': currentTime,
+    });
+    
+    // 3. Gesendete Anfrage bei sich selbst speichern (für Tracking)
+    await userCollection.doc(uid)
+        .collection('sentRequests')
+        .doc(targetUserId)
+        .set({
+      'receiverId': targetUserId,
+      'sentAt': currentTime,
+      'status': 'pending',
+    });
+    
+    return true;
+  } catch (e) {
+    print('Fehler beim Senden der Freundschaftsanfrage: $e');
+    return false;
+  }
+}
+
+// Freundschaftsanfrage akzeptieren
+Future<bool> acceptFriendRequest(String senderId) async {
+  try {
+    final currentTime = FieldValue.serverTimestamp();
+    
+    // Batch für atomare Operation
+    final batch = FirebaseFirestore.instance.batch();
+    
+    // 1. Freundschaft bei beiden Usern hinzufügen
+    final friendship1 = friendsCollection.doc(senderId);
+    batch.set(friendship1, {
+      'userId': senderId,
+      'addedAt': currentTime,
+      'status': 'accepted',
+    });
+    
+    final friendship2 = FirebaseFirestore.instance
+        .collection('users')
+        .doc(senderId)
+        .collection('friends')
+        .doc(uid);
+    batch.set(friendship2, {
+      'userId': uid,
+      'addedAt': currentTime,
+      'status': 'accepted',
+    });
+    
+    // 2. Freundschaftsanfrage beim Empfänger löschen
+    final requestToDelete = friendRequestsCollection.doc(senderId);
+    batch.delete(requestToDelete);
+    
+    // 3. Gesendete Anfrage beim Sender löschen
+    final sentRequestToDelete = FirebaseFirestore.instance
+        .collection('users')
+        .doc(senderId)
+        .collection('sentRequests')
+        .doc(uid);
+    batch.delete(sentRequestToDelete);
+    
+    // 4. Friends-Counter bei beiden erhöhen
+    final user1Update = userCollection.doc(uid);
+    batch.update(user1Update, {
+      'friends_count': FieldValue.increment(1),
+    });
+    
+    final user2Update = userCollection.doc(senderId);
+    batch.update(user2Update, {
+      'friends_count': FieldValue.increment(1),
+    });
+    
+    await batch.commit();
+    return true;
+  } catch (e) {
+    print('Fehler beim Akzeptieren der Freundschaftsanfrage: $e');
+    return false;
+  }
+}
+
+// Freundschaftsanfrage ablehnen
+Future<bool> declineFriendRequest(String senderId) async {
+  try {
+    final batch = FirebaseFirestore.instance.batch();
+    
+    // 1. Anfrage beim Empfänger löschen
+    final requestToDelete = friendRequestsCollection.doc(senderId);
+    batch.delete(requestToDelete);
+    
+    // 2. Gesendete Anfrage beim Sender löschen
+    final sentRequestToDelete = FirebaseFirestore.instance
+        .collection('users')
+        .doc(senderId)
+        .collection('sentRequests')
+        .doc(uid);
+    batch.delete(sentRequestToDelete);
+    
+    await batch.commit();
+    return true;
+  } catch (e) {
+    print('Fehler beim Ablehnen der Freundschaftsanfrage: $e');
+    return false;
+  }
+}
+
+// Freund entfernen
+Future<bool> removeFriend(String friendId) async {
+  try {
+    final batch = FirebaseFirestore.instance.batch();
+    
+    // 1. Freundschaft bei beiden Usern entfernen
+    final friendship1 = friendsCollection.doc(friendId);
+    batch.delete(friendship1);
+    
+    final friendship2 = FirebaseFirestore.instance
+        .collection('users')
+        .doc(friendId)
+        .collection('friends')
+        .doc(uid);
+    batch.delete(friendship2);
+    
+    // 2. Friends-Counter bei beiden reduzieren
+    final user1Update = userCollection.doc(uid);
+    batch.update(user1Update, {
+      'friends_count': FieldValue.increment(-1),
+    });
+    
+    final user2Update = userCollection.doc(friendId);
+    batch.update(user2Update, {
+      'friends_count': FieldValue.increment(-1),
+    });
+    
+    await batch.commit();
+    return true;
+  } catch (e) {
+    print('Fehler beim Entfernen der Freundschaft: $e');
+    return false;
+  }
+}
+
+// Freundschaftsstatus prüfen
+Future<String> getFriendshipStatus(String targetUserId) async {
+  try {
+    // 1. Prüfen ob bereits Freunde
+    final friendship = await friendsCollection.doc(targetUserId).get();
+    if (friendship.exists) {
+      return 'friends';
+    }
+    
+    // 2. Prüfen ob Anfrage gesendet wurde
+    final sentRequest = await userCollection.doc(uid)
+        .collection('sentRequests')
+        .doc(targetUserId)
+        .get();
+    if (sentRequest.exists) {
+      return 'request_sent';
+    }
+    
+    // 3. Prüfen ob Anfrage empfangen wurde
+    final receivedRequest = await friendRequestsCollection.doc(targetUserId).get();
+    if (receivedRequest.exists) {
+      return 'request_received';
+    }
+    
+    return 'none';
+  } catch (e) {
+    print('Fehler beim Prüfen des Freundschafts-Status: $e');
+    return 'none';
+  }
+}
+
+// Alle Freunde streamen
+Stream<QuerySnapshot> get userFriends {
+  return friendsCollection.orderBy('addedAt', descending: true).snapshots();
+}
+
+// Eingehende Freundschaftsanfragen streamen
+Stream<QuerySnapshot> get incomingFriendRequests {
+  return friendRequestsCollection.orderBy('sentAt', descending: true).snapshots();
+}
+
+// Gesendete Freundschaftsanfragen streamen
+Stream<QuerySnapshot> get sentFriendRequests {
+  return userCollection.doc(uid)
+      .collection('sentRequests')
+      .orderBy('sentAt', descending: true)
+      .snapshots();
+}
+
+// Freundesdaten laden (für Profil-Anzeige)
+Future<Map<String, dynamic>?> getFriendData(String friendId) async {
+  try {
+    final doc = await userCollection.doc(friendId).get();
+    if (doc.exists) {
+      return {
+        'uid': friendId,
+        ...doc.data() as Map<String, dynamic>,
+      };
+    }
+    return null;
+  } catch (e) {
+    print('Fehler beim Laden der Freundes-Daten: $e');
+    return null;
+  }
+}
 }

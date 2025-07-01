@@ -36,7 +36,7 @@ class NavigationsLeiste extends StatelessWidget {
               type: BottomNavigationBarType.fixed,
               currentIndex: currentPage,
               iconSize: 26,
-              elevation: 0, // Entfernt zusätzliche Schatten
+              elevation: 0,
               onTap: (index) {
                 switch (index) {
                   case 0:
@@ -47,7 +47,6 @@ class NavigationsLeiste extends StatelessWidget {
                     break;
                   case 1:
                     if (currentPage != 1) {
-                      // Navigation zum Feed (Freunde-Seite)
                       Navigator.of(
                         context,
                       ).push(MaterialPageRoute(builder: (context) => Feed()));
