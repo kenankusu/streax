@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:math';
 
 class DatabaseService {
   final String uid;
@@ -70,6 +71,40 @@ class DatabaseService {
     } catch (e) {
       print('Zitate laden fehlgeschlagen: $e');
       return "Fall in love with the process, and the results will come.";
+    }
+  }
+
+  // Zufälliges Zitat mit separaten Text- und Autor-Feldern
+  Future<Map<String, String>> getRandomQuoteWithAuthor() async {
+    try {
+      // Hole alle Zitate aus der "quotes" Collection
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('quotes')
+          .get();
+      
+      if (querySnapshot.docs.isNotEmpty) {
+        // Zufälliges Zitat auswählen
+        final randomIndex = Random().nextInt(querySnapshot.docs.length);
+        final randomDoc = querySnapshot.docs[randomIndex];
+        final data = randomDoc.data() as Map<String, dynamic>;
+        
+        return {
+          'text': data['text'] ?? "Fall in love with the process, and the results will come.",
+          'author': data['author'] ?? "",
+        };
+      } else {
+        // Fallback wenn keine Zitate in der Datenbank
+        return {
+          'text': "Fall in love with the process, and the results will come.",
+          'author': "",
+        };
+      }
+    } catch (e) {
+      print('Fehler beim Laden der Zitate: $e');
+      return {
+        'text': "Fall in love with the process, and the results will come.",
+        'author': "",
+      };
     }
   }
 

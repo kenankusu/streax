@@ -29,35 +29,34 @@ class startseite extends StatelessWidget {
                   children: [
                     // Begrüßung und Streak-Wert
                     Kopfzeile(streakWert: streakWert),
-                    SizedBox(height: 40), // Abstand zwischen Kopfzeile und Kalender
+                    SizedBox(height: 20), // Von 30 auf 20 reduziert
 
-                // Kalender
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 40),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.of(context).push(MaterialPageRoute(builder: (context) => kalender()));
-                        },
-                        child: Row(
-                          children: [
-                            Text(
-                              "Deine Woche",
-                              style: Theme.of(context).textTheme.headlineMedium,
+                    // Kalender
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 40),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.of(context).push(MaterialPageRoute(builder: (context) => kalender()));
+                            },
+                            child: Row(
+                              children: [
+                                Text(
+                                  "Deine Woche",
+                                  style: Theme.of(context).textTheme.headlineMedium,
+                                ),
+                                SizedBox(width: 2),
+                                Icon(Icons.chevron_right, color: Colors.white, size: 32),
+                              ],
                             ),
-                            SizedBox(width: 2),
-                            Icon(Icons.chevron_right, color: Colors.white, size: 32),
-                          ],
-                        ),
+                          ),
+                          SizedBox(height: 30),
+                          Journal(),
+                        ],
                       ),
-                      SizedBox(height: 30), // Abstand zwischen Überschrift und Kalender
-                      //tatsächliches Kalender Widget
-                      Journal(),
-                    ],
-                  ),
-                ),
+                    ),
 
 
                     // Feed
@@ -81,7 +80,6 @@ class startseite extends StatelessWidget {
 
                     SizedBox(height: 20),
 
-                    //Überschrift für Ziele-Bereich - JETZT KLICKBAR
                     Padding(
                       padding: const EdgeInsets.only(bottom: 40),
                       child: GestureDetector(

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:streax/Models/user.dart';
-import 'package:streax/Services/database.dart';
+import 'package:streax/services/database.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -21,9 +21,10 @@ class _KopfzeileState extends State<Kopfzeile> with SingleTickerProviderStateMix
   double _currentProgress = 0.0;
   double _targetProgress = 0.0;
   bool _milestoneActive = false;
-  double _lastKnownProgress = -1.0; // Tracking für Änderungen
+  double _lastKnownProgress = -1.0;
   
   String? quote;
+  String? author; 
 
   @override
   void initState() {
@@ -33,7 +34,7 @@ class _KopfzeileState extends State<Kopfzeile> with SingleTickerProviderStateMix
       duration: const Duration(milliseconds: 800),
     );
     
-    _loadQuote(); // Beim Starten Zitat laden
+    _loadQuote(); 
   }
 
   @override
@@ -46,10 +47,11 @@ class _KopfzeileState extends State<Kopfzeile> with SingleTickerProviderStateMix
   Future<void> _loadQuote() async {
     final user = Provider.of<StreaxUser?>(context, listen: false);
     if (user != null) {
-      final loadedQuote = await DatabaseService(uid: user.uid).getRandomQuote();
+      final quoteData = await DatabaseService(uid: user.uid).getRandomQuoteWithAuthor();
       if (mounted) {
         setState(() {
-          quote = loadedQuote;
+          quote = quoteData['text'];
+          author = quoteData['author'];
         });
       }
     }
@@ -116,9 +118,33 @@ class _KopfzeileState extends State<Kopfzeile> with SingleTickerProviderStateMix
   Widget Willkommen(String firstName) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Schriftstil definieren
-        final textStyle = Theme.of(context).textTheme.headlineMedium?.copyWith(
-          fontSize: 40,
+        // Dynamische Schriftgröße basierend auf Namenslänge
+        double getNameFontSize(String name) {
+          int length = name.length;
+          if (length <= 6) {
+            return 48.0; // Ursprüngliche Größe für kurze Namen
+          } else if (length <= 8) {
+            return 44.0; // Etwas kleiner
+          } else if (length <= 10) {
+            return 40.0; // Noch kleiner
+          } else if (length <= 12) {
+            return 36.0; // Deutlich kleiner
+          } else if (length <= 15) {
+            return 32.0; // Sehr klein
+          } else {
+            return 28.0; // Minimum für sehr lange Namen
+          }
+        }
+
+        // Schriftstil für "Hallo," bleibt gleich
+        final helloStyle = Theme.of(context).textTheme.headlineMedium?.copyWith(
+          fontSize: 32,
+          color: Colors.white,
+        );
+
+        // Schriftstil für Namen mit dynamischer Größe
+        final nameStyle = Theme.of(context).textTheme.headlineMedium?.copyWith(
+          fontSize: getNameFontSize(firstName), // Dynamische Größe
           fontWeight: FontWeight.bold,
           color: Colors.white,
         );
@@ -126,7 +152,7 @@ class _KopfzeileState extends State<Kopfzeile> with SingleTickerProviderStateMix
         // TextPainter zum Messen der exakten Textbreite
         final textSpan = TextSpan(
           text: firstName,
-          style: textStyle,
+          style: nameStyle,
         );
         final textPainter = TextPainter(
           text: textSpan,
@@ -139,23 +165,23 @@ class _KopfzeileState extends State<Kopfzeile> with SingleTickerProviderStateMix
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // "Hallo," in bisheriger Größe
+            // "Hallo," bleibt gleich
             Text(
               "Hallo,",
-              style: Theme.of(context).textTheme.headlineMedium,
+              style: helloStyle,
             ),
-            // Name mit exakt passenden Unterstrich
+            // Name mit dynamischer Größe und passendem Unterstrich
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   firstName,
-                  style: textStyle,
+                  style: nameStyle,
                 ),
                 // Unterstrich mit exakter Textbreite
                 Container(
                   height: 4,
-                  width: textWidth, // Exakte Breite des Textes
+                  width: textWidth, // Passt sich automatisch an die neue Textbreite an
                   margin: EdgeInsets.only(top: 2),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
@@ -250,6 +276,11 @@ class _KopfzeileState extends State<Kopfzeile> with SingleTickerProviderStateMix
     );
   }
 
+  // Hilfsmethoden
+  bool _hasAuthor() {
+    return author != null && author!.isNotEmpty;
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = Provider.of<StreaxUser?>(context)!;
@@ -263,7 +294,7 @@ class _KopfzeileState extends State<Kopfzeile> with SingleTickerProviderStateMix
         if (snapshot.hasData && snapshot.data!.exists) {
           final userData = snapshot.data!.data() as Map<String, dynamic>;
           streak = userData['streak'] ?? 0;
-          firstName = userData['firstName'] ?? 'Unbekannt'; // Nur Vorname laden
+          firstName = userData['firstName'] ?? 'Unbekannt';
         }
 
         return Column(
@@ -271,25 +302,45 @@ class _KopfzeileState extends State<Kopfzeile> with SingleTickerProviderStateMix
             SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Willkommen(firstName), 
+                Padding(
+                  padding: const EdgeInsets.only(top: 30),
+                  child: Willkommen(firstName),
+                ),
                 Padding(
                   padding: const EdgeInsets.only(top: 10, right: 20),
                   child: streakAnzeige(streak),
                 ),
               ],
             ),
-            SizedBox(height: 20),
+            SizedBox(height: 40),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 40),
-              child: Text(
-                // Falls das Zitat noch lädt, Fallback anzeigen
-                quote ?? "Fall in love with the process, and the results will come.",
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  fontStyle: FontStyle.italic,
-                  color: Colors.grey[400],
-                ),
-                textAlign: TextAlign.center,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                children: [
+                  Text(
+                    quote ?? "Fall in love with the process, and the results will come.",
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontStyle: FontStyle.italic,
+                      color: Colors.grey[400],
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  // Autor anzeigen, falls vorhanden
+                  if (_hasAuthor()) ...[
+                    SizedBox(height: 8),
+                    Text(
+                      "— $author",
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        fontStyle: FontStyle.normal,
+                        color: Colors.grey[500],
+                        fontSize: 12,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ],
               ),
             ),
           ],

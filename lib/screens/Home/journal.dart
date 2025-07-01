@@ -47,10 +47,7 @@ class Journal extends StatelessWidget {
             String dateKey = "${day.year.toString().padLeft(4, '0')}-${day.month.toString().padLeft(2, '0')}-${day.day.toString().padLeft(2, '0')}";
             final eintrag = eintraege[dateKey];
             bool hasEntry = eintrag != null && eintrag['icon'] != null && eintrag['icon'] != '';
-
-            Color borderColor = hasEntry
-                ? Theme.of(context).colorScheme.primary
-                : Theme.of(context).colorScheme.surfaceContainer; 
+            bool isToday = idx == today;
 
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 2.0),
@@ -59,9 +56,11 @@ class Journal extends StatelessWidget {
                   Text(
                     tag,
                     style: TextStyle(
-                      color: idx == today ? Theme.of(context).colorScheme.primary : Colors.white,
-                      fontSize: 16,
-                      fontWeight: idx == today ? FontWeight.bold : FontWeight.normal,
+                      color: isToday 
+                          ? Color(0xFF1C499E) // Nur blaues Ende des Gradients
+                          : Colors.white,
+                      fontSize: 16, 
+                      fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -98,28 +97,40 @@ class Journal extends StatelessWidget {
                             );
                           }
                         : null,
-                    child: Container(
-                      width: 50,
-                      height: 70,
-                      decoration: BoxDecoration(
-                        color: Colors.transparent,
-                        border: Border.all(
-                          color: borderColor, // Nutzt jetzt surfaceContainer für leere Tage
-                          width: 4,
-                        ),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Center(
-                        child: hasEntry
-                            ? Image.asset(
+                    child: hasEntry
+                        ? Container(
+                            width: 50,
+                            height: 70,
+                            decoration: BoxDecoration(
+                              color: Colors.transparent,
+                              border: Border.all(
+                                color: Color(0xFF1C499E), // Nur blaues Ende des Gradients
+                                width: 4,
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Center(
+                              child: Image.asset(
                                 eintrag['icon'],
                                 width: 36,
                                 height: 36,
                                 fit: BoxFit.contain,
-                              )
-                            : const SizedBox.shrink(),
-                      ),
-                    ),
+                              ),
+                            ),
+                          )
+                        : Container(
+                            width: 50,
+                            height: 70,
+                            decoration: BoxDecoration(
+                              color: Colors.transparent,
+                              border: Border.all(
+                                color: Theme.of(context).colorScheme.surfaceContainer,
+                                width: 4,
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Center(child: SizedBox.shrink()),
+                          ),
                   ),
                 ],
               ),
@@ -127,6 +138,47 @@ class Journal extends StatelessWidget {
           }),
         );
       },
+    );
+  }
+}
+
+class GradientBorder extends StatelessWidget {
+  final Widget child;
+  final double width;
+  final double height;
+  final double borderWidth;
+  final BorderRadius borderRadius;
+
+  const GradientBorder({
+    Key? key,
+    required this.child,
+    required this.width,
+    required this.height,
+    this.borderWidth = 4,
+    required this.borderRadius,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF1C499E), Color(0xFFB1D43A)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: borderRadius,
+      ),
+      child: Container(
+        margin: EdgeInsets.all(borderWidth),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface, // Hintergrund der App
+          borderRadius: BorderRadius.circular(borderRadius.topLeft.x - borderWidth),
+        ),
+        child: child,
+      ),
     );
   }
 }
