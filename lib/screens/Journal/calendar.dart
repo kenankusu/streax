@@ -336,7 +336,7 @@ class _KalenderState extends State<kalender> {
                                 Expanded(
                                   child: Text(
                                     "Aktivitäten dieser Monat:",
-                                    style: Theme.of(context).textTheme.bodyMedium, // bodySmall -> bodyMedium
+                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white),
                                     textAlign: TextAlign.left,
                                   ),
                                 ),
@@ -351,7 +351,7 @@ class _KalenderState extends State<kalender> {
                                 const SizedBox(width: 12), // Mehr Abstand: 8 -> 12
                                 Text(
                                   logsThisMonth.toString(),
-                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold), // bodySmall -> bodyMedium
+                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold, color: Colors.white), // bodySmall -> bodyMedium
                                   textAlign: TextAlign.right,
                                 ),
                               ],
@@ -364,7 +364,7 @@ class _KalenderState extends State<kalender> {
                                 Expanded(
                                   child: Text(
                                     "Aktivitäten vorheriger Monat:",
-                                    style: Theme.of(context).textTheme.bodyMedium, // bodySmall -> bodyMedium
+                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white),
                                     textAlign: TextAlign.left,
                                   ),
                                 ),
@@ -374,7 +374,7 @@ class _KalenderState extends State<kalender> {
                                 // Zahl des vorherigen Monats - richtig positioniert
                                 Text(
                                   logsLastMonth.toString(),
-                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold), // bodySmall -> bodyMedium
+                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold, color: Colors.white), // bodySmall -> bodyMedium
                                   textAlign: TextAlign.right,
                                 ),
                               ],

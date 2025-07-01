@@ -315,24 +315,44 @@ class GradientCircularProgress extends StatelessWidget {
   Widget build(BuildContext context) {
     return CustomPaint(
       size: Size(size, size),
-      painter: _GradientCirclePainter(progress),
+      painter: _GradientCirclePainter(
+        progress,
+        Theme.of(context).colorScheme.surfaceContainer, // << Hintergrundfarbe direkt aus dem Theme
+      ),
     );
   }
 }
 
 class _GradientCirclePainter extends CustomPainter {
-  final double progress; // 0.0 bis knapp < 1.0
+  final double progress;
+  final Color backgroundColor;
 
-  _GradientCirclePainter(this.progress);
+  _GradientCirclePainter(this.progress, this.backgroundColor);
 
   @override
   void paint(Canvas canvas, Size size) {
     final rect = Offset.zero & size;
 
+    // Hintergrund-Kreis (immer voll)
+    final backgroundPaint = Paint()
+      ..color = backgroundColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 10
+      ..strokeCap = StrokeCap.butt;
+
+    canvas.drawArc(
+      rect,
+      0,
+      2 * 3.141592653589793,
+      false,
+      backgroundPaint,
+    );
+
+    // Gradient-Arc für den Fortschritt
     final gradient = SweepGradient(
       colors: [Color(0xFF1C499E), Color(0xFFB1D43A)],
       stops: [0.0, 1.0],
-      transform: GradientRotation(-3.1415926535 / 2), 
+      transform: GradientRotation(-3.1415926535 / 2),
     );
 
     final paint = Paint()
@@ -341,11 +361,10 @@ class _GradientCirclePainter extends CustomPainter {
       ..strokeWidth = 10
       ..strokeCap = StrokeCap.butt;
 
-    // Volle Kreisumfang = 2π, wir zeichnen progress * 2π
     final sweepAngle = 2 * 3.141592653589793 * progress;
     canvas.drawArc(
       rect,
-      -3.141592653589793 / 2, 
+      -3.141592653589793 / 2,
       sweepAngle,
       false,
       paint,
@@ -354,5 +373,6 @@ class _GradientCirclePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_GradientCirclePainter oldDelegate) =>
-      oldDelegate.progress != progress;
+      oldDelegate.progress != progress ||
+      oldDelegate.backgroundColor != backgroundColor;
 }

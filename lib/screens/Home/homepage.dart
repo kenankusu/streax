@@ -106,22 +106,15 @@ class startseite extends StatelessWidget {
                         ),
                       ),
                     ),
-
-                    //Fortschrittssektion - kann später entfernt werden
                   ],
                 ),
               ),
             ),
           ),
           // Schwebende Navigation
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: NavigationsLeiste(currentPage: 0),
-          ),
         ],
       ),
+      bottomNavigationBar: NavigationsLeiste(currentPage: 0),
     );
   }
 }

@@ -225,7 +225,7 @@ class GoalDialogs {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(20),
-            borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2),
+            borderSide: BorderSide(color: Colors.white, width: 2), // Blau → Weiß
           ),
           contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         ),
