@@ -229,4 +229,51 @@ class DatabaseService {
       return false;
     }
   }
+
+  // Username zu UID umwandeln
+  Future<String?> getUserIdByUsername(String username) async {
+    try {
+      final query = await userCollection
+          .where('username', isEqualTo: username)
+          .limit(1)
+          .get();
+      
+      if (query.docs.isNotEmpty) {
+        return query.docs.first.id; // Das ist die UID
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // Prüft, ob ein Username verfügbar ist
+  Future<bool> isUsernameAvailable(String username) async {
+    if (username.isEmpty) return false;
+    
+    final query = await userCollection
+        .where('username', isEqualTo: username)
+        .limit(1)
+        .get();
+    
+    return query.docs.isEmpty; //true = verfügbar, false = nicht verfügbar
+  }
+
+  // Username aktualisieren, mit Verfügbarkeitsprüfung
+  Future<bool> updateUsername(String newUsername) async {
+    try {
+      bool available = await isUsernameAvailable(newUsername);
+      if (!available) return false;
+      
+      // Username speichern
+      await userCollection.doc(uid).update({
+        'username': newUsername,
+        'last_updated': FieldValue.serverTimestamp(),
+      });
+      
+      return true; // Username erfolgreich aktualisiert
+    } catch (e) {
+      return false;
+    }
+  }
 }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:streax/Services/database.dart';
+import 'package:streax/services/database.dart';
 import '../../utils/snackbar.dart';
 
 // Profil bearbeiten
@@ -142,6 +142,45 @@ class EditProfileDialog {
 
     if (usernameController.text.trim().isEmpty) {
       SnackBarUtils.showError(context, 'Username darf nicht leer sein');
+      return false;
+    }
+
+    // Username-Validierung mit korrektem RegExp Pattern
+    String newUsername = usernameController.text.trim();
+
+    // Prüfe ob Username mindestens 3 Zeichen lang ist
+    if (newUsername.length < 3) {
+      SnackBarUtils.showError(
+        context,
+        'Username muss mindestens 3 Zeichen haben',
+      );
+      return false;
+    }
+
+    // Prüfe ob Username Leerzeichen enthält
+    if (newUsername.contains(' ')) {
+      SnackBarUtils.showError(
+        context,
+        'Username darf keine Leerzeichen enthalten',
+      );
+      return false;
+    }
+
+    // Prüfe ob Username nur Buchstaben, Zahlen, Punkte und Unterstriche enthält
+    RegExp validUsername = RegExp(r'^[a-zA-Z0-9._]+$');
+    if (!validUsername.hasMatch(newUsername)) {
+      SnackBarUtils.showError(
+        context,
+        'Username darf nur Buchstaben, Zahlen, Punkte und Unterstriche enthalten',
+      );
+      return false;
+    }
+
+    // Username-Verfügbarkeitsprüfung
+    DatabaseService dbService = DatabaseService(uid: uid);
+    bool isAvailable = await dbService.isUsernameAvailable(newUsername);
+    if (!isAvailable) {
+      SnackBarUtils.showError(context, 'Dieser Username ist bereits vergeben');
       return false;
     }
 

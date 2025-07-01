@@ -1,7 +1,7 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
-import 'package:streax/Services/database.dart';
+import 'package:streax/services/database.dart';
 
 class WelcomePage extends StatefulWidget {
   final String uid;
@@ -19,7 +19,8 @@ class _WelcomePageState extends State<WelcomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope( // ✅ Verhindert Zurück-Navigation
+    return WillPopScope(
+      // ✅ Verhindert Zurück-Navigation
       onWillPop: () async => false,
       child: Scaffold(
         backgroundColor: Theme.of(context).colorScheme.surface,
@@ -56,17 +57,17 @@ class _WelcomePageState extends State<WelcomePage> {
                     ],
                   ),
                 ),
-                
+
                 SizedBox(height: 60),
-                
+
                 // Form
                 Text(
                   'Profil erstellen',
                   style: Theme.of(context).textTheme.headlineMedium,
                 ),
-                
+
                 SizedBox(height: 32),
-                
+
                 // Name Input
                 TextFormField(
                   controller: nameController,
@@ -95,9 +96,9 @@ class _WelcomePageState extends State<WelcomePage> {
                     ),
                   ),
                 ),
-                
+
                 SizedBox(height: 20),
-                
+
                 // Username Input
                 TextFormField(
                   controller: usernameController,
@@ -126,9 +127,9 @@ class _WelcomePageState extends State<WelcomePage> {
                     ),
                   ),
                 ),
-                
+
                 Spacer(),
-                
+
                 // Button
                 SizedBox(
                   width: double.infinity,
@@ -149,7 +150,9 @@ class _WelcomePageState extends State<WelcomePage> {
                             width: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
                             ),
                           )
                         : Text(
@@ -161,9 +164,9 @@ class _WelcomePageState extends State<WelcomePage> {
                           ),
                   ),
                 ),
-                
+
                 SizedBox(height: 20),
-                
+
                 // Hinweis
                 Center(
                   child: Text(
@@ -187,31 +190,52 @@ class _WelcomePageState extends State<WelcomePage> {
     // Validation
     String name = nameController.text.trim();
     String username = usernameController.text.trim();
-    
+
     if (name.isEmpty || username.isEmpty) {
       _showError('Bitte alle Felder ausfüllen');
       return;
     }
-    
+
+    // Username-Validierung mit korrektem RegExp Pattern
     if (username.length < 3) {
       _showError('Username muss mindestens 3 Zeichen haben');
       return;
     }
-    
+
+    // Prüfe ob Username Leerzeichen enthält
     if (username.contains(' ')) {
       _showError('Username darf keine Leerzeichen enthalten');
       return;
     }
-    
+
+    // Prüfe ob Username nur Buchstaben, Zahlen, Punkte und Unterstriche enthält
+    RegExp validUsername = RegExp(r'^[a-zA-Z0-9._]+$');
+    if (!validUsername.hasMatch(username)) {
+      _showError(
+        'Username darf nur Buchstaben, Zahlen, Punkte und Unterstriche enthalten',
+      );
+      return;
+    }
+
     setState(() => isLoading = true);
-    
+
     try {
+      // Username-Verfügbarkeitsprüfung
+      DatabaseService dbService = DatabaseService(uid: widget.uid);
+      bool isAvailable = await dbService.isUsernameAvailable(username);
+      if (!isAvailable) {
+        _showError('Dieser Username ist bereits vergeben');
+        setState(() => isLoading = false);
+        return;
+      }
+
       // Profil in Firestore erstellen
       await DatabaseService(uid: widget.uid).updateUserData(
         name,
-        username,
+        '', // lastName leer lassen oder aufteilen
+        username: username,
       );
-      
+
       // Zurück zur App - Wrapper wird automatisch zur startseite wechseln
       if (mounted) {
         Navigator.of(context).popUntil((route) => route.isFirst);
@@ -228,9 +252,7 @@ class _WelcomePageState extends State<WelcomePage> {
         content: Text(message),
         backgroundColor: Colors.red,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
     );
   }
