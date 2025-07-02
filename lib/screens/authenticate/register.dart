@@ -4,7 +4,7 @@ import 'package:streax/Services/database.dart';
 import 'package:streax/screens/Introscreens/introPage1.dart';
 import 'package:streax/screens/Introscreens/introPage2.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-import 'email_verification_screen.dart'; // ✅ Diesen Import hinzufügen
+import 'email_verification_screen.dart';
 
 
 class Register extends StatefulWidget {
@@ -24,9 +24,6 @@ class _RegisterState extends State<Register> {
   String email = '';
   String password = '';
   String error = '';
-  
-  // Checkbox state für "Eingeloggt bleiben"
-  bool stayLoggedIn = false;
 
   //Controller für den PageView
   final PageController _controller = PageController();
@@ -122,34 +119,12 @@ class _RegisterState extends State<Register> {
                                               borderSide: BorderSide.none,
                                             ),
                                           ),
-                                          validator: (val) => val!.length < 6 ? 'Passwort muss mindestens 10 Zeichen lang sein' : null,
+                                          validator: (val) => val!.length < 10 ? 'Passwort muss mindestens 10 Zeichen lang sein' : null,
                                           onChanged: (val) {
                                             setState(() => password = val);
                                           },
                                         ),
-                                        SizedBox(height: 15.0),
-                                        Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Checkbox(
-                                              value: stayLoggedIn,
-                                              onChanged: (value) {
-                                                setState(() {
-                                                  stayLoggedIn = value ?? false;
-                                                });
-                                              },
-                                              activeColor: Theme.of(context).colorScheme.primary,
-                                            ),
-                                            Text(
-                                              'Eingeloggt bleiben',
-                                              style: TextStyle(
-                                                color: Theme.of(context).colorScheme.onSurface,
-                                                fontSize: 14,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        SizedBox(height: 20.0),
+                                        SizedBox(height: 30.0),
                                         Align(
                                           alignment: Alignment.center,
                                           child: SizedBox(
@@ -168,7 +143,7 @@ class _RegisterState extends State<Register> {
                                                 borderRadius: BorderRadius.circular(30.0),
                                                 boxShadow: [
                                                   BoxShadow(
-                                                    color: Colors.black.withOpacity(0.5),
+                                                    color: Colors.black.withValues(alpha: 0.5),
                                                     blurRadius: 16,
                                                     offset: Offset(0, 4),
                                                   ),
@@ -198,12 +173,7 @@ class _RegisterState extends State<Register> {
                                                     setState(() => loading = true);
                                                     
                                                     try {
-                                                      // ✅ Korrekte Verarbeitung der neuen Map-Struktur:
-                                                      Map<String, dynamic> result = await _auth.registerWithEmailAndPassword(
-                                                        email, 
-                                                        password, 
-                                                        stayLoggedIn: stayLoggedIn
-                                                      );
+                                                      Map<String, dynamic> result = await _auth.registerWithEmailAndPassword(email, password);
                                                       
                                                       if(result['success'] == true && result['user'] != null) {
                                                         // User-Profil erstellen mit der UID aus der Map

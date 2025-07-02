@@ -76,10 +76,17 @@ class _PasswordResetDialogState extends State<PasswordResetDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      backgroundColor: Colors.brown[100],
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
       title: Text(
         'Passwort zurücksetzen',
-        style: TextStyle(color: Theme.of(context).colorScheme.primary, fontSize: 24, fontWeight: FontWeight.bold),
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+        ),
       ),
       content: SingleChildScrollView(
         child: Column(
@@ -88,72 +95,125 @@ class _PasswordResetDialogState extends State<PasswordResetDialog> {
           children: [
             if (!_isSuccess) ...[
               Text(
-                'Gib deine Email-Adresse ein, um einen Link zum Zurücksetzen deines Passworts zu erhalten:',
-                style: TextStyle(color: Theme.of(context).colorScheme.primary, fontSize: 16),
+                'Ein Link zum Zurücksetzen deines Passworts wird an folgende Email-Adresse verschickt:',
+                style: TextStyle(color: Colors.grey[400], fontSize: 16),
               ),
-              SizedBox(height: 16),
+              SizedBox(height: 20),
               TextField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
+                style: TextStyle(color: Colors.white),
                 decoration: InputDecoration(
                   hintText: 'Email-Adresse',
-                  border: OutlineInputBorder(),
+                  hintStyle: TextStyle(color: Colors.grey[600]),
                   filled: true,
-                  fillColor: Colors.white,
+                  fillColor: Theme.of(context).colorScheme.surfaceContainer,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).colorScheme.primary,
+                      width: 2,
+                    ),
+                  ),
+                  prefixIcon: Icon(
+                    Icons.email_outlined,
+                    color: Colors.grey[400],
+                  ),
                 ),
                 enabled: !_isLoading,
               ),
-              SizedBox(height: 16),
+              SizedBox(height: 20),
             ],
             if (_message.isNotEmpty)
               Container(
-                padding: EdgeInsets.all(12),
+                width: double.infinity,
+                padding: EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: _isSuccess ? Colors.green[50] : Colors.red[50],
-                  borderRadius: BorderRadius.circular(8),
+                  color: _isSuccess 
+                    ? Colors.green.withOpacity(0.1)
+                    : Colors.red.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: _isSuccess ? Colors.green : Colors.red,
                     width: 1,
                   ),
                 ),
-                child: Text(
-                  _message,
-                  style: TextStyle(
-                    color: _isSuccess ? Colors.green[800] : Colors.red[800],
-                  ),
+                child: Row(
+                  children: [
+                    Icon(
+                      _isSuccess ? Icons.check_circle_outline : Icons.error_outline,
+                      color: _isSuccess ? Colors.green : Colors.red,
+                      size: 20,
+                    ),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        _message,
+                        style: TextStyle(
+                          color: _isSuccess ? Colors.green : Colors.red,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
           ],
         ),
       ),
-
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
           child: Text(
             _isSuccess ? 'Schließen' : 'Abbrechen',
-            style: TextStyle(color: Theme.of(context).colorScheme.primary),
+            style: TextStyle(color: Colors.grey[400]),
           ),
         ),
         if (!_isSuccess)
-          ElevatedButton(
-            onPressed: _isLoading ? null : _sendResetEmail,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.primary,
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Theme.of(context).colorScheme.primary,
+                  Theme.of(context).colorScheme.secondary,
+                ],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+              borderRadius: BorderRadius.circular(12),
             ),
-            child: _isLoading
-                ? SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+            child: ElevatedButton(
+              onPressed: _isLoading ? null : _sendResetEmail,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                shadowColor: Colors.transparent,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              ),
+              child: _isLoading
+                  ? SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : Text(
+                      'Email senden',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  )
-                : Text(
-                    'Email senden',
-                    style: TextStyle(color: Colors.white),
-                  ),
+            ),
           ),
       ],
     );
