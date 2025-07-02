@@ -1,6 +1,7 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';  // Diesen Import hinzufügen
 import 'package:streax/services/database.dart';
 
 class WelcomePage extends StatefulWidget {
@@ -15,6 +16,7 @@ class WelcomePage extends StatefulWidget {
 class _WelcomePageState extends State<WelcomePage> {
   final nameController = TextEditingController();
   final usernameController = TextEditingController();
+  DateTime? selectedBirthdate;
   bool isLoading = false;
 
   @override
@@ -128,6 +130,41 @@ class _WelcomePageState extends State<WelcomePage> {
                   ),
                 ),
 
+                SizedBox(height: 20),
+
+                // Geburtsdatum-Feld
+                GestureDetector(
+                  onTap: () => _showBirthdatePicker(),
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surfaceContainer,
+                      borderRadius: BorderRadius.circular(12),
+                      // Rote Umrandung wenn nicht ausgewählt
+                      border: selectedBirthdate == null 
+                        ? Border.all(color: Colors.red.withOpacity(0.5), width: 1)
+                        : null,
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.cake_outlined, color: Colors.grey[400]),
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            selectedBirthdate != null 
+                              ? '${selectedBirthdate!.day.toString().padLeft(2, '0')}.${selectedBirthdate!.month.toString().padLeft(2, '0')}.${selectedBirthdate!.year}'
+                              : 'Geburtsdatum',
+                            style: TextStyle(
+                              color: selectedBirthdate != null ? Colors.white : Colors.grey[600],
+                            ),
+                          ),
+                        ),
+                        Icon(Icons.arrow_drop_down, color: Colors.grey[400]),
+                      ],
+                    ),
+                  ),
+                ),
+
                 Spacer(),
 
                 // Button
@@ -186,6 +223,44 @@ class _WelcomePageState extends State<WelcomePage> {
     );
   }
 
+  void _showBirthdatePicker() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        DateTime tempDate = selectedBirthdate ?? DateTime(2000);
+        return AlertDialog(
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+          contentPadding: const EdgeInsets.all(0),
+          content: SizedBox(
+            width: 300,
+            height: 300,
+            child: Column(
+              children: [
+                Expanded(
+                  child: CupertinoDatePicker(
+                    mode: CupertinoDatePickerMode.date,
+                    initialDateTime: tempDate,
+                    minimumDate: DateTime(1920),
+                    maximumDate: DateTime.now(),
+                    onDateTimeChanged: (date) => tempDate = date,
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {
+                    setState(() => selectedBirthdate = tempDate);
+                    Navigator.pop(context);
+                  },
+                  child: const Text('Übernehmen'),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Future<void> _createProfile() async {
     // Validation
     String name = nameController.text.trim();
@@ -193,6 +268,12 @@ class _WelcomePageState extends State<WelcomePage> {
 
     if (name.isEmpty || username.isEmpty) {
       _showError('Bitte alle Felder ausfüllen');
+      return;
+    }
+
+    // Geburtsdatum-Validierung hinzufügen
+    if (selectedBirthdate == null) {
+      _showError('Bitte Geburtsdatum auswählen');
       return;
     }
 
@@ -232,8 +313,9 @@ class _WelcomePageState extends State<WelcomePage> {
       // Profil in Firestore erstellen
       await DatabaseService(uid: widget.uid).updateUserData(
         name,
-        '', // lastName leer lassen oder aufteilen
+        '',
         username: username,
+        birthdate: selectedBirthdate!.toIso8601String(), // ! weil jetzt immer gesetzt
       );
 
       // Zurück zur App - Wrapper wird automatisch zur startseite wechseln

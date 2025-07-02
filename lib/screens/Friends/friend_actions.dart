@@ -338,7 +338,7 @@ class ProfileDialog {
             SizedBox(height: 12),
 
             // Streak Info
-            if (user['streak'] > 0)
+            if ((user['streak'] ?? 0) > 0)
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
@@ -346,7 +346,7 @@ class ProfileDialog {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  '🔥 ${user['streak']} Tag${user['streak'] == 1 ? '' : 'e'} Streak',
+                  '🔥 ${user['streak'] ?? 0} Tag${(user['streak'] ?? 0) == 1 ? '' : 'e'} Streak',
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.primary,
                     fontWeight: FontWeight.bold,

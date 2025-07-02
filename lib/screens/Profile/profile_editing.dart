@@ -1,15 +1,78 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:streax/services/database.dart';
 import '../../utils/snackbar.dart';
 
-// Profil bearbeiten
-
 class EditProfileDialog {
-  static void show(
+  // Hilfsfunktion für Picker-Inhalte
+  static Widget _buildPickerContent(
+    String type,
+    dynamic currentValue,
+    Function(dynamic) onChanged,
+  ) {
+    switch (type) {
+      case 'weight':
+        return CupertinoPicker(
+          backgroundColor: Colors.transparent,
+          itemExtent: 40,
+          scrollController: FixedExtentScrollController(
+            initialItem: (currentValue as String).isNotEmpty
+                ? int.parse(currentValue) - 30
+                : 40,
+          ),
+          onSelectedItemChanged: (index) => onChanged((index + 30).toString()),
+          children: List.generate(
+            171,
+            (i) => Center(
+              child: Text(
+                '${i + 30} kg',
+                style: TextStyle(color: Colors.white, fontSize: 18),
+              ),
+            ),
+          ),
+        );
+
+      case 'height':
+        return CupertinoPicker(
+          backgroundColor: Colors.transparent,
+          itemExtent: 40,
+          scrollController: FixedExtentScrollController(
+            initialItem: (currentValue as String).isNotEmpty
+                ? int.parse(currentValue) - 140
+                : 35,
+          ),
+          onSelectedItemChanged: (index) => onChanged((index + 140).toString()),
+          children: List.generate(
+            81,
+            (i) => Center(
+              child: Text(
+                '${i + 140} cm',
+                style: TextStyle(color: Colors.white, fontSize: 18),
+              ),
+            ),
+          ),
+        );
+
+      case 'birthdate':
+        return CupertinoDatePicker(
+          mode: CupertinoDatePickerMode.date,
+          initialDateTime: currentValue ?? DateTime(2000),
+          minimumDate: DateTime(1920),
+          maximumDate: DateTime.now(),
+          onDateTimeChanged: onChanged,
+        );
+
+      default:
+        return Container();
+    }
+  }
+
+  // Dialog zum Bearbeiten des Profils
+  static Future<void> show(
     BuildContext context,
     String uid,
     Map<String, dynamic> currentData,
-  ) {
+  ) async {
     final firstNameController = TextEditingController(
       text: currentData['firstName'] ?? '',
     );
@@ -25,130 +88,207 @@ class EditProfileDialog {
     final heightController = TextEditingController(
       text: currentData['height']?.toString() ?? '',
     );
-    String selectedGender = currentData['gender'] ?? 'Nicht angegeben';
 
-    showDialog(
+    DateTime? selectedBirthdate = currentData['birthdate'] != null
+        ? DateTime.tryParse(currentData['birthdate'])
+        : null;
+    String selectedGender = currentData['gender'] ?? 'Männlich';
+
+    await showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Profil bearbeiten'),
-        content: StatefulBuilder(
-          builder: (context, setState) => SingleChildScrollView(
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          title: Text(
+            'Profil bearbeiten',
+            style: TextStyle(color: Colors.white),
+          ),
+          content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                TextField(
-                  controller: firstNameController,
-                  decoration: const InputDecoration(labelText: 'Vorname'),
+                _buildTextField(firstNameController, 'Vorname'),
+                _buildTextField(lastNameController, 'Nachname'),
+                _buildTextField(usernameController, 'Username'),
+
+                // Gewicht Picker
+                _buildPickerField(
+                  context,
+                  weightController,
+                  'Gewicht (kg)',
+                  'weight',
+                  setState,
                 ),
-                TextField(
-                  controller: lastNameController,
-                  decoration: const InputDecoration(labelText: 'Nachname'),
+
+                // Größe Picker
+                _buildPickerField(
+                  context,
+                  heightController,
+                  'Größe (cm)',
+                  'height',
+                  setState,
                 ),
-                TextField(
-                  controller: usernameController,
-                  decoration: const InputDecoration(labelText: 'Username'),
-                ),
-                TextField(
-                  controller: weightController,
-                  decoration: const InputDecoration(
-                    labelText: 'Gewicht (kg)',
-                    hintText: 'z.B. 70',
+
+                // Geburtsdatum Picker
+                GestureDetector(
+                  onTap: () => _showPicker(
+                    context,
+                    'birthdate',
+                    selectedBirthdate,
+                    (value) => setState(() => selectedBirthdate = value),
                   ),
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
+                  child: AbsorbPointer(
+                    child: TextField(
+                      style: TextStyle(color: Colors.white),
+                      decoration: InputDecoration(
+                        labelText: selectedBirthdate != null
+                            ? '${selectedBirthdate!.day.toString().padLeft(2, '0')}.${selectedBirthdate!.month.toString().padLeft(2, '0')}.${selectedBirthdate!.year}'
+                            : 'Geburtstag',
+                        labelStyle: TextStyle(color: Colors.white70),
+                        hintText: 'Pflichtfeld',
+                      ),
+                    ),
                   ),
                 ),
-                TextField(
-                  controller: heightController,
-                  decoration: const InputDecoration(
-                    labelText: 'Größe (cm)',
-                    hintText: 'z.B. 175',
-                  ),
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: false,
-                  ),
-                ),
-                const SizedBox(height: 16),
+
+                // Geschlecht Dropdown
                 DropdownButtonFormField<String>(
                   value: selectedGender,
-                  decoration: const InputDecoration(labelText: 'Geschlecht'),
-                  items: ['Nicht angegeben', 'Männlich', 'Weiblich', 'Divers']
-                      .map((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value),
-                        );
-                      })
+                  style: TextStyle(color: Colors.white),
+                  dropdownColor: Colors.grey[850],
+                  decoration: InputDecoration(labelText: 'Geschlecht'),
+                  items: ['Männlich', 'Weiblich', 'Divers']
+                      .map(
+                        (e) =>
+                            DropdownMenuItem<String>(value: e, child: Text(e)),
+                      )
                       .toList(),
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      selectedGender = newValue!;
-                    });
-                  },
+                  onChanged: (value) => setState(() => selectedGender = value!),
                 ),
               ],
             ),
           ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Abbrechen'),
+            ),
+            TextButton(
+              onPressed: () async {
+                if (await _saveProfile(
+                  context,
+                  uid,
+                  firstNameController.text,
+                  lastNameController.text,
+                  usernameController.text,
+                  weightController.text,
+                  heightController.text,
+                  selectedGender,
+                  selectedBirthdate,
+                )) {
+                  Navigator.pop(context);
+                }
+              },
+              child: Text('Speichern'),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Abbrechen'),
-          ),
-          TextButton(
-            onPressed: () async {
-              final result = await _validateAndSave(
-                context,
-                uid,
-                firstNameController,
-                lastNameController,
-                usernameController,
-                weightController,
-                heightController,
-                selectedGender,
-              );
-
-              if (result) {
-                Navigator.pop(context);
-              }
-            },
-            child: const Text('Speichern'),
-          ),
-        ],
       ),
     );
   }
 
-  static Future<bool> _validateAndSave(
+  // Hilfsfunktionen
+  static Widget _buildTextField(
+    TextEditingController controller,
+    String label,
+  ) {
+    return TextField(
+      controller: controller,
+      style: TextStyle(color: Colors.white),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: TextStyle(color: Colors.white70),
+      ),
+    );
+  }
+
+  static Widget _buildPickerField(
+    BuildContext context,
+    TextEditingController controller,
+    String label,
+    String type,
+    StateSetter setState,
+  ) {
+    return GestureDetector(
+      onTap: () => _showPicker(
+        context,
+        type,
+        controller.text,
+        (value) => setState(() => controller.text = value),
+      ),
+      child: AbsorbPointer(
+        child: TextField(
+          controller: controller,
+          style: TextStyle(color: Colors.white),
+          decoration: InputDecoration(
+            labelText: label,
+            labelStyle: TextStyle(color: Colors.white70),
+          ),
+        ),
+      ),
+    );
+  }
+
+  static void _showPicker(
+    BuildContext context,
+    String type,
+    dynamic currentValue,
+    Function(dynamic) onSelected,
+  ) {
+    showCupertinoModalPopup(
+      context: context,
+      builder: (context) => Container(
+        height: 250,
+        color: Colors.grey[900],
+        child: Column(
+          children: [
+            Expanded(
+              child: _buildPickerContent(type, currentValue, onSelected),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Fertig', style: TextStyle(color: Colors.blue)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  static Future<bool> _saveProfile(
     BuildContext context,
     String uid,
-    TextEditingController firstNameController,
-    TextEditingController lastNameController,
-    TextEditingController usernameController,
-    TextEditingController weightController,
-    TextEditingController heightController,
-    String selectedGender,
+    String firstName,
+    String lastName,
+    String username,
+    String weight,
+    String height,
+    String gender,
+    DateTime? birthdate,
   ) async {
-    // Validierung
-    if (firstNameController.text.trim().isEmpty) {
-      SnackBarUtils.showError(context, 'Vorname darf nicht leer sein');
+    // Basisvalidierung
+    if (firstName.isEmpty ||
+        lastName.isEmpty ||
+        username.isEmpty ||
+        birthdate == null) {
+      SnackBarUtils.showError(context, 'Bitte alle Pflichtfelder ausfüllen');
       return false;
     }
 
-    if (lastNameController.text.trim().isEmpty) {
-      SnackBarUtils.showError(context, 'Nachname darf nicht leer sein');
-      return false;
-    }
+    // Usernamevalidierung
+    String newUsername = username.trim();
 
-    if (usernameController.text.trim().isEmpty) {
-      SnackBarUtils.showError(context, 'Username darf nicht leer sein');
-      return false;
-    }
-
-    // Username-Validierung mit korrektem RegExp Pattern
-    String newUsername = usernameController.text.trim();
-
-    // Prüfe ob Username mindestens 3 Zeichen lang ist
+    // Mindestlänge
     if (newUsername.length < 3) {
       SnackBarUtils.showError(
         context,
@@ -157,7 +297,7 @@ class EditProfileDialog {
       return false;
     }
 
-    // Prüfe ob Username Leerzeichen enthält
+    // Keine Leerzeichen
     if (newUsername.contains(' ')) {
       SnackBarUtils.showError(
         context,
@@ -166,7 +306,7 @@ class EditProfileDialog {
       return false;
     }
 
-    // Prüfe ob Username nur Buchstaben, Zahlen, Punkte und Unterstriche enthält
+    // Erlaubte Zeichen
     RegExp validUsername = RegExp(r'^[a-zA-Z0-9._]+$');
     if (!validUsername.hasMatch(newUsername)) {
       SnackBarUtils.showError(
@@ -176,51 +316,28 @@ class EditProfileDialog {
       return false;
     }
 
-    // Username-Verfügbarkeitsprüfung
+    // Verfügbarkeitsprüfung, mit Ausnahme des eigenen Usernames
     DatabaseService dbService = DatabaseService(uid: uid);
-    bool isAvailable = await dbService.isUsernameAvailable(newUsername);
+    bool isAvailable = await dbService.isUsernameAvailable(
+      newUsername,
+      excludeUid: uid,
+    );
     if (!isAvailable) {
       SnackBarUtils.showError(context, 'Dieser Username ist bereits vergeben');
       return false;
     }
 
-    // Gewicht parsen und validieren
-    double? weight;
-    if (weightController.text.isNotEmpty) {
-      weight = double.tryParse(weightController.text);
-      if (weight == null || weight <= 0 || weight > 500) {
-        SnackBarUtils.showError(
-          context,
-          'Bitte gültiges Gewicht eingeben (1-500 kg)',
-        );
-        return false;
-      }
-    }
-
-    // Größe parsen und validieren
-    int? height;
-    if (heightController.text.isNotEmpty) {
-      height = int.tryParse(heightController.text);
-      if (height == null || height <= 0 || height > 300) {
-        SnackBarUtils.showError(
-          context,
-          'Bitte gültige Größe eingeben (1-300 cm)',
-        );
-        return false;
-      }
-    }
-
+    // Speichern wenn alle Validierungen bestanden
     try {
-      await DatabaseService(uid: uid).updateUserData(
-        firstNameController.text.trim(),
-        lastNameController.text.trim(),
-        username: usernameController.text.trim(),
-        weight: weight,
-        height: height,
-        gender: selectedGender != 'Nicht angegeben' ? selectedGender : null,
+      await dbService.updateUserData(
+        firstName.trim(),
+        lastName.trim(),
+        username: newUsername,
+        weight: double.tryParse(weight),
+        height: int.tryParse(height),
+        gender: gender,
+        birthdate: birthdate.toIso8601String(),
       );
-
-      SnackBarUtils.showSuccess(context, 'Profil erfolgreich aktualisiert!');
       return true;
     } catch (e) {
       SnackBarUtils.showError(context, 'Fehler beim Speichern: $e');

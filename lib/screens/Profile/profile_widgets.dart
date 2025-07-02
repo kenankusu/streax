@@ -262,8 +262,29 @@ class ProfileInfo extends StatelessWidget {
 
   const ProfileInfo({super.key, required this.userData});
 
+  // Hilfsfunktion für Altersberechnung
+  int? _calculateAge(String? birthdateString) {
+    if (birthdateString == null) return null;
+    
+    final birthdate = DateTime.tryParse(birthdateString);
+    if (birthdate == null) return null;
+    
+    final now = DateTime.now();
+    int age = now.year - birthdate.year;
+    
+    // Prüfen ob Geburtstag dieses Jahr schon war
+    if (now.month < birthdate.month || 
+        (now.month == birthdate.month && now.day < birthdate.day)) {
+      age--;
+    }
+    
+    return age;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final age = _calculateAge(userData['birthdate']);
+    
     return Column(
       children: [
         Text(
@@ -272,6 +293,10 @@ class ProfileInfo extends StatelessWidget {
         ),
         Text(
           "Dein längster streak: ${userData['longest_streak'] ?? 0}",
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+        Text(
+          "Alter: ${age != null ? '$age Jahre' : 'Fehler beim Berechnen'}",
           style: Theme.of(context).textTheme.bodySmall,
         ),
         Text(
