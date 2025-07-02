@@ -155,7 +155,7 @@ class EditProfileDialog {
                 DropdownButtonFormField<String>(
                   value: selectedGender,
                   style: TextStyle(color: Colors.white),
-                  dropdownColor: Colors.grey[850],
+                  dropdownColor: Theme.of(context).colorScheme.surface,
                   decoration: InputDecoration(labelText: 'Geschlecht'),
                   items: ['Männlich', 'Weiblich', 'Divers']
                       .map(
