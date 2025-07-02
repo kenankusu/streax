@@ -137,8 +137,9 @@ class NavigationsLeiste extends StatelessWidget {
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: Color(0xFF4A90E2).withOpacity(0.3),
-                      blurRadius: 12,
+                      color: Colors.black.withOpacity(0.45),
+                      blurRadius: 16,
+                      spreadRadius: 2,
                       offset: Offset(0, 6),
                     ),
                   ],

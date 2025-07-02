@@ -21,9 +21,9 @@ class DatabaseService {
     String? profilePicture,
     String? lastStreakDate,
     double? weight,
-    int? height,
+    double? height,
     String? gender,
-    String? birthdate
+    String? birthdate,
   }) async {
     Map<String, dynamic> data = {
       'firstName': firstName,

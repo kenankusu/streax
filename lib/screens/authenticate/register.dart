@@ -218,6 +218,7 @@ class _RegisterState extends State<Register> {
                                                             MaterialPageRoute(
                                                               builder: (context) => EmailVerificationScreen(
                                                                 email: result['email'],
+                                                                uid: result['uid'],
                                                               ),
                                                             ),
                                                           );
