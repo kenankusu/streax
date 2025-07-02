@@ -306,7 +306,6 @@ class _WelcomePageState extends State<WelcomePage> {
                         GestureDetector(
                           onTap: () => _showBirthdatePicker(),
                           child: Container(
-                            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
                             decoration: BoxDecoration(
                               color: Theme.of(context).colorScheme.surfaceContainer,
                               borderRadius: BorderRadius.circular(12),
@@ -314,15 +313,18 @@ class _WelcomePageState extends State<WelcomePage> {
                             ),
                             child: Row(
                               children: [
-                                Icon(Icons.cake_outlined, color: Colors.grey[400]),
+                                Icon(Icons.cake_outlined, color: Colors.white),
                                 SizedBox(width: 12),
                                 Expanded(
-                                  child: Text(
-                                    selectedBirthdate != null 
-                                      ? '${selectedBirthdate!.day.toString().padLeft(2, '0')}.${selectedBirthdate!.month.toString().padLeft(2, '0')}.${selectedBirthdate!.year}'
-                                      : 'Geburtsdatum',
-                                    style: TextStyle(
-                                      color: Colors.white
+                                  child: Padding(
+                                    padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                                    child: Text(
+                                      selectedBirthdate != null 
+                                        ? '${selectedBirthdate!.day.toString().padLeft(2, '0')}.${selectedBirthdate!.month.toString().padLeft(2, '0')}.${selectedBirthdate!.year}'
+                                        : 'Geburtsdatum',
+                                      style: TextStyle(
+                                        color: Colors.white
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -331,7 +333,6 @@ class _WelcomePageState extends State<WelcomePage> {
                             ),
                           ),
                         ),
-
                         SizedBox(height: 20),
                       ],
                     ),

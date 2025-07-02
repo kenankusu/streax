@@ -63,12 +63,12 @@ class IntroPage2 extends StatelessWidget{
               ),
 
               SizedBox(height: 20),
-              // Logo unten, horizontal zentriert
+              //Logo unten, horizontal zentriert
               Padding(
                 padding: const EdgeInsets.only(top: 24.0),
                 child: Image.asset(
-                  'assets/images/streaxpresi.png',
-                  height: 300,
+                  'assets/images/streax-homepage-screenhot.png',
+                  height: 3000,
                   fit: BoxFit.contain,
                 ),
               ),
