@@ -313,22 +313,28 @@ class _WelcomePageState extends State<WelcomePage> {
                             ),
                             child: Row(
                               children: [
-                                Icon(Icons.cake_outlined, color: Colors.white),
-                                SizedBox(width: 12),
+                                Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 18.0, horizontal: 16.0),
+                                  child: Icon(Icons.cake_outlined, color: Colors.white),
+                                ),
                                 Expanded(
                                   child: Padding(
-                                    padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                                    padding: EdgeInsets.symmetric(vertical: 18.0, horizontal: 0.0),
                                     child: Text(
                                       selectedBirthdate != null 
                                         ? '${selectedBirthdate!.day.toString().padLeft(2, '0')}.${selectedBirthdate!.month.toString().padLeft(2, '0')}.${selectedBirthdate!.year}'
                                         : 'Geburtsdatum',
                                       style: TextStyle(
-                                        color: Colors.white
+                                        color: Colors.white,
+                                        fontSize: 16,
                                       ),
                                     ),
                                   ),
                                 ),
-                                Icon(Icons.arrow_drop_down, color: Theme.of(context).colorScheme.onSurface),
+                                Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 18.0, horizontal: 16.0),
+                                  child: Icon(Icons.arrow_drop_down, color: Theme.of(context).colorScheme.onSurface),
+                                ),
                               ],
                             ),
                           ),

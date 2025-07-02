@@ -59,10 +59,23 @@ class _ProfilState extends State<Profil> {
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        title: const Text('Profil', style: TextStyle(color: Colors.white)),
-        iconTheme: const IconThemeData(color: Colors.white),
+        backgroundColor: Colors.transparent,
         elevation: 0,
+        centerTitle: true,
+        title: const Text(
+          'Profil',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 22,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        iconTheme: const IconThemeData(color: Colors.white),
+        flexibleSpace: Container(),
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
+        shadowColor: Colors.transparent,
       ),
       body: Stack(
         children: [
@@ -85,33 +98,62 @@ class _ProfilState extends State<Profil> {
                 var userData = snapshot.data!.data() as Map<String, dynamic>;
 
                 return SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       // Profil Header (Avatar, Name, Edit/Share buttons)
-                      ProfileHeader(userData: userData, uid: user.uid),
-
-                      const SizedBox(height: 16),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 24),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.surfaceContainer,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                          child: ProfileHeader(userData: userData, uid: user.uid),
+                        ),
+                      ),
 
                       // Sportarten auswählen
-                      SportIcons(userData: userData, uid: user.uid),
-
-                      const SizedBox(height: 16),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 24),
+                        child: Container(
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.surfaceContainer,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+                          child: SportIcons(userData: userData, uid: user.uid),
+                        ),
+                      ),
 
                       // Profil Info (Streak, Gewicht, Größe, etc.)
-                      ProfileInfo(userData: userData),
-
-                      const SizedBox(height: 32),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 32),
+                        child: Container(
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.surfaceContainer,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+                          child: ProfileInfo(userData: userData),
+                        ),
+                      ),
 
                       // Linie oben
-                      const Divider(color: Colors.grey),
+                      const Divider(color: Colors.grey, thickness: 0.7, height: 24),
 
                       // Bottom Actions
-                      _buildBottomActions(context, user.uid),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 12.0),
+                        child: _buildBottomActions(context, user.uid),
+                      ),
 
                       // Extra Abstand für die Navigation Bar
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 40),
                     ],
                   ),
                 );
@@ -133,34 +175,50 @@ class _ProfilState extends State<Profil> {
   Widget _buildBottomActions(BuildContext context, String uid) {
     return Column(
       children: [
-        TextButton(
-          onPressed: () async {
-            await _auth.signOut();
-            Navigator.of(
-              context,
-            ).pushNamedAndRemoveUntil('/', (route) => false);
-          },
-          child: Text(
-            "Abmelden",
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(color: Colors.red),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            icon: Icon(Icons.logout, color: Colors.red.shade300),
+            label: Text(
+              "Abmelden",
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red.shade300, fontWeight: FontWeight.bold),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              side: BorderSide(color: Colors.red.shade300, width: 1.2),
+              padding: const EdgeInsets.symmetric(vertical: 16),
+            ),
+            onPressed: () async {
+              await _auth.signOut();
+              Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+            },
           ),
         ),
-        const SizedBox(height: 8),
-        TextButton(
-          onPressed: () {
-            DeleteAccountDialog.show(context, uid, (isDeleting) {
-              setState(() {
-                _isDeleting = isDeleting;
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            icon: Icon(Icons.delete_forever, color: Colors.red.shade400),
+            label: Text(
+              "Account löschen",
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red.shade400, fontWeight: FontWeight.bold),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              side: BorderSide(color: Colors.red.shade400, width: 1.2),
+              padding: const EdgeInsets.symmetric(vertical: 16),
+            ),
+            onPressed: () {
+              DeleteAccountDialog.show(context, uid, (isDeleting) {
+                setState(() {
+                  _isDeleting = isDeleting;
+                });
               });
-            });
-          },
-          child: Text(
-            "Account löschen",
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(color: Colors.red),
+            },
           ),
         ),
       ],
