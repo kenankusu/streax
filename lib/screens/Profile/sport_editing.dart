@@ -8,31 +8,11 @@ import '../../utils/snackbar.dart';
 
 class SportSelectionDialog {
   static const List<String> availableSports = [
-    'Laufen',
-    'Radfahren',
-    'Schwimmen',
-    'Krafttraining',
-    'Yoga',
-    'Pilates',
-    'Tennis',
-    'Fußball',
-    'Basketball',
-    'Volleyball',
-    'Wandern',
-    'Klettern',
-    'Boxen',
-    'Martial Arts',
-    'Crossfit',
-    'Tanzen',
-    'Golf',
-    'Badminton',
-    'Skifahren',
-    'Snowboarden',
-    'Surfen',
-    'Reiten',
-    'Rudern',
-    'Calisthenics',
-    'Andere',
+      'Krafttraining',
+      'Laufen',
+      'Tischtennis',
+      'Boxen',
+      'Fussball',
   ];
 
   static void show(
@@ -60,7 +40,7 @@ class SportSelectionDialog {
               child: Column(
                 children: [
                   Text(
-                    'Wähle deine Lieblingssportarten aus:',
+                    'Wähle Sportarten, die du regelmäßig machst:',
                     style: TextStyle(color: Colors.grey[300]),
                   ),
                   const SizedBox(height: 16),

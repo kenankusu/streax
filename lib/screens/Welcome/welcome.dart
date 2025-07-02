@@ -209,7 +209,7 @@ class _WelcomePageState extends State<WelcomePage> {
 
                         SizedBox(height: 20),
 
-                        // Weight Input
+                        // Gewicht Input
                         TextFormField(
                           controller: weightController,
                           keyboardType: TextInputType.number,
