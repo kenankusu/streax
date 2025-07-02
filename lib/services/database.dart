@@ -34,7 +34,7 @@ class DatabaseService {
     if (username != null) data['username'] = username;
     if (streak != null) data['streak'] = streak;
     if (friends != null) data['friends_count'] = friends;
-    if (maxStreak != null) data['longest_streak'] = maxStreak;
+    if (maxStreak != null) data['streak_max'] = maxStreak;
     if (profilePicture != null) data['profile_picture'] = profilePicture;
     if (lastStreakDate != null) data['lastStreakDate'] = lastStreakDate;
     if (weight != null) data['weight'] = weight;

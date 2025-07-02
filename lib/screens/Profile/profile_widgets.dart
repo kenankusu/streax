@@ -272,26 +272,26 @@ class ProfileInfo extends StatelessWidget {
   // Hilfsfunktion für Altersberechnung
   int? _calculateAge(String? birthdateString) {
     if (birthdateString == null) return null;
-    
+
     final birthdate = DateTime.tryParse(birthdateString);
     if (birthdate == null) return null;
-    
+
     final now = DateTime.now();
     int age = now.year - birthdate.year;
-    
+
     // Prüfen ob Geburtstag dieses Jahr schon war
-    if (now.month < birthdate.month || 
+    if (now.month < birthdate.month ||
         (now.month == birthdate.month && now.day < birthdate.day)) {
       age--;
     }
-    
+
     return age;
   }
 
   @override
   Widget build(BuildContext context) {
     final age = _calculateAge(userData['birthdate']);
-    
+
     return Column(
       children: [
         Text(
@@ -299,11 +299,11 @@ class ProfileInfo extends StatelessWidget {
           style: Theme.of(context).textTheme.bodySmall,
         ),
         Text(
-          "Dein längster streak: ${userData['longest_streak'] ?? 0}",
+          "Dein längster Streak: ${userData['streak_max'] ?? 0}",
           style: Theme.of(context).textTheme.bodySmall,
         ),
         Text(
-          "Alter: ${age != null ? '$age Jahre' : 'Fehler beim Berechnen'}",
+          "Dein Alter: ${age != null ? '$age Jahre' : 'Fehler beim Berechnen'}",
           style: Theme.of(context).textTheme.bodySmall,
         ),
         Text(
@@ -315,7 +315,7 @@ class ProfileInfo extends StatelessWidget {
           style: Theme.of(context).textTheme.bodySmall,
         ),
         Text(
-          "Geschlecht: ${userData['gender'] ?? 'Nicht angegeben'}",
+          "Dein Geschlecht: ${userData['gender'] ?? 'Nicht angegeben'}",
           style: Theme.of(context).textTheme.bodySmall,
         ),
       ],
