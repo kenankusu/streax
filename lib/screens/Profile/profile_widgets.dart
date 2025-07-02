@@ -3,6 +3,7 @@ import 'profile_editing.dart';
 import '../../services/image_service.dart';
 import '../../utils/snackbar.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter/services.dart';
 
 // Profil Header (Avatar, Name, Edit/Share buttons)
 
@@ -242,10 +243,16 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                 EditProfileDialog.show(context, widget.uid, widget.userData);
               },
             ),
+            // Teilenbutton
             IconButton(
               icon: const Icon(Icons.share, color: Colors.white),
               onPressed: () {
-                // Teilen-Funktion (wird noch implementiert)
+                final username = widget.userData['username'] ?? 'unbekannt';
+                Clipboard.setData(ClipboardData(text: '@$username'));
+                SnackBarUtils.showSuccess(
+                  context,
+                  'Username @$username wurde in die Zwischenablage kopiert',
+                );
               },
             ),
           ],
