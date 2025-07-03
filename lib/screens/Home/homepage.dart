@@ -80,155 +80,161 @@ class startseite extends StatelessWidget {
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: Stack(
         children: [
+          // Hauptinhalt
           SafeArea(
             bottom: false,
             child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 48, 20, 120),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Begrüßung und Streak-Wert
-                    Kopfzeile(streakWert: streakWert),
-                    SizedBox(height: 20),
+              padding: const EdgeInsets.fromLTRB(20, 48, 20, 120), // Extra padding unten für Navigation
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Begrüßung und Streak-Wert
+                  Kopfzeile(streakWert: streakWert),
+                  SizedBox(height: 20),
 
-                    // Kalender
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 40),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.of(context).push(MaterialPageRoute(builder: (context) => calendar()));
-                            },
-                            child: Row(
-                              children: [
-                                Text(
-                                  "Deine Woche",
-                                  style: Theme.of(context).textTheme.headlineMedium,
-                                ),
-                                SizedBox(width: 2),
-                                Icon(Icons.chevron_right, color: Colors.white, size: 32),
-                              ],
-                            ),
+                  // Kalender
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 40),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).push(MaterialPageRoute(builder: (context) => calendar()));
+                          },
+                          child: Row(
+                            children: [
+                              Text(
+                                "Deine Woche",
+                                style: Theme.of(context).textTheme.headlineMedium,
+                              ),
+                              SizedBox(width: 2),
+                              Icon(Icons.chevron_right, color: Colors.white, size: 32),
+                            ],
                           ),
-                          SizedBox(height: 30),
-                          Journal(),
-                        ],
-                      ),
-                    ),
-
-                    // Feed
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 40),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Feed",
-                            style: Theme.of(context).textTheme.headlineMedium,
-                          ),
-                          SizedBox(height: 20),
-                          Text(
-                            "keine neuen Aktivitäten",
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey[500]),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // Ziele Header
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 20),
-                      child: GestureDetector(
-                        onTap: () {
-                          showModalBottomSheet(
-                            context: context,
-                            isScrollControlled: true,
-                            backgroundColor: Colors.transparent,
-                            builder: (context) => ZielePopup(),
-                          );
-                        },
-                        child: Row(
-                          children: [
-                            Text(
-                              "Deine Ziele",
-                              style: Theme.of(context).textTheme.headlineMedium,
-                            ),
-                            SizedBox(width: 2),
-                            Icon(Icons.chevron_right, color: Colors.white, size: 32),
-                          ],
                         ),
-                      ),
+                        SizedBox(height: 30),
+                        Journal(),
+                      ],
                     ),
+                  ),
 
-                    // StreamBuilder für Ziele mit besserer Fehlerbehandlung
-                    StreamBuilder<QuerySnapshot>(
-                      stream: DatabaseService(uid: user.uid).userGoals,
-                      builder: (context, snapshot) {
-                        // Lade-Zustand
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return Center(
-                            child: Padding(
-                              padding: const EdgeInsets.all(20),
-                              child: CircularProgressIndicator(),
-                            ),
-                          );
-                        }
-                        
-                        // Fehler-Zustand
-                        if (snapshot.hasError) {
-                          print('Fehler beim Laden der Ziele: ${snapshot.error}');
-                          return Container(
-                            padding: EdgeInsets.symmetric(vertical: 20),
-                            child: Text(
-                              'Fehler beim Laden der Ziele',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: Colors.red[400],
-                              ),
-                            ),
-                          );
-                        }
-                        
-                        // Keine Daten oder leere Collection
-                        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                          return Container(
-                            padding: EdgeInsets.symmetric(vertical: 20),
-                            child: Text(
-                              'Keine Ziele vorhanden',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: Colors.grey[500],
-                              ),
-                            ),
-                          );
-                        }
-                        
-                        // Erfolgreiche Daten
-                        final goals = snapshot.data!.docs;
-                        
-                        return Column(
-                          children: goals.map((goal) {
-                            final data = goal.data() as Map<String, dynamic>;
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: 16),
-                              child: Fortschrittsbalken(
-                                label: _getGoalDisplayName(data),
-                                fortschritt: _calculateProgress(data),
-                              ),
-                            );
-                          }).toList(),
+                  // Feed
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 40),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Feed",
+                          style: Theme.of(context).textTheme.headlineMedium,
+                        ),
+                        SizedBox(height: 20),
+                        Text(
+                          "keine neuen Aktivitäten",
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey[500]),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Ziele Header
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 20),
+                    child: GestureDetector(
+                      onTap: () {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.transparent,
+                          builder: (context) => ZielePopup(),
                         );
                       },
+                      child: Row(
+                        children: [
+                          Text(
+                            "Deine Ziele",
+                            style: Theme.of(context).textTheme.headlineMedium,
+                          ),
+                          SizedBox(width: 2),
+                          Icon(Icons.chevron_right, color: Colors.white, size: 32),
+                        ],
+                      ),
                     ),
-                  ],
-                ),
+                  ),
+
+                  // StreamBuilder für Ziele mit besserer Fehlerbehandlung
+                  StreamBuilder<QuerySnapshot>(
+                    stream: DatabaseService(uid: user.uid).userGoals,
+                    builder: (context, snapshot) {
+                      // Lade-Zustand
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: CircularProgressIndicator(),
+                          ),
+                        );
+                      }
+                      
+                      // Fehler-Zustand
+                      if (snapshot.hasError) {
+                        print('Fehler beim Laden der Ziele: ${snapshot.error}');
+                        return Container(
+                          padding: EdgeInsets.symmetric(vertical: 20),
+                          child: Text(
+                            'Fehler beim Laden der Ziele',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Colors.red[400],
+                            ),
+                          ),
+                        );
+                      }
+                      
+                      // Keine Daten oder leere Collection
+                      if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                        return Container(
+                          padding: EdgeInsets.symmetric(vertical: 20),
+                          child: Text(
+                            'Keine Ziele vorhanden',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Colors.grey[500],
+                            ),
+                          ),
+                        );
+                      }
+                      
+                      // Erfolgreiche Daten
+                      final goals = snapshot.data!.docs;
+                      
+                      return Column(
+                        children: goals.map((goal) {
+                          final data = goal.data() as Map<String, dynamic>;
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 16),
+                            child: Fortschrittsbalken(
+                              label: _getGoalDisplayName(data),
+                              fortschritt: _calculateProgress(data),
+                            ),
+                          );
+                        }).toList(),
+                      );
+                    },
+                  ),
+                ],
               ),
             ),
           ),
+          
+          // Navigation Bar am unteren Rand (neue Version)
+          const Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: NavigationsLeiste(currentPage: 0),
+          ),
         ],
       ),
-      bottomNavigationBar: NavigationsLeiste(currentPage: 0),
     );
   }
 }
