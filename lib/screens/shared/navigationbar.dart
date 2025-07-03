@@ -110,7 +110,7 @@ class NavigationsLeiste extends StatelessWidget {
       case 4:
         // Navigation zum Profil
         Navigator.of(context).push(
-          MaterialPageRoute(builder: (context) => const Profil()),
+          MaterialPageRoute(builder: (context) => const Profile()),
         );
         break;
     }

@@ -87,7 +87,7 @@ class _WrapperState extends State<Wrapper> {
               title: 'streax',
               debugShowCheckedModeBanner: false,
               theme: _buildAppTheme(),
-              home: startseite(), // Startseite mit Navigationsleiste
+              home: Homepage(), // Startseite mit Navigationsleiste
             );
           }
         },
