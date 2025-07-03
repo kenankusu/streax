@@ -107,14 +107,18 @@ class DeleteAccountDialog {
 
       if (!firestoreDeleted || !authDeleted) {
         setDeleting(false);
-        _showErrorDialog(
-          context,
-          'Beim Löschen des Accounts ist ein Fehler aufgetreten.',
-        );
+        if (context.mounted) {
+          _showErrorDialog(
+            context,
+            'Beim Löschen des Accounts ist ein Fehler aufgetreten.',
+          );
+        }
       }
     } catch (e) {
       setDeleting(false);
-      _showErrorDialog(context, 'Unerwarteter Fehler: $e');
+      if (context.mounted) {
+        _showErrorDialog(context, 'Unerwarteter Fehler: $e');
+      }
     }
   }
 

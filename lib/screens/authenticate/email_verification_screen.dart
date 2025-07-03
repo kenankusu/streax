@@ -160,6 +160,17 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
     }
   }
 
+  Future<void> _handleBackToLogin() async {
+    await _auth.signOut(); // Aktuellen User ausloggen
+    
+    if (mounted) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => Wrapper()),
+        (route) => false,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -290,17 +301,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
               
               // Zurück zur Anmeldung Button
               TextButton(
-                onPressed: () async {
-                  await _auth.signOut(); // Aktuellen User ausloggen
-                  
-                  // mounted-Check nach async Operation hinzufügen
-                  if (mounted) {
-                    Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(builder: (context) => Wrapper()),
-                      (route) => false,
-                    );
-                  }
-                },
+                onPressed: _handleBackToLogin,
                 child: Text(
                   'Zur Anmeldung zurück',
                   style: TextStyle(

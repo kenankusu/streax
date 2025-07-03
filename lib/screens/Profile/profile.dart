@@ -172,6 +172,13 @@ class _ProfilState extends State<Profil> {
     );
   }
 
+  Future<void> _handleLogout() async {
+    await _auth.signOut();
+    if (mounted) {
+      Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+    }
+  }
+
   Widget _buildBottomActions(BuildContext context, String uid) {
     return Column(
       children: [
@@ -190,10 +197,7 @@ class _ProfilState extends State<Profil> {
               side: BorderSide(color: Colors.red.shade300, width: 1.2),
               padding: const EdgeInsets.symmetric(vertical: 16),
             ),
-            onPressed: () async {
-              await _auth.signOut();
-              Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
-            },
+            onPressed: _handleLogout,
           ),
         ),
         const SizedBox(height: 12),
