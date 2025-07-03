@@ -106,7 +106,7 @@ class _FeedState extends State<Feed> {
                       ),
                       const SizedBox(height: 20),
                       Text(
-                        'Dein Feed ist noch leer',
+                        'Keine Aktivitäten in den letzten 7 Tagen',
                         style: TextStyle(
                           color: colorScheme.onSurface.withOpacity(0.7),
                           fontSize: 18,
@@ -115,7 +115,7 @@ class _FeedState extends State<Feed> {
                       ),
                       const SizedBox(height: 10),
                       Text(
-                        'Folge Freunden, um ihre Aktivitäten zu sehen',
+                        'Füge Freunde hinzu, um ihre Aktivitäten zu sehen',
                         style: TextStyle(
                           color: colorScheme.onSurface.withOpacity(0.5),
                           fontSize: 14,

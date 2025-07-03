@@ -211,7 +211,6 @@ class AktivitaetHinzufuegen extends StatelessWidget {
                       'Speichern',
                       style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                         color: Colors.black,
-                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),

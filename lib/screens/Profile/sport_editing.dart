@@ -8,31 +8,11 @@ import '../../utils/snackbar.dart';
 
 class SportSelectionDialog {
   static const List<String> availableSports = [
-    'Laufen',
-    'Radfahren',
-    'Schwimmen',
-    'Krafttraining',
-    'Yoga',
-    'Pilates',
-    'Tennis',
-    'Fußball',
-    'Basketball',
-    'Volleyball',
-    'Wandern',
-    'Klettern',
-    'Boxen',
-    'Martial Arts',
-    'Crossfit',
-    'Tanzen',
-    'Golf',
-    'Badminton',
-    'Skifahren',
-    'Snowboarden',
-    'Surfen',
-    'Reiten',
-    'Rudern',
-    'Calisthenics',
-    'Andere',
+      'Krafttraining',
+      'Laufen',
+      'Tischtennis',
+      'Boxen',
+      'Fussball',
   ];
 
   static void show(
@@ -60,7 +40,7 @@ class SportSelectionDialog {
               child: Column(
                 children: [
                   Text(
-                    'Wähle deine Lieblingssportarten aus:',
+                    'Wähle Sportarten, die du regelmäßig machst:',
                     style: TextStyle(color: Colors.grey[300]),
                   ),
                   const SizedBox(height: 16),
@@ -137,7 +117,7 @@ class SportIcons extends StatelessWidget {
           "Deine Sportarten:",
           style: Theme.of(
             context,
-          ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
+          ).textTheme.bodySmall
         ),
         const SizedBox(height: 8),
         // Horizontale scrollbare Liste
@@ -187,20 +167,28 @@ class SportIcon extends StatelessWidget {
               width: 60,
               height: 60,
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: Theme.of(context).colorScheme.primary,
-                  width: 2,
+                gradient: LinearGradient(
+                  colors: [Color(0xFF1C499E), Color(0xFFB1D43A)],
+                  stops: [0.35, 1.0],
+                  begin: Alignment.bottomLeft,
+                  end: Alignment.topRight,
                 ),
               ),
-              child: Center(
-                child: Text(
-                  sportName.substring(0, 1).toUpperCase(),
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.primary,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
+              child: Container(
+                margin: const EdgeInsets.all(3), // Border thickness
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  borderRadius: BorderRadius.circular(9), // 12 - border thickness
+                ),
+                child: Center(
+                  child: Text(
+                    sportName.substring(0, 1).toUpperCase(),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
@@ -284,17 +272,17 @@ class AddSportIcon extends StatelessWidget {
             width: 60,
             height: 60,
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+              color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: Theme.of(context).colorScheme.primary,
+                color: Theme.of(context).colorScheme.onSurface,
                 width: 2,
               ),
             ),
             child: Center(
               child: Icon(
                 Icons.add,
-                color: Theme.of(context).colorScheme.primary,
+                color: Theme.of(context).colorScheme.onSurface,
                 size: 30,
               ),
             ),
@@ -304,7 +292,7 @@ class AddSportIcon extends StatelessWidget {
             'Sportarten',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
               fontSize: 12,
-              color: Colors.grey[400],
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
         ],

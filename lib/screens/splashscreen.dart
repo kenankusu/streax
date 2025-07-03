@@ -66,7 +66,8 @@ class _WrapperState extends State<Wrapper> {
             final currentUser = _auth.currentUser;
             if (currentUser != null) {
               return MaterialApp(
-                home: EmailVerificationScreen(email: currentUser.email ?? ''),
+                home: EmailVerificationScreen(email: currentUser.email ?? '',
+                uid: currentUser.uid), //UID muss auch übergeben werden, damit die welcome page auch nach verifizierung funktioniert
                 debugShowCheckedModeBanner: false,
                 theme: _buildAppTheme(),
               );
