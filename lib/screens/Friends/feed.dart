@@ -240,444 +240,454 @@ class _FeedState extends State<Feed> {
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Header mit Suchfeld und Benachrichtigungs-Button
-            Container(
-              padding: const EdgeInsets.all(20),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Suchfeld mit Gradient-Umrandung
-                  Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(27.5),
-                        gradient: LinearGradient(
-                          colors: [
-                            Theme.of(context).colorScheme.primary,
-                            Theme.of(context).colorScheme.secondary,
-                          ],
-                          begin: Alignment.centerLeft,
-                          end: Alignment.centerRight,
-                        ),
-                      ),
+      body: Stack(
+        children: [
+          // Hauptinhalt
+          Column(
+            children: [
+              // Header mit Suchfeld und Benachrichtigungs-Button
+              Container(
+                padding: const EdgeInsets.all(20),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Suchfeld mit Gradient-Umrandung
+                    Expanded(
                       child: Container(
-                        margin: EdgeInsets.all(1.5),
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(26),
-                          color: Theme.of(context).colorScheme.surface,
+                          borderRadius: BorderRadius.circular(27.5),
+                          gradient: LinearGradient(
+                            colors: [
+                              Theme.of(context).colorScheme.primary,
+                              Theme.of(context).colorScheme.secondary,
+                            ],
+                            begin: Alignment.centerLeft,
+                            end: Alignment.centerRight,
+                          ),
                         ),
-                        child: Column(
-                          children: [
-                            // Suchfeld
-                            Container(
-                              height: 55,
-                              child: TextField(
-                                controller: _searchController,
-                                focusNode: _searchFocusNode,
-                                style: TextStyle(color: Colors.white),
-                                textAlignVertical: TextAlignVertical.center,
-                                decoration: InputDecoration(
-                                  border: InputBorder.none,
-                                  contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 16),
-                                  prefixIcon: Padding(
-                                    padding: EdgeInsets.symmetric(horizontal: 16),
-                                    child: Icon(
-                                      Icons.search,
-                                      color: Colors.white70,
-                                      size: 22,
+                        child: Container(
+                          margin: EdgeInsets.all(1.5),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(26),
+                            color: Theme.of(context).colorScheme.surface,
+                          ),
+                          child: Column(
+                            children: [
+                              // Suchfeld
+                              Container(
+                                height: 55,
+                                child: TextField(
+                                  controller: _searchController,
+                                  focusNode: _searchFocusNode,
+                                  style: TextStyle(color: Colors.white),
+                                  textAlignVertical: TextAlignVertical.center,
+                                  decoration: InputDecoration(
+                                    border: InputBorder.none,
+                                    contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+                                    prefixIcon: Padding(
+                                      padding: EdgeInsets.symmetric(horizontal: 16),
+                                      child: Icon(
+                                        Icons.search,
+                                        color: Colors.white70,
+                                        size: 22,
+                                      ),
                                     ),
-                                  ),
-                                  prefixIconConstraints: BoxConstraints(
-                                    minWidth: 54,
-                                    minHeight: 55,
-                                  ),
-                                  hintText: 'Nutzer suchen...',
-                                  hintStyle: TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 16,
-                                  ),
-                                  suffixIcon: _searchController.text.isNotEmpty
-                                      ? Padding(
-                                          padding: EdgeInsets.symmetric(horizontal: 16),
-                                          child: IconButton(
-                                            icon: Icon(Icons.clear, color: Colors.white70, size: 20),
-                                            onPressed: () {
-                                              _searchController.clear();
-                                              _searchFocusNode.unfocus();
-                                              setState(() {
-                                                _searchQuery = '';
-                                                _exactMatch = null;
-                                                _isAlreadyFriend = false;
-                                                _requestSent = false;
-                                              });
-                                            },
-                                          ),
-                                        )
-                                      : null,
-                                  suffixIconConstraints: BoxConstraints(
-                                    minWidth: 54,
-                                    minHeight: 55,
+                                    prefixIconConstraints: BoxConstraints(
+                                      minWidth: 54,
+                                      minHeight: 55,
+                                    ),
+                                    hintText: 'Nutzer suchen...',
+                                    hintStyle: TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 16,
+                                    ),
+                                    suffixIcon: _searchController.text.isNotEmpty
+                                        ? Padding(
+                                            padding: EdgeInsets.symmetric(horizontal: 16),
+                                            child: IconButton(
+                                              icon: Icon(Icons.clear, color: Colors.white70, size: 20),
+                                              onPressed: () {
+                                                _searchController.clear();
+                                                _searchFocusNode.unfocus();
+                                                setState(() {
+                                                  _searchQuery = '';
+                                                  _exactMatch = null;
+                                                  _isAlreadyFriend = false;
+                                                  _requestSent = false;
+                                                });
+                                              },
+                                            ),
+                                          )
+                                        : null,
+                                    suffixIconConstraints: BoxConstraints(
+                                      minWidth: 54,
+                                      minHeight: 55,
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                            // Erweiterte Suchansicht - zeigt Suchergebnisse unter dem Suchfeld an
-                            if (_isSearchExpanded && _searchQuery.isNotEmpty) ...[
-                              Container(
-                                width: double.infinity,
-                                height: 1,
-                                color: Colors.white.withOpacity(0.1),
-                              ),
-                              Container(
-                                padding: EdgeInsets.all(16),
-                                child: _isSearching
-                                    ? Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          SizedBox(
-                                            width: 20,
-                                            height: 20,
-                                            child: CircularProgressIndicator(
-                                              color: Theme.of(context).colorScheme.primary,
-                                              strokeWidth: 2,
+                              // Erweiterte Suchansicht - zeigt Suchergebnisse unter dem Suchfeld an
+                              if (_isSearchExpanded && _searchQuery.isNotEmpty) ...[
+                                Container(
+                                  width: double.infinity,
+                                  height: 1,
+                                  color: Colors.white.withOpacity(0.1),
+                                ),
+                                Container(
+                                  padding: EdgeInsets.all(16),
+                                  child: _isSearching
+                                      ? Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            SizedBox(
+                                              width: 20,
+                                              height: 20,
+                                              child: CircularProgressIndicator(
+                                                color: Theme.of(context).colorScheme.primary,
+                                                strokeWidth: 2,
+                                              ),
                                             ),
-                                          ),
-                                          SizedBox(width: 12),
-                                          Text(
-                                            'Suche nach "$_searchQuery"...',
-                                            style: TextStyle(color: Colors.white70, fontSize: 14),
-                                          ),
-                                        ],
-                                      )
-                                    : _exactMatch != null
-                                        ? Row(
-                                            children: [
-                                              CircleAvatar(
-                                                radius: 20,
-                                                backgroundColor: Colors.grey[300],
-                                                backgroundImage: _exactMatch!['profileImageUrl'] != null &&
-                                                        _exactMatch!['profileImageUrl'].toString().isNotEmpty
-                                                    ? NetworkImage(_exactMatch!['profileImageUrl'])
-                                                    : null,
-                                                child: _exactMatch!['profileImageUrl'] == null ||
-                                                        _exactMatch!['profileImageUrl'].toString().isEmpty
-                                                    ? Icon(Icons.person, color: Colors.grey[600], size: 24)
-                                                    : null,
-                                              ),
-                                              
-                                              SizedBox(width: 12),
-                                              
-                                              Expanded(
-                                                child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      '${_exactMatch!['firstName']} ${_exactMatch!['lastName']}'.trim(),
-                                                      style: TextStyle(
-                                                        color: Colors.white,
-                                                        fontSize: 14,
-                                                        fontWeight: FontWeight.bold,
-                                                      ),
-                                                    ),
-                                                    Text(
-                                                      '@${_exactMatch!['username']}',
-                                                      style: TextStyle(
-                                                        color: Colors.white70,
-                                                        fontSize: 12,
-                                                      ),
-                                                    ),
-                                                    if (_exactMatch!['streak'] > 0)
-                                                      Text(
-                                                        '🔥 ${_exactMatch!['streak']} Tag${_exactMatch!['streak'] == 1 ? '' : 'e'} Streak',
-                                                        style: TextStyle(
-                                                          color: Theme.of(context).colorScheme.primary,
-                                                          fontSize: 10,
-                                                          fontWeight: FontWeight.w500,
-                                                        ),
-                                                      ),
-                                                  ],
-                                                ),
-                                              ),
-                                              
-                                              // Dynamischer Button: Freund hinzufügen / Anfrage gesendet / Bereits Freund
-                                              Container(
-                                                width: 35,
-                                                height: 35,
-                                                decoration: BoxDecoration(
-                                                  gradient: _isAlreadyFriend
-                                                      ? LinearGradient(
-                                                          colors: [
-                                                            Color(0xFF4CAF50),
-                                                            Color(0xFF66BB6A),
-                                                          ],
-                                                          begin: Alignment.centerLeft,
-                                                          end: Alignment.centerRight,
-                                                        )
-                                                      : _requestSent
-                                                          ? null
-                                                          : LinearGradient(
-                                                              colors: [
-                                                                Theme.of(context).colorScheme.primary,
-                                                                Theme.of(context).colorScheme.secondary,
-                                                              ],
-                                                              begin: Alignment.centerLeft,
-                                                              end: Alignment.centerRight,
-                                                            ),
-                                                  color: _requestSent ? Colors.grey : null,
-                                                  borderRadius: BorderRadius.circular(17.5),
-                                                  boxShadow: _isAlreadyFriend
-                                                      ? [
-                                                          BoxShadow(
-                                                            color: Color(0xFF4CAF50).withOpacity(0.3),
-                                                            blurRadius: 4,
-                                                            offset: Offset(0, 2),
-                                                          ),
-                                                        ]
+                                            SizedBox(width: 12),
+                                            Text(
+                                              'Suche nach "$_searchQuery"...',
+                                              style: TextStyle(color: Colors.white70, fontSize: 14),
+                                            ),
+                                          ],
+                                        )
+                                      : _exactMatch != null
+                                          ? Row(
+                                              children: [
+                                                CircleAvatar(
+                                                  radius: 20,
+                                                  backgroundColor: Colors.grey[300],
+                                                  backgroundImage: _exactMatch!['profileImageUrl'] != null &&
+                                                          _exactMatch!['profileImageUrl'].toString().isNotEmpty
+                                                      ? NetworkImage(_exactMatch!['profileImageUrl'])
+                                                      : null,
+                                                  child: _exactMatch!['profileImageUrl'] == null ||
+                                                          _exactMatch!['profileImageUrl'].toString().isEmpty
+                                                      ? Icon(Icons.person, color: Colors.grey[600], size: 24)
                                                       : null,
                                                 ),
-                                                child: IconButton(
-                                                  onPressed: (_isAlreadyFriend || _requestSent) ? null : () {
-                                                    setState(() {
-                                                      _requestSent = true;
-                                                    });
-                                                    
-                                                    FriendActions.sendFriendRequest(
-                                                      context,
-                                                      _exactMatch!,
-                                                      () {
-                                                        ScaffoldMessenger.of(context).showSnackBar(
-                                                          SnackBar(
-                                                            content: Text('Freundschaftsanfrage gesendet!'),
-                                                            backgroundColor: Colors.green,
+                                                
+                                                SizedBox(width: 12),
+                                                
+                                                Expanded(
+                                                  child: Column(
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    children: [
+                                                      Text(
+                                                        '${_exactMatch!['firstName']} ${_exactMatch!['lastName']}'.trim(),
+                                                        style: TextStyle(
+                                                          color: Colors.white,
+                                                          fontSize: 14,
+                                                          fontWeight: FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                      Text(
+                                                        '@${_exactMatch!['username']}',
+                                                        style: TextStyle(
+                                                          color: Colors.white70,
+                                                          fontSize: 12,
+                                                        ),
+                                                      ),
+                                                      if (_exactMatch!['streak'] > 0)
+                                                        Text(
+                                                          '🔥 ${_exactMatch!['streak']} Tag${_exactMatch!['streak'] == 1 ? '' : 'e'} Streak',
+                                                          style: TextStyle(
+                                                            color: Theme.of(context).colorScheme.primary,
+                                                            fontSize: 10,
+                                                            fontWeight: FontWeight.w500,
                                                           ),
-                                                        );
-                                                      },
-                                                    );
-                                                  },
-                                                  icon: Icon(
-                                                    _isAlreadyFriend 
-                                                        ? Icons.check 
-                                                        : _requestSent 
-                                                            ? Icons.hourglass_empty
-                                                            : Icons.person_add,
-                                                    color: Colors.white,
-                                                    size: 18,
+                                                        ),
+                                                    ],
                                                   ),
-                                                  padding: EdgeInsets.zero,
                                                 ),
-                                              ),
-                                            ],
-                                          )
-                                        : Row(
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            children: [
-                                              Icon(
-                                                Icons.search_off,
-                                                color: Colors.white70,
-                                                size: 20,
-                                              ),
-                                              SizedBox(width: 8),
-                                              Text(
-                                                'Kein User mit diesem Namen gefunden',
-                                                style: TextStyle(color: Colors.white70, fontSize: 14),
-                                              ),
-                                            ],
-                                          ),
-                              ),
+                                                
+                                                // Dynamischer Button: Freund hinzufügen / Anfrage gesendet / Bereits Freund
+                                                Container(
+                                                  width: 35,
+                                                  height: 35,
+                                                  decoration: BoxDecoration(
+                                                    gradient: _isAlreadyFriend
+                                                        ? LinearGradient(
+                                                            colors: [
+                                                              Color(0xFF4CAF50),
+                                                              Color(0xFF66BB6A),
+                                                            ],
+                                                            begin: Alignment.centerLeft,
+                                                            end: Alignment.centerRight,
+                                                          )
+                                                        : _requestSent
+                                                            ? null
+                                                            : LinearGradient(
+                                                                colors: [
+                                                                  Theme.of(context).colorScheme.primary,
+                                                                  Theme.of(context).colorScheme.secondary,
+                                                                ],
+                                                                begin: Alignment.centerLeft,
+                                                                end: Alignment.centerRight,
+                                                              ),
+                                                    color: _requestSent ? Colors.grey : null,
+                                                    borderRadius: BorderRadius.circular(17.5),
+                                                    boxShadow: _isAlreadyFriend
+                                                        ? [
+                                                            BoxShadow(
+                                                              color: Color(0xFF4CAF50).withOpacity(0.3),
+                                                              blurRadius: 4,
+                                                              offset: Offset(0, 2),
+                                                            ),
+                                                          ]
+                                                        : null,
+                                                  ),
+                                                  child: IconButton(
+                                                    onPressed: (_isAlreadyFriend || _requestSent) ? null : () {
+                                                      setState(() {
+                                                        _requestSent = true;
+                                                      });
+                                                      
+                                                      FriendActions.sendFriendRequest(
+                                                        context,
+                                                        _exactMatch!,
+                                                        () {
+                                                          ScaffoldMessenger.of(context).showSnackBar(
+                                                            SnackBar(
+                                                              content: Text('Freundschaftsanfrage gesendet!'),
+                                                              backgroundColor: Colors.green,
+                                                            ),
+                                                          );
+                                                        },
+                                                      );
+                                                    },
+                                                    icon: Icon(
+                                                      _isAlreadyFriend 
+                                                          ? Icons.check 
+                                                          : _requestSent 
+                                                              ? Icons.hourglass_empty
+                                                              : Icons.person_add,
+                                                      color: Colors.white,
+                                                      size: 18,
+                                                    ),
+                                                    padding: EdgeInsets.zero,
+                                                  ),
+                                                ),
+                                              ],
+                                            )
+                                          : Row(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                Icon(
+                                                  Icons.search_off,
+                                                  color: Colors.white70,
+                                                  size: 20,
+                                                ),
+                                                SizedBox(width: 8),
+                                                Text(
+                                                  'Kein User mit diesem Namen gefunden',
+                                                  style: TextStyle(color: Colors.white70, fontSize: 14),
+                                                ),
+                                              ],
+                                            ),
+                                ),
+                              ],
                             ],
-                          ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 15),
-                  
-                  // Freunde-Button mit Benachrichtigungs-Badge für neue Anfragen
-                  StreamBuilder<QuerySnapshot>(
-                    stream: DatabaseService(uid: currentUser.uid).incomingFriendRequests,
-                    builder: (context, requestSnapshot) {
-                      final requestCount = requestSnapshot.hasData ? requestSnapshot.data!.docs.length : 0;
-                      
-                      return Stack(
-                        children: [
-                          Container(
-                            width: 55,
-                            height: 55,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  Theme.of(context).colorScheme.primary,
-                                  Theme.of(context).colorScheme.secondary,
-                                ],
-                                begin: Alignment.centerLeft,
-                                end: Alignment.centerRight,
-                              ),
-                              shape: BoxShape.circle,
-                            ),
-                            child: IconButton(
-                              onPressed: () {
-                                Navigator.of(context).push(
-                                  PageRouteBuilder(
-                                    pageBuilder: (context, animation, secondaryAnimation) => FriendsSlideInView(),
-                                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                                      const begin = Offset(1.0, 0.0);
-                                      const end = Offset.zero;
-                                      const curve = Curves.easeInOutCubic;
-
-                                      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-                                      var offsetAnimation = animation.drive(tween);
-
-                                      return SlideTransition(
-                                        position: offsetAnimation,
-                                        child: child,
-                                      );
-                                    },
-                                    transitionDuration: Duration(milliseconds: 300),
-                                  ),
-                                );
-                              },
-                              icon: Icon(
-                                Icons.group,
-                                color: Colors.white,
-                                size: 24,
-                              ),
-                            ),
-                          ),
-                          // Badge für Anzhal Freundschaftsanfragen
-                          if (requestCount > 0)
-                            Positioned(
-                              right: -2,
-                              top: -2,
-                              child: Container(
-                                width: 22,
-                                height: 22,
-                                decoration: BoxDecoration(
-                                  color: Colors.red,
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: Theme.of(context).colorScheme.surface,
-                                    width: 2.5,
-                                  ),
+                    const SizedBox(width: 15),
+                    
+                    // Freunde-Button mit Benachrichtigungs-Badge für neue Anfragen
+                    StreamBuilder<QuerySnapshot>(
+                      stream: DatabaseService(uid: currentUser.uid).incomingFriendRequests,
+                      builder: (context, requestSnapshot) {
+                        final requestCount = requestSnapshot.hasData ? requestSnapshot.data!.docs.length : 0;
+                        
+                        return Stack(
+                          children: [
+                            Container(
+                              width: 55,
+                              height: 55,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Theme.of(context).colorScheme.primary,
+                                    Theme.of(context).colorScheme.secondary,
+                                  ],
+                                  begin: Alignment.centerLeft,
+                                  end: Alignment.centerRight,
                                 ),
-                                child: Center(
-                                  child: Text(
-                                    requestCount > 99 ? '99+' : requestCount.toString(),
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: requestCount > 99 ? 8 : 10,
-                                      fontWeight: FontWeight.bold,
-                                      height: 1.0,
+                                shape: BoxShape.circle,
+                              ),
+                              child: IconButton(
+                                onPressed: () {
+                                  Navigator.of(context).push(
+                                    PageRouteBuilder(
+                                      pageBuilder: (context, animation, secondaryAnimation) => FriendsSlideInView(),
+                                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                        const begin = Offset(1.0, 0.0);
+                                        const end = Offset.zero;
+                                        const curve = Curves.easeInOutCubic;
+
+                                        var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                                        var offsetAnimation = animation.drive(tween);
+
+                                        return SlideTransition(
+                                          position: offsetAnimation,
+                                          child: child,
+                                        );
+                                      },
+                                      transitionDuration: Duration(milliseconds: 300),
                                     ),
-                                    textAlign: TextAlign.center,
-                                  ),
+                                  );
+                                },
+                                icon: Icon(
+                                  Icons.group,
+                                  color: Colors.white,
+                                  size: 24,
                                 ),
                               ),
                             ),
-                        ],
-                      );
-                    },
-                  ),
-                ],
+                            // Badge für Anzhal Freundschaftsanfragen
+                            if (requestCount > 0)
+                              Positioned(
+                                right: -2,
+                                top: -2,
+                                child: Container(
+                                  width: 22,
+                                  height: 22,
+                                  decoration: BoxDecoration(
+                                    color: Colors.red,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: Theme.of(context).colorScheme.surface,
+                                      width: 2.5,
+                                    ),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      requestCount > 99 ? '99+' : requestCount.toString(),
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: requestCount > 99 ? 8 : 10,
+                                        fontWeight: FontWeight.bold,
+                                        height: 1.0,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
-            ),
 
-            // Feed mit Aktivitäten der Freunde
-            Expanded(
-              child: StreamBuilder<List<Map<String, dynamic>>>(
-                stream: _cachedFeedStream,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          CircularProgressIndicator(color: colorScheme.primary),
-                          SizedBox(height: 16),
-                          Text(
-                            'Lade Feed...',
-                            style: TextStyle(color: Colors.grey[400]),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-
-                  if (snapshot.hasError) {
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.error_outline, size: 64, color: Colors.red[400]),
-                          SizedBox(height: 16),
-                          Text(
-                            'Fehler beim Laden des Feeds',
-                            style: TextStyle(color: Colors.red[400]),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-
-                  final activities = snapshot.data ?? [];
-
-                  if (activities.isEmpty) {
-                    return Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Center(
+              // Feed mit Aktivitäten der Freunde
+              Expanded(
+                child: StreamBuilder<List<Map<String, dynamic>>>(
+                  stream: _cachedFeedStream,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
+                      return Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(
-                              Icons.group_outlined,
-                              size: 80,
-                              color: colorScheme.onSurface.withOpacity(0.3),
-                            ),
-                            const SizedBox(height: 20),
+                            CircularProgressIndicator(color: colorScheme.primary),
+                            SizedBox(height: 16),
                             Text(
-                              'Keine Aktivitäten in den letzten 7 Tagen',
-                              style: TextStyle(
-                                color: colorScheme.onSurface.withOpacity(0.7),
-                                fontSize: 18,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            Text(
-                              'Füge Freunde hinzu, um deinen Feed zu füllen!',
-                              style: TextStyle(
-                                color: colorScheme.onSurface.withOpacity(0.5),
-                                fontSize: 14,
-                              ),
-                              textAlign: TextAlign.center,
+                              'Lade Feed...',
+                              style: TextStyle(color: Colors.grey[400]),
                             ),
                           ],
                         ),
-                      ),
-                    );
-                  }
-
-                  // Liste der Aktivitäten anzeigen
-                  return ListView.builder(
-                    padding: EdgeInsets.fromLTRB(20, 28, 20, 10),
-                    itemCount: activities.length,
-                    itemBuilder: (context, index) {
-                      final activity = activities[index];
-                      return ActivityCard(
-                        activity: activity, 
-                        timeAgo: _getTimeAgo(activity['timestamp']),
                       );
-                    },
-                  );
-                },
+                    }
+
+                    if (snapshot.hasError) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.error_outline, size: 64, color: Colors.red[400]),
+                            SizedBox(height: 16),
+                            Text(
+                              'Fehler beim Laden des Feeds',
+                              style: TextStyle(color: Colors.red[400]),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
+                    final activities = snapshot.data ?? [];
+
+                    if (activities.isEmpty) {
+                      return Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.group_outlined,
+                                size: 80,
+                                color: colorScheme.onSurface.withOpacity(0.3),
+                              ),
+                              const SizedBox(height: 20),
+                              Text(
+                                'Keine Aktivitäten in den letzten 7 Tagen',
+                                style: TextStyle(
+                                  color: colorScheme.onSurface.withOpacity(0.7),
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                'Füge Freunde hinzu, um deinen Feed zu füllen!',
+                                style: TextStyle(
+                                  color: colorScheme.onSurface.withOpacity(0.5),
+                                  fontSize: 14,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }
+
+                    // Liste der Aktivitäten anzeigen
+                    return ListView.builder(
+                      padding: EdgeInsets.fromLTRB(20, 28, 20, 10),
+                      itemCount: activities.length,
+                      itemBuilder: (context, index) {
+                        final activity = activities[index];
+                        return ActivityCard(
+                          activity: activity, 
+                          timeAgo: _getTimeAgo(activity['timestamp']),
+                        );
+                      },
+                    );
+                  },
+                ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
+          
+          // Navigation Bar am unteren Rand
+          const Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: NavigationsLeiste(currentPage: 1),
+          ),
+        ],
       ),
-      bottomNavigationBar: const NavigationsLeiste(currentPage: 1),
     );
   }
 }

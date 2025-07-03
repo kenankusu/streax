@@ -5,8 +5,6 @@ import '../Shared/navigationbar.dart';
 import 'package:streax/Services/database.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
-// Importiere der gruppierten Module
 import 'Profile_widgets.dart';
 import 'sport_editing.dart';
 import 'delete_account.dart';
@@ -57,33 +55,11 @@ class _ProfileState extends State<Profile> {
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        title: const Text(
-          'Profil',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 22,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        iconTheme: const IconThemeData(color: Colors.white),
-        flexibleSpace: Container(),
-        scrolledUnderElevation: 0,
-        surfaceTintColor: Colors.transparent,
-        shadowColor: Colors.transparent,
-      ),
       body: Stack(
         children: [
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 100,
+          // Hauptinhalt - füllt den ganzen Bildschirm
+          SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(20, 48, 20, 100), // Top padding für Status Bar, Bottom für Navigation
             child: StreamBuilder<DocumentSnapshot>(
               stream: DatabaseService(uid: user.uid).userData,
               builder: (context, snapshot) {
@@ -97,69 +73,77 @@ class _ProfileState extends State<Profile> {
 
                 var userData = snapshot.data!.data() as Map<String, dynamic>;
 
-                return SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      // Profil Header (Avatar, Name, bearbeiten/teilen buttons)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 24),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.surfaceContainer,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-                          child: ProfileHeader(userData: userData, uid: user.uid),
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Titel
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 32),
+                      child: Text(
+                        'Profil',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 22,
                         ),
                       ),
-
-                      // Sportarten auswählen
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 24),
-                        child: Container(
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.surfaceContainer,
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-                          child: SportIcons(userData: userData, uid: user.uid),
+                    ),
+                    
+                    // Profil Header (Avatar, Name, Edit/Share buttons)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 24),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.surfaceContainer,
+                          borderRadius: BorderRadius.circular(20),
                         ),
+                        padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                        child: ProfileHeader(userData: userData, uid: user.uid),
                       ),
+                    ),
 
-                      // Profil Info (Streak, Gewicht, Größe, etc.)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 32),
-                        child: Container(
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.surfaceContainer,
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-                          child: ProfileInfo(userData: userData),
+                    // Sportarten auswählen
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 24),
+                      child: Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.surfaceContainer,
+                          borderRadius: BorderRadius.circular(16),
                         ),
+                        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+                        child: SportIcons(userData: userData, uid: user.uid),
                       ),
+                    ),
 
-                      // Linie oben
-                      const Divider(color: Colors.grey, thickness: 0.7, height: 24),
-
-                      // Bottom Actions
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 12.0),
-                        child: _buildBottomActions(context, user.uid),
+                    // Profil Info (Streak, Gewicht, Größe, etc.)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 32),
+                      child: Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.surfaceContainer,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+                        child: ProfileInfo(userData: userData),
                       ),
+                    ),
 
-                      // Extra Abstand für die Navigation Bar
-                      const SizedBox(height: 40),
-                    ],
-                  ),
+                    // Linie oben
+                    const Divider(color: Colors.grey, thickness: 0.7, height: 24),
+
+                    // Bottom Actions
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12.0),
+                      child: _buildBottomActions(context, user.uid),
+                    ),
+                  ],
                 );
               },
             ),
           ),
+          
           // Navigation Bar
           const Positioned(
             bottom: 0,
