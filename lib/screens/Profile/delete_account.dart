@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:streax/Services/auth.dart';
 import 'package:streax/Services/database.dart';
 
-// Account löschen
-
+/// Sichere Account-Löschung mit doppelter Bestätigung
+/// Implementiert mehrstufigen Löschprozess zur Vermeidung versehentlicher Löschungen
 class DeleteAccountDialog {
+  
+  /// Zeigt erste Bestätigungsebene für Account-Löschung
+  /// Erklärt dem User die Konsequenzen der Löschung
   static void show(
     BuildContext context,
     String uid,
@@ -39,6 +42,8 @@ class DeleteAccountDialog {
     );
   }
 
+  /// Zeigt zweite und finale Bestätigungsebene
+  /// Letzte Chance für den User, die Löschung abzubrechen
   static void _showFinalConfirmation(
     BuildContext context,
     String uid,
@@ -79,11 +84,14 @@ class DeleteAccountDialog {
     );
   }
 
+  /// Führt die tatsächliche Account-Löschung durch
+  /// Löscht zuerst Firestore-Daten, dann Firebase Auth Account
   static Future<void> _deleteAccount(
     BuildContext context,
     String uid,
     Function(bool) setDeleting,
   ) async {
+    // Loading-State aktivieren
     setDeleting(true);
 
     try {
@@ -99,14 +107,18 @@ class DeleteAccountDialog {
 
       if (!firestoreDeleted || !authDeleted) {
         setDeleting(false);
-        _showErrorDialog(
-          context,
-          'Beim Löschen des Accounts ist ein Fehler aufgetreten.',
-        );
+        if (context.mounted) {
+          _showErrorDialog(
+            context,
+            'Beim Löschen des Accounts ist ein Fehler aufgetreten.',
+          );
+        }
       }
     } catch (e) {
       setDeleting(false);
-      _showErrorDialog(context, 'Unerwarteter Fehler: $e');
+      if (context.mounted) {
+        _showErrorDialog(context, 'Unerwarteter Fehler: $e');
+      }
     }
   }
 

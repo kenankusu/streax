@@ -2,75 +2,82 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:streax/Models/user.dart';
 
+/// Authentication Service für Firebase Auth-Operationen
+/// Verwaltet Registrierung, Login, Email-Verifizierung und Passwort-Reset
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  // User-Objekt nur für verifizierte Firebase-User erstellen
+  /// Konvertiert Firebase User zu StreaxUser - nur für verifizierte Accounts
   StreaxUser? _userFromFirebaseUser(User? user) {
     return (user != null && user.emailVerified) ? StreaxUser(uid: user.uid) : null;
   }
 
-  // Haupt-Auth-Stream für Provider
+  /// Haupt-Auth-Stream für den Provider - nur verifizierte User
   Stream<StreaxUser?> get user {
     return _auth.authStateChanges().map(_userFromFirebaseUser);
   }
 
-  // Prüft ob User eingeloggt aber nicht verifiziert ist
+  /// Prüft ob User eingeloggt aber noch nicht verifiziert ist
   bool get isUserLoggedInButNotVerified {
     final user = _auth.currentUser;
     return user != null && !user.emailVerified;
   }
 
-  // Direkter Zugriff auf Firebase-User für Verifizierungs-Operationen
+  /// Direkter Zugriff auf Firebase-User für Verifizierungs-Operationen
   User? get currentUser => _auth.currentUser;
 
-  // Login-Methode mit Email-Verifizierung Check
+  /// Login mit Email/Passwort und Email-Verifizierung-Check
+  /// Wirft FirebaseAuthException bei Fehlern
   Future<StreaxUser?> signInWithEmailAndPassword(String email, String password) async {
     try {
+      // Deutsche Firebase-Nachrichten aktivieren
       await _auth.setLanguageCode('de');
       
       UserCredential result = await _auth.signInWithEmailAndPassword(
-        email: email, 
+        email: email.trim(), 
         password: password
       );
       
       User? user = result.user;
 
-      // Sofort prüfen ob Email verifiziert ist
+      // Email-Verifizierung sofort prüfen
       if (user != null && !user.emailVerified) {
-        debugPrint('Login erfolgreich, aber Email nicht verifiziert');
+        debugPrint('Login erfolgreich, aber Email nicht verifiziert für: ${user.email}');
         throw FirebaseAuthException(
           code: 'email-not-verified',
           message: 'Email-Adresse ist nicht verifiziert'
         );
       }
 
-      debugPrint('Login erfolgreich');
+      debugPrint('Login erfolgreich für: ${user?.email}');
       return _userFromFirebaseUser(user);
     } on FirebaseAuthException catch (e) {
       debugPrint('Anmelde-Fehler: ${e.code} - ${e.message}');
       rethrow;
     } catch (e) {
-      debugPrint('Anmelde-Fehler: ${e.toString()}');
+      debugPrint('Unerwarteter Login-Fehler: ${e.toString()}');
       rethrow;
     }
   }
 
-  // Registrierung mit automatischer Email-Verifizierung
+  /// Registrierung mit automatischer Email-Verifizierung
+  /// Gibt detaillierte Erfolgs/Fehler-Map zurück
   Future<Map<String, dynamic>> registerWithEmailAndPassword(String email, String password) async {
     try {
+      // Deutsche Firebase-Nachrichten aktivieren
       await _auth.setLanguageCode('de');
       
       UserCredential result = await _auth.createUserWithEmailAndPassword(
-        email: email, 
+        email: email.trim(), 
         password: password
       );
       
       User? user = result.user;
       
       if (user != null) {
+        // Verifizierungs-Email sofort senden
         await user.sendEmailVerification();
-        debugPrint('Registrierung erfolgreich, Verifizierungs-Email gesendet');
+        debugPrint('Registrierung erfolgreich für: ${user.email}, Verifizierungs-Email gesendet');
         
         return {
           'success': true,
@@ -92,7 +99,7 @@ class AuthService {
         'error': _getGermanErrorMessage(e.code)
       };
     } catch (e) {
-      debugPrint('Registrierungs-Fehler: ${e.toString()}');
+      debugPrint('Unerwarteter Registrierungs-Fehler: ${e.toString()}');
       return {
         'success': false,
         'error': 'Ein unerwarteter Fehler ist aufgetreten'
@@ -100,127 +107,149 @@ class AuthService {
     }
   }
 
-  // Deutsche Fehlermeldungen
+  /// Konvertiert Firebase-Fehlercodes zu deutschen Benutzer-Nachrichten
   String _getGermanErrorMessage(String errorCode) {
     switch (errorCode) {
       case 'weak-password':
-        return 'Das Passwort ist zu schwach';
+        return 'Das Passwort ist zu schwach (mindestens 10 Zeichen)';
       case 'email-already-in-use':
         return 'Diese Email-Adresse wird bereits verwendet';
       case 'invalid-email':
         return 'Ungültige Email-Adresse';
       case 'operation-not-allowed':
         return 'Email/Passwort-Anmeldung ist deaktiviert';
+      case 'too-many-requests':
+        return 'Zu viele Anfragen. Bitte versuche es später erneut';
       default:
-        return 'Registrierung fehlgeschlagen';
+        return 'Registrierung fehlgeschlagen. Bitte versuche es erneut';
     }
   }
 
-  // Verifizierungs-Email erneut senden
+  /// Verifizierungs-Email erneut senden mit Spam-Schutz
+  /// Behandelt "too-many-requests" als Erfolg da Email bereits versendet
   Future<bool> resendEmailVerification() async {
     try {
       User? user = _auth.currentUser;
+      if (user == null) {
+        debugPrint('Kein User eingeloggt für Email-Resend');
+        return false;
+      }
+
+      // User-Status vom Server aktualisieren
+      await user.reload();
+      user = _auth.currentUser;
+      
       if (user != null && !user.emailVerified) {
-        await user.reload(); // User-Status vom Server aktualisieren
-        user = _auth.currentUser;
-        
-        if (user != null && !user.emailVerified) {
-          await user.sendEmailVerification();
-          debugPrint('Verifizierungs-Email erneut gesendet an: ${user.email}');
-          return true;
-        } else {
-          debugPrint('User ist bereits verifiziert');
-          return false;
-        }
+        await user.sendEmailVerification();
+        debugPrint('Verifizierungs-Email erneut gesendet an: ${user.email}');
+        return true;
+      } else if (user != null && user.emailVerified) {
+        debugPrint('User ${user.email} ist bereits verifiziert');
+        return false;
       } else {
         debugPrint('Kein User eingeloggt oder bereits verifiziert');
         return false;
       }
     } on FirebaseAuthException catch (e) {
-      debugPrint('Firebase Auth Fehler: ${e.code} - ${e.message}');
+      debugPrint('Firebase Auth Fehler beim Email-Resend: ${e.code} - ${e.message}');
       switch (e.code) {
         case 'too-many-requests':
-          debugPrint('Zu viele Requests - Email wurde bereits gesendet');
-          return true; // Als Erfolg werten da Email bereits versendet
+          debugPrint('Email-Spam-Schutz aktiv - Email wurde bereits kürzlich gesendet');
+          return true; // Als Erfolg werten, da Email bereits versendet wurde
         case 'user-not-found':
-          debugPrint('User nicht gefunden');
+          debugPrint('User für Email-Resend nicht gefunden');
           return false;
         default:
           return false;
       }
     } catch (e) {
-      debugPrint('Allgemeiner Fehler beim Email-Versand: $e');
+      debugPrint('Unerwarteter Fehler beim Email-Resend: $e');
       return false;
     }
   }
 
-  // Email-Verifizierungsstatus prüfen mit Server-Reload
+  /// Email-Verifizierungsstatus mit Server-Synchronisation prüfen
+  /// Wartet kurz für Firebase-Server-Synchronisation
   Future<bool> checkEmailVerification() async {
     try {
       User? user = _auth.currentUser;
-      if (user != null) {
-        // User-Daten vom Firebase-Server neu laden
-        await user.reload();
-        await Future.delayed(const Duration(seconds: 2)); // Firebase Zeit für Synchronisation geben
-        
-        user = _auth.currentUser;
-        bool isVerified = user?.emailVerified ?? false;
-        
-        debugPrint('Email-Verifizierung Status: $isVerified');
-        return isVerified;
+      if (user == null) {
+        debugPrint('Kein User für Verifizierungs-Check eingeloggt');
+        return false;
       }
-      return false;
+
+      // User-Daten vom Firebase-Server neu laden
+      await user.reload();
+      // Kurze Wartezeit für Server-Synchronisation
+      await Future.delayed(const Duration(seconds: 1));
+        
+      // Aktuellen User-Status holen
+      user = _auth.currentUser;
+      bool isVerified = user?.emailVerified ?? false;
+        
+      debugPrint('Email-Verifizierung Status für ${user?.email}: $isVerified');
+      return isVerified;
     } catch (e) {
-      debugPrint('Fehler beim Prüfen der Email-Verifizierung: $e');
+      debugPrint('Fehler beim Email-Verifizierungs-Check: $e');
       return false;
     }
   }
 
-  // Sicherer Logout mit Fehlerbehandlung
-  Future signOut() async {
+  /// Sicherer Logout mit vollständiger Session-Bereinigung
+  Future<void> signOut() async {
     try {
+      final userEmail = _auth.currentUser?.email;
       await _auth.signOut();
-      debugPrint('Logout erfolgreich');
+      debugPrint('Logout erfolgreich für: $userEmail');
     } catch (e) {
-      debugPrint('Logout Fehler: ${e.toString()}');
-      return null;
+      debugPrint('Logout-Fehler: ${e.toString()}');
     }
   }
 
-  // Account vollständig löschen
+  /// Account vollständig und unwiderruflich löschen
   Future<bool> deleteAccount() async {
     try {
       User? user = _auth.currentUser;
       if (user == null) {
-        debugPrint('Kein User eingeloggt');
+        debugPrint('Kein User für Account-Löschung eingeloggt');
         return false;
       }
 
+      final userEmail = user.email;
+      
       // Firebase Auth Account unwiderruflich löschen
       await user.delete();
       // Zusätzlicher expliziter Logout für Sicherheit
       await _auth.signOut();
       
-      debugPrint('Account erfolgreich gelöscht und ausgeloggt');
+      debugPrint('Firebase Auth Account erfolgreich gelöscht für: $userEmail');
       return true;
+    } on FirebaseAuthException catch (e) {
+      debugPrint('Firebase Auth Löschungs-Fehler: ${e.code} - ${e.message}');
+      if (e.code == 'requires-recent-login') {
+        debugPrint('Account-Löschung erfordert erneute Anmeldung');
+      }
+      return false;
     } catch (e) {
-      debugPrint('Account-Löschung fehlgeschlagen: ${e.toString()}');
+      debugPrint('Unerwarteter Account-Löschungs-Fehler: ${e.toString()}');
       return false;
     }
   }
 
-  // Passwort-Reset-Email versenden
+  /// Passwort-Reset-Email versenden mit deutscher Lokalisierung
+  /// Wirft FirebaseAuthException bei spezifischen Fehlern
   Future<bool> sendPasswordResetEmail(String email) async {
     try {
-      await _auth.setLanguageCode('de'); // Deutsche Reset-Emails
-      await _auth.sendPasswordResetEmail(email: email);
+      // Deutsche Reset-Emails aktivieren
+      await _auth.setLanguageCode('de');
+      await _auth.sendPasswordResetEmail(email: email.trim());
       debugPrint('Passwort-Reset-Email gesendet an: $email');
       return true;
     } on FirebaseAuthException catch (e) {
-      debugPrint('Passwort-Reset-Fehler: ${e.code} - ${e.message}');
-      rethrow;
+      debugPrint('Passwort-Reset Firebase-Fehler: ${e.code} - ${e.message}');
+      rethrow; // Spezifische Fehlerbehandlung im UI
     } catch (e) {
-      debugPrint('Allgemeiner Fehler: $e');
+      debugPrint('Unerwarteter Passwort-Reset-Fehler: $e');
       return false;
     }
   }

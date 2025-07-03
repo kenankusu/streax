@@ -306,7 +306,6 @@ class _WelcomePageState extends State<WelcomePage> {
                         GestureDetector(
                           onTap: () => _showBirthdatePicker(),
                           child: Container(
-                            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
                             decoration: BoxDecoration(
                               color: Theme.of(context).colorScheme.surfaceContainer,
                               borderRadius: BorderRadius.circular(12),
@@ -314,24 +313,32 @@ class _WelcomePageState extends State<WelcomePage> {
                             ),
                             child: Row(
                               children: [
-                                Icon(Icons.cake_outlined, color: Colors.grey[400]),
-                                SizedBox(width: 12),
+                                Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 18.0, horizontal: 16.0),
+                                  child: Icon(Icons.cake_outlined, color: Colors.white),
+                                ),
                                 Expanded(
-                                  child: Text(
-                                    selectedBirthdate != null 
-                                      ? '${selectedBirthdate!.day.toString().padLeft(2, '0')}.${selectedBirthdate!.month.toString().padLeft(2, '0')}.${selectedBirthdate!.year}'
-                                      : 'Geburtsdatum',
-                                    style: TextStyle(
-                                      color: Colors.white
+                                  child: Padding(
+                                    padding: EdgeInsets.symmetric(vertical: 18.0, horizontal: 0.0),
+                                    child: Text(
+                                      selectedBirthdate != null 
+                                        ? '${selectedBirthdate!.day.toString().padLeft(2, '0')}.${selectedBirthdate!.month.toString().padLeft(2, '0')}.${selectedBirthdate!.year}'
+                                        : 'Geburtsdatum',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                      ),
                                     ),
                                   ),
                                 ),
-                                Icon(Icons.arrow_drop_down, color: Theme.of(context).colorScheme.onSurface),
+                                Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 18.0, horizontal: 16.0),
+                                  child: Icon(Icons.arrow_drop_down, color: Theme.of(context).colorScheme.onSurface),
+                                ),
                               ],
                             ),
                           ),
                         ),
-
                         SizedBox(height: 20),
                       ],
                     ),

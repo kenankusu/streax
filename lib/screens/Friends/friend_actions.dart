@@ -62,10 +62,6 @@ class FriendActions {
         ),
       );
 
-      final success = await DatabaseService(
-        uid: currentUserId,
-      ).acceptFriendRequest(user['uid']).timeout(Duration(seconds: 15));
-
       // Loading-Dialog wieder schließen
       if (Navigator.canPop(context)) {
         Navigator.pop(context);
