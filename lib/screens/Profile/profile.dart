@@ -7,18 +7,18 @@ import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 // Importiere der gruppierten Module
-import 'profile_widgets.dart';
+import 'Profile_widgets.dart';
 import 'sport_editing.dart';
 import 'delete_account.dart';
 
-class Profil extends StatefulWidget {
-  const Profil({super.key});
+class Profile extends StatefulWidget {
+  const Profile({super.key});
 
   @override
-  State<Profil> createState() => _ProfilState();
+  State<Profile> createState() => _ProfileState();
 }
 
-class _ProfilState extends State<Profil> {
+class _ProfileState extends State<Profile> {
   final AuthService _auth = AuthService();
   bool _isDeleting = false;
 
@@ -102,7 +102,7 @@ class _ProfilState extends State<Profil> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      // Profil Header (Avatar, Name, Edit/Share buttons)
+                      // Profil Header (Avatar, Name, bearbeiten/teilen buttons)
                       Padding(
                         padding: const EdgeInsets.only(bottom: 24),
                         child: Container(

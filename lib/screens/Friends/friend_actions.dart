@@ -143,6 +143,7 @@ class FriendActions {
   static Future<void> removeFriend(
     BuildContext context,
     Map<String, dynamic> user,
+    String currentUserId,  // KORRIGIERT: currentUserId als Parameter hinzugefügt
   ) async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -170,18 +171,6 @@ class FriendActions {
     );
 
     if (confirmed == true) {
-      final currentUser = FirebaseAuth.instance.currentUser;
-
-      if (currentUser == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Fehler: Nicht eingeloggt'),
-            backgroundColor: Colors.red,
-          ),
-        );
-        return;
-      }
-
       if (user['uid'] == null || user['uid'].toString().isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -213,7 +202,7 @@ class FriendActions {
         );
 
         final success = await DatabaseService(
-          uid: currentUser.uid,
+          uid: currentUserId,
         ).removeFriend(user['uid']).timeout(Duration(seconds: 15));
 
         // Loading-Dialog wieder schließen

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../services/database.dart';
 import 'friend_actions.dart';
 
@@ -37,7 +38,6 @@ class ProfileView extends StatelessWidget {
                   
                   SizedBox(width: 15),
                   
-                  // Titel
                   Expanded(
                     child: Text(
                       'Profil',
@@ -58,7 +58,12 @@ class ProfileView extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: IconButton(
-                      onPressed: () => FriendActions.removeFriend(context, user),
+                      onPressed: () {
+                        final currentUser = FirebaseAuth.instance.currentUser;
+                        if (currentUser != null) {
+                          FriendActions.removeFriend(context, user, currentUser.uid);
+                        }
+                      },
                       icon: Icon(Icons.person_remove, color: Colors.red, size: 22),
                       padding: EdgeInsets.zero,
                     ),

@@ -10,11 +10,11 @@ import '../Journal/calendar.dart';
 import '../../Services/database.dart';
 import 'Goals/progress_indicators.dart';
 
-class startseite extends StatelessWidget {
+class homepage extends StatelessWidget {
   final int streakWert = 25;
   final int aktuellerTagIndex = 3;
 
-  const startseite({super.key});
+  const homepage({super.key});
 
   // Helper-Methods für Goals
   String _getGoalDisplayName(Map<String, dynamic> data) {
@@ -89,7 +89,7 @@ class startseite extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Begrüßung und Streak-Wert
-                    Kopfzeile(streakWert: streakWert),
+                    Header(streakWert: streakWert),
                     SizedBox(height: 20),
 
                     // Kalender

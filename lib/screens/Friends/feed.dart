@@ -175,6 +175,7 @@ class _FeedState extends State<Feed> {
       _isSearching = false;
     });
   }
+
 // Überprüft ob User bereits Freund ist oder eine Anfrage gesendet wurde
   Future<Map<String, bool>> _checkFullFriendshipStatus(String currentUserId, String targetUserId) async {
     try {
@@ -224,7 +225,6 @@ class _FeedState extends State<Feed> {
       return 'jetzt';
     }
   }
-
 
   @override
   Widget build(BuildContext context) {

@@ -525,10 +525,9 @@ class DatabaseService {
   /// Freundschaftsanfrage akzeptieren - Batch-Operation für Konsistenz
   Future<bool> acceptFriendRequest(String senderId) async {
     try {
-      print('Start acceptFriendRequest: $uid -> $senderId');
-      
-      final batch = FirebaseFirestore.instance.batch();
       final currentTime = FieldValue.serverTimestamp();
+
+      final batch = FirebaseFirestore.instance.batch();
 
       // 1. Freundschaft bei beiden Usern hinzufügen
       batch.set(friendsCollection.doc(senderId), {
@@ -559,7 +558,6 @@ class DatabaseService {
       await batch.commit();
       debugPrint('Freundschaftsanfrage von $senderId erfolgreich akzeptiert');
       return true;
-
     } catch (e) {
       debugPrint('Fehler beim Akzeptieren der Freundschaftsanfrage: $e');
       return false;
@@ -569,49 +567,43 @@ class DatabaseService {
   /// Freundschaftsanfrage ablehnen
   Future<bool> declineFriendRequest(String senderId) async {
     try {
-      print('Start declineFriendRequest: $uid -> $senderId');
-      
       final batch = FirebaseFirestore.instance.batch();
-
-      // Anfrage bei beiden Usern löschen
+      
+      // Friend-Requests bei beiden Usern löschen
       batch.delete(friendRequestsCollection.doc(senderId));
       batch.delete(
         FirebaseFirestore.instance.collection('users').doc(senderId).collection('sentRequests').doc(uid)
       );
-
+      
       await batch.commit();
       debugPrint('Freundschaftsanfrage von $senderId abgelehnt');
       return true;
-
     } catch (e) {
       debugPrint('Fehler beim Ablehnen der Freundschaftsanfrage: $e');
       return false;
     }
   }
 
-  /// Freundschaft entfernen
+  /// Freund entfernen
   Future<bool> removeFriend(String friendId) async {
     try {
-      print('Start removeFriend: $uid -> $friendId');
-
       final batch = FirebaseFirestore.instance.batch();
-
+      
       // Freundschaft bei beiden Usern entfernen
       batch.delete(friendsCollection.doc(friendId));
       batch.delete(
         FirebaseFirestore.instance.collection('users').doc(friendId).collection('friends').doc(uid)
       );
-
+      
       // Friends-Counter bei beiden reduzieren
       batch.update(userCollection.doc(uid), {'friends_count': FieldValue.increment(-1)});
       batch.update(userCollection.doc(friendId), {'friends_count': FieldValue.increment(-1)});
-
+      
       await batch.commit();
       debugPrint('Freundschaft mit $friendId entfernt');
       return true;
-
     } catch (e) {
-      debugPrint('Fehler beim Entfernen der Freundschaft: $e');
+      debugPrint('Fehler beim Entfernen des Freundes: $e');
       return false;
     }
   }

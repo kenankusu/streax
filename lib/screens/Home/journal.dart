@@ -41,7 +41,6 @@ class Journal extends StatelessWidget {
         int today = DateTime.now().weekday - 1;
 
         return Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: List.generate(7, (idx) {
             DateTime day = weekStart.add(Duration(days: idx));
             String tag = wochentage[idx];

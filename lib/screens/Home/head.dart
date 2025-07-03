@@ -5,19 +5,19 @@ import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 // Hauptheader der Home-Seite mit Begrüßung, Streak-Anzeige und täglichem Zitat
-class Kopfzeile extends StatefulWidget {
-  final int streakWert;
+class Header extends StatefulWidget {
+  final int streakValue;
 
-  const Kopfzeile({
-    required this.streakWert,
+  const Header({
+    required this.streakValue,
     super.key,
   });
 
   @override
-  _KopfzeileState createState() => _KopfzeileState();
+  _HeaderState createState() => _HeaderState();
 }
 
-class _KopfzeileState extends State<Kopfzeile> with SingleTickerProviderStateMixin {
+class _HeaderState extends State<Header> with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   double _currentProgress = 0.0;
   double _targetProgress = 0.0;
@@ -64,17 +64,17 @@ class _KopfzeileState extends State<Kopfzeile> with SingleTickerProviderStateMix
     
     _lastKnownProgress = newProgress;
     
-    double oldP = _currentProgress;
-    double newP = newProgress;
+    double previousProgress = _currentProgress;
+    double newTargetProgress = newProgress;
     
     // Verhindert Rückwärts-Sprünge in der Animation
-    if (newP < oldP) {
-      newP += 1.0;
+    if (newTargetProgress < previousProgress) {
+      newTargetProgress += 1.0;
     }
 
     setState(() {
-      _currentProgress = oldP;
-      _targetProgress = newP;
+      _currentProgress = previousProgress;
+      _targetProgress = newTargetProgress;
     });
 
     _animationController.reset();
@@ -100,9 +100,9 @@ class _KopfzeileState extends State<Kopfzeile> with SingleTickerProviderStateMix
           _targetProgress = (streak % 365) / 365.0;
         } else {
           // Berechnet das nächste Streak-Ziel
-          final List<int> ziele = [3, 7, 14, 30, 60, 100, 365];
-          int naechstesZiel = ziele.firstWhere((ziel) => streak < ziel, orElse: () => 365);
-          _targetProgress = streak / naechstesZiel;
+          final List<int> milestones = [3, 7, 14, 30, 60, 100, 365];
+          int nextMilestone = milestones.firstWhere((milestone) => streak < milestone, orElse: () => 365);
+          _targetProgress = streak / nextMilestone;
         }
       });
       
@@ -117,7 +117,7 @@ class _KopfzeileState extends State<Kopfzeile> with SingleTickerProviderStateMix
   }
 
   // Erstellt die personalisierte Begrüßung mit dynamischer Schriftgröße
-  Widget Willkommen(String firstName) {
+  Widget welcomeWidget(String firstName) {
     return LayoutBuilder(
       builder: (context, constraints) {
         // Passt die Schriftgröße an die Länge des Namens an
@@ -201,18 +201,18 @@ class _KopfzeileState extends State<Kopfzeile> with SingleTickerProviderStateMix
   }
 
   // Zeigt die animierte Streak-Anzeige mit Fortschrittskreis
-  Widget streakAnzeige(int streak) {
-    final List<int> ziele = [3, 7, 14, 30, 60, 100, 365, 500, 1000];
-    int naechstesZiel;
+  Widget streakDisplay(int streak) {
+    final List<int> milestones = [3, 7, 14, 30, 60, 100, 365, 500, 1000];
+    int nextMilestone;
     double rawProgress;
     
     // Berechnet Fortschritt basierend auf aktueller Streak
     if (streak >= 1000) {
-      naechstesZiel = 1000;
+      nextMilestone = 1000;
       rawProgress = (streak % 1000) / 1000.0;
     } else {
-      naechstesZiel = ziele.firstWhere((ziel) => streak < ziel, orElse: () => 1000);
-      rawProgress = streak / naechstesZiel;
+      nextMilestone = milestones.firstWhere((milestone) => streak < milestone, orElse: () => 1000);
+      rawProgress = streak / nextMilestone;
     }
     
     if (rawProgress > 1.0) rawProgress = 1.0;
@@ -269,7 +269,7 @@ class _KopfzeileState extends State<Kopfzeile> with SingleTickerProviderStateMix
                         ),
                       ),
                       Text(
-                        '/ $naechstesZiel',
+                        '/ $nextMilestone',
                         style: TextStyle(
                           color: Colors.grey[400],
                           fontSize: 16,
@@ -318,11 +318,11 @@ class _KopfzeileState extends State<Kopfzeile> with SingleTickerProviderStateMix
               children: [
                 Padding(
                   padding: const EdgeInsets.only(top: 30),
-                  child: Willkommen(firstName),
+                  child: welcomeWidget(firstName),
                 ),
                 Padding(
                   padding: const EdgeInsets.only(top: 10, right: 20),
-                  child: streakAnzeige(streak),
+                  child: streakDisplay(streak),
                 ),
               ],
             ),
