@@ -2,13 +2,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+/// Widget für die Wochenansicht der Journal-Einträge
 class Journal extends StatelessWidget {
   const Journal({super.key});
-
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
 
+    // Berechnung der aktuellen Woche (Montag bis Sonntag)
     final now = DateTime.now();
     final monday = now.subtract(Duration(days: now.weekday - 1));
     final weekStart = DateTime(monday.year, monday.month, monday.day);
@@ -27,7 +28,7 @@ class Journal extends StatelessWidget {
           return const Center(child: CircularProgressIndicator());
         }
 
-        // Mappe Einträge nach Datum
+        // Gruppiert Aktivitäten nach Datum für schnelleren Zugriff
         final Map<String, Map<String, dynamic>> eintraege = {};
         for (var doc in snapshot.data!.docs) {
           final data = doc.data() as Map<String, dynamic>;
@@ -47,10 +48,7 @@ class Journal extends StatelessWidget {
             String dateKey = "${day.year.toString().padLeft(4, '0')}-${day.month.toString().padLeft(2, '0')}-${day.day.toString().padLeft(2, '0')}";
             final eintrag = eintraege[dateKey];
             bool hasEntry = eintrag != null && eintrag['icon'] != null && eintrag['icon'] != '';
-
-            Color borderColor = hasEntry
-                ? Theme.of(context).colorScheme.primary
-                : const Color.fromARGB(255, 75, 73, 73);
+            bool isToday = idx == today;
 
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 2.0),
@@ -59,9 +57,11 @@ class Journal extends StatelessWidget {
                   Text(
                     tag,
                     style: TextStyle(
-                      color: idx == today ? Theme.of(context).colorScheme.primary : Colors.white,
-                      fontSize: 16,
-                      fontWeight: idx == today ? FontWeight.bold : FontWeight.normal,
+                      color: isToday 
+                          ? Color(0xFF1C499E)
+                          : Colors.white,
+                      fontSize: 16, 
+                      fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -98,28 +98,40 @@ class Journal extends StatelessWidget {
                             );
                           }
                         : null,
-                    child: Container(
-                      width: 50,
-                      height: 70,
-                      decoration: BoxDecoration(
-                        color: Colors.transparent,
-                        border: Border.all(
-                          color: borderColor,
-                          width: 4,
-                        ),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Center(
-                        child: hasEntry
-                            ? Image.asset(
+                    child: hasEntry
+                        ? Container(
+                            width: 50,
+                            height: 70,
+                            decoration: BoxDecoration(
+                              color: Colors.transparent,
+                              border: Border.all(
+                                color: Color(0xFF1C499E),
+                                width: 4,
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Center(
+                              child: Image.asset(
                                 eintrag['icon'],
                                 width: 36,
                                 height: 36,
                                 fit: BoxFit.contain,
-                              )
-                            : const SizedBox.shrink(),
-                      ),
-                    ),
+                              ),
+                            ),
+                          )
+                        : Container(
+                            width: 50,
+                            height: 70,
+                            decoration: BoxDecoration(
+                              color: Colors.transparent,
+                              border: Border.all(
+                                color: Theme.of(context).colorScheme.surfaceContainer,
+                                width: 4,
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Center(child: SizedBox.shrink()),
+                          ),
                   ),
                 ],
               ),
@@ -127,6 +139,47 @@ class Journal extends StatelessWidget {
           }),
         );
       },
+    );
+  }
+}
+
+class GradientBorder extends StatelessWidget {
+  final Widget child;
+  final double width;
+  final double height;
+  final double borderWidth;
+  final BorderRadius borderRadius;
+
+  const GradientBorder({
+    Key? key,
+    required this.child,
+    required this.width,
+    required this.height,
+    this.borderWidth = 4,
+    required this.borderRadius,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF1C499E), Color(0xFFB1D43A)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: borderRadius,
+      ),
+      child: Container(
+        margin: EdgeInsets.all(borderWidth),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(borderRadius.topLeft.x - borderWidth),
+        ),
+        child: child,
+      ),
     );
   }
 }

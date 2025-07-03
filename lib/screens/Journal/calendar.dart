@@ -5,14 +5,14 @@ import 'package:flutter/cupertino.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-class kalender extends StatefulWidget {
-  const kalender({super.key});
+class calendar extends StatefulWidget {
+  const calendar({super.key});
 
   @override
-  State<kalender> createState() => _KalenderState();
+  State<calendar> createState() => _calendarState();
 }
 
-class _KalenderState extends State<kalender> {
+class _calendarState extends State<calendar> {
   DateTime _focusedDay = DateTime.now();
   final CalendarController _calendarController = CalendarController();
   late final DateTime maxMonth = DateTime(DateTime.now().year, DateTime.now().month + 2, 0);
@@ -26,6 +26,7 @@ class _KalenderState extends State<kalender> {
       );
     }
 
+    // Zeitraum für Firebase-Abfrage (ganzes Jahr vom fokussierten Tag)
     final now = _focusedDay;
     final firstDayOfYear = DateTime(now.year, 1, 1);
     final lastDayOfYear = DateTime(now.year, 12, 31, 23, 59, 59);
@@ -39,29 +40,13 @@ class _KalenderState extends State<kalender> {
             padding: const EdgeInsets.only(left: 8, right: 8, top: 16, bottom: 8),
             child: Row(
               children: [
-                SizedBox(
-                  width: 70,
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: IconButton(
-                      onPressed: () {},
-                      icon: Icon(Icons.menu, color: Colors.white),
-                      tooltip: "Menü",
-                    ),
-                  ),
-                ),
                 Expanded(
-                  child: Center(
+                  child: Container(
+                    alignment: Alignment.center,
                     child: Text(
                       'Dein Journal',
                       style: Theme.of(context).textTheme.headlineMedium,
                     ),
-                  ),
-                ),
-                SizedBox(
-                  width: 70,
-                  child: Align(
-                    alignment: Alignment.centerRight,
                   ),
                 ),
               ],
@@ -72,6 +57,7 @@ class _KalenderState extends State<kalender> {
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: StreamBuilder<QuerySnapshot>(
+          // Lädt alle Aktivitäten des aktuellen Jahres für den Kalender
           stream: FirebaseFirestore.instance
               .collection('users')
               .doc(user.uid)
@@ -84,7 +70,7 @@ class _KalenderState extends State<kalender> {
               return const Center(child: CircularProgressIndicator());
             }
 
-            // Mappe Einträge nach Datum (ALLE Einträge, nicht nach Monat filtern!)
+            // Einträge werden nach datum gemappt
             final Map<String, Map<String, dynamic>> eintraege = {};
             for (var doc in snapshot.data!.docs) {
               final data = doc.data() as Map<String, dynamic>;
@@ -95,16 +81,18 @@ class _KalenderState extends State<kalender> {
 
             return Column(
                 children: [
+                  // Monat/Jahr Picker 
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       TextButton.icon(
                         onPressed: () async {
                           final DateTime now = DateTime.now();
-                          final DateTime maxMonth = DateTime(now.year, now.month + 2, 0); // letzter Tag des nächsten Monats
+                          final DateTime maxMonth = DateTime(now.year, now.month + 2, 0);
                           final DateTime initialDate = _focusedDay.isAfter(maxMonth) ? maxMonth : _focusedDay;
                           DateTime tempDate = initialDate;
 
+                          // Cupertino-Stil Datum-Picker für iOS-Look
                           final DateTime? pickedDate = await showDialog<DateTime>(
                             context: context,
                             builder: (context) {
@@ -123,7 +111,7 @@ class _KalenderState extends State<kalender> {
                                           mode: CupertinoDatePickerMode.monthYear,
                                           initialDateTime: initialDate,
                                           minimumDate: DateTime(2000),
-                                          maximumDate: maxMonth, // <--- hier!
+                                          maximumDate: maxMonth,
                                           onDateTimeChanged: (DateTime newDate) {
                                             tempDate = DateTime(newDate.year, newDate.month, 1);
                                           },
@@ -131,7 +119,7 @@ class _KalenderState extends State<kalender> {
                                       ),
                                       TextButton(
                                         onPressed: () {
-                                          Navigator.of(context).pop(tempDate); // <--- gibt das Datum zurück!
+                                          Navigator.of(context).pop(tempDate); 
                                         },
                                         style: TextButton.styleFrom(
                                           foregroundColor: Colors.white,
@@ -168,6 +156,8 @@ class _KalenderState extends State<kalender> {
                     ],
                   ),
                   const SizedBox(height: 8),
+                  
+                  // Der tatsächliche Kalender
                   SfCalendar(
                     controller: _calendarController,
                     view: CalendarView.month,
@@ -234,6 +224,7 @@ class _KalenderState extends State<kalender> {
                         child: Stack(
                           clipBehavior: Clip.none,
                           children: [
+                            // Heute Markierung: blauer Rahmen
                             if (isToday)
                               Container(
                                 width: 45,
@@ -246,6 +237,7 @@ class _KalenderState extends State<kalender> {
                                   ),
                                 ),
                               ),
+                            // Tage mit Aktivitäten: Blau gefüllter Rahmen
                             if (eintrag != null)
                               Container(
                                 width: 45,
@@ -255,7 +247,6 @@ class _KalenderState extends State<kalender> {
                                   shape: BoxShape.circle,
                                 ),
                               ),
-                            // Datum
                             Container(
                               width: 45,
                               height: 45,
@@ -286,7 +277,7 @@ class _KalenderState extends State<kalender> {
                       }
                     },
                   ),
-                  // Trennlinie
+                  
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 12),
                     child: Divider(
@@ -295,16 +286,16 @@ class _KalenderState extends State<kalender> {
                       height: 1,
                     ),
                   ),
+                  
+                  // Statistik: Vergleich aktueller und vorheriger Monat
                   Builder(
                     builder: (context) {
-                      // Aktivitäten im aktuellen Monat zählen
                       final logsThisMonth = eintraege.values.where((eintrag) {
                         if (eintrag['datum'] == null) return false;
                         final DateTime date = DateTime.tryParse(eintrag['datum']) ?? DateTime(2000);
                         return date.year == _focusedDay.year && date.month == _focusedDay.month;
                       }).length;
 
-                      // Aktivitäten im vorherigen Monat zählen (auch Jahreswechsel beachten)
                       int prevMonth = _focusedDay.month - 1;
                       int prevYear = _focusedDay.year;
                       if (prevMonth == 0) {
@@ -323,8 +314,7 @@ class _KalenderState extends State<kalender> {
                       } else if (logsThisMonth < logsLastMonth) {
                         trendIcon = Icon(Icons.arrow_downward, color: Colors.red, size: 22);
                       } else {
-                        // Gleiche Größe und Ausrichtung wie die Pfeile
-                        trendIcon = Icon(Icons.remove, color: Colors.grey, size: 22); // size: 28 -> 22, weight entfernt
+                        trendIcon = Icon(Icons.remove, color: Colors.grey, size: 22); 
                       }
 
                       return Column(
@@ -336,22 +326,21 @@ class _KalenderState extends State<kalender> {
                                 Expanded(
                                   child: Text(
                                     "Aktivitäten dieser Monat:",
-                                    style: Theme.of(context).textTheme.bodyMedium, // bodySmall -> bodyMedium
+                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white),
                                     textAlign: TextAlign.left,
                                   ),
                                 ),
-                                // Container für einheitliche Icon-Ausrichtung
                                 SizedBox(
-                                  width: 35, // Etwas breiter: 30 -> 35
+                                  width: 35,
                                   child: Align(
                                     alignment: Alignment.center,
                                     child: trendIcon,
                                   ),
                                 ),
-                                const SizedBox(width: 12), // Mehr Abstand: 8 -> 12
+                                const SizedBox(width: 12), 
                                 Text(
                                   logsThisMonth.toString(),
-                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold), // bodySmall -> bodyMedium
+                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold, color: Colors.white), // bodySmall -> bodyMedium
                                   textAlign: TextAlign.right,
                                 ),
                               ],
@@ -364,17 +353,15 @@ class _KalenderState extends State<kalender> {
                                 Expanded(
                                   child: Text(
                                     "Aktivitäten vorheriger Monat:",
-                                    style: Theme.of(context).textTheme.bodyMedium, // bodySmall -> bodyMedium
+                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white),
                                     textAlign: TextAlign.left,
                                   ),
                                 ),
-                                // Leerer Platz für Icon (damit beide Zeilen gleich ausgerichtet sind)
                                 SizedBox(width: 35),
                                 const SizedBox(width: 12),
-                                // Zahl des vorherigen Monats - richtig positioniert
                                 Text(
                                   logsLastMonth.toString(),
-                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold), // bodySmall -> bodyMedium
+                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),
                                   textAlign: TextAlign.right,
                                 ),
                               ],

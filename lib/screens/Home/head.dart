@@ -4,6 +4,7 @@ import 'package:streax/Services/database.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+// Hauptheader der Home-Seite mit Begrüßung, Streak-Anzeige und täglichem Zitat
 class Kopfzeile extends StatefulWidget {
   final int streakWert;
 
@@ -21,7 +22,10 @@ class _KopfzeileState extends State<Kopfzeile> with SingleTickerProviderStateMix
   double _currentProgress = 0.0;
   double _targetProgress = 0.0;
   bool _milestoneActive = false;
-  double _lastKnownProgress = -1.0; // Tracking für Änderungen
+  double _lastKnownProgress = -1.0;
+
+  String? quote;
+  String? author; 
 
   @override
   void initState() {
@@ -30,6 +34,8 @@ class _KopfzeileState extends State<Kopfzeile> with SingleTickerProviderStateMix
       vsync: this,
       duration: const Duration(milliseconds: 800),
     );
+    
+    _loadQuote(); 
   }
 
   @override
@@ -38,7 +44,22 @@ class _KopfzeileState extends State<Kopfzeile> with SingleTickerProviderStateMix
     super.dispose();
   }
 
-  void _updateProgress(double newProgress, int streak) {  // Parameter hinzufügen
+  // Lädt ein zufälliges motivierendes Zitat aus der Firebase-Datenbank
+  Future<void> _loadQuote() async {
+    final user = Provider.of<StreaxUser?>(context, listen: false);
+    if (user != null) {
+      final quoteData = await DatabaseService(uid: user.uid).getRandomQuoteWithAuthor();
+      if (mounted) {
+        setState(() {
+          quote = quoteData['text'];
+          author = quoteData['author'];
+        });
+      }
+    }
+  }
+
+  // Aktualisiert den Fortschrittsbalken mit flüssiger Animation
+  void _updateProgress(double newProgress, int streak) {
     if (_milestoneActive || newProgress == _lastKnownProgress) return;
     
     _lastKnownProgress = newProgress;
@@ -46,7 +67,7 @@ class _KopfzeileState extends State<Kopfzeile> with SingleTickerProviderStateMix
     double oldP = _currentProgress;
     double newP = newProgress;
     
-    // Falls wir "nach vorne überlappen"
+    // Verhindert Rückwärts-Sprünge in der Animation
     if (newP < oldP) {
       newP += 1.0;
     }
@@ -61,17 +82,16 @@ class _KopfzeileState extends State<Kopfzeile> with SingleTickerProviderStateMix
       setState(() {
         _currentProgress = _targetProgress % 1.0;
       });
-      // Falls 100% und kein aktiver Meilenstein
+      // mögliche Implementation einer Animation bei erreichen eines Ziels
       if (_currentProgress >= 1.0 && !_milestoneActive) {
-        _startMilestoneAnimation(streak);  // streak übergeben
+        _startMilestoneAnimation(streak);
       }
     });
   }
 
-  void _startMilestoneAnimation(int streak) {  // Parameter hinzufügen
+  void _startMilestoneAnimation(int streak) {
     _milestoneActive = true;
     
-    // Nach kurzer Pause neues Ziel setzen
     Future.delayed(const Duration(milliseconds: 800), () {
       setState(() {
         _currentProgress = 0.0;
@@ -79,7 +99,7 @@ class _KopfzeileState extends State<Kopfzeile> with SingleTickerProviderStateMix
         if (streak >= 365) {
           _targetProgress = (streak % 365) / 365.0;
         } else {
-          // Normaler Fall: neuer Meilenstein
+          // Berechnet das nächste Streak-Ziel
           final List<int> ziele = [3, 7, 14, 30, 60, 100, 365];
           int naechstesZiel = ziele.firstWhere((ziel) => streak < ziel, orElse: () => 365);
           _targetProgress = streak / naechstesZiel;
@@ -96,20 +116,44 @@ class _KopfzeileState extends State<Kopfzeile> with SingleTickerProviderStateMix
     });
   }
 
+  // Erstellt die personalisierte Begrüßung mit dynamischer Schriftgröße
   Widget Willkommen(String firstName) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Schriftstil definieren
-        final textStyle = Theme.of(context).textTheme.headlineMedium?.copyWith(
-          fontSize: 40,
+        // Passt die Schriftgröße an die Länge des Namens an
+        double getNameFontSize(String name) {
+          int length = name.length;
+          if (length <= 6) {
+            return 48.0;
+          } else if (length <= 8) {
+            return 44.0;
+          } else if (length <= 10) {
+            return 40.0;
+          } else if (length <= 12) {
+            return 36.0;
+          } else if (length <= 15) {
+            return 32.0;
+          } else {
+            return 28.0;
+          }
+        }
+
+        // Textstile für Begrüßung und Namen
+        final helloStyle = Theme.of(context).textTheme.headlineMedium?.copyWith(
+          fontSize: 32,
+          color: Colors.white,
+        );
+
+        final nameStyle = Theme.of(context).textTheme.headlineMedium?.copyWith(
+          fontSize: getNameFontSize(firstName),
           fontWeight: FontWeight.bold,
           color: Colors.white,
         );
 
-        // TextPainter zum Messen der exakten Textbreite
+        // Berechnet die exakte Textbreite für den passenden Unterstrich
         final textSpan = TextSpan(
           text: firstName,
-          style: textStyle,
+          style: nameStyle,
         );
         final textPainter = TextPainter(
           text: textSpan,
@@ -122,23 +166,22 @@ class _KopfzeileState extends State<Kopfzeile> with SingleTickerProviderStateMix
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // "Hallo," in bisheriger Größe
             Text(
               "Hallo,",
-              style: Theme.of(context).textTheme.headlineMedium,
+              style: helloStyle,
             ),
-            // Name mit exakt passenden Unterstrich
+            // Name mit Gradient-Unterstrich
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   firstName,
-                  style: textStyle,
+                  style: nameStyle,
                 ),
-                // Unterstrich mit exakter Textbreite
+                // Gradient-Unterstrich der sich an die Textbreite anpasst
                 Container(
                   height: 4,
-                  width: textWidth, // Exakte Breite des Textes
+                  width: textWidth,
                   margin: EdgeInsets.only(top: 2),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
@@ -157,43 +200,38 @@ class _KopfzeileState extends State<Kopfzeile> with SingleTickerProviderStateMix
     );
   }
 
+  // Zeigt die animierte Streak-Anzeige mit Fortschrittskreis
   Widget streakAnzeige(int streak) {
-    final List<int> ziele = [3, 7, 14, 30, 60, 100, 365, 500, 1000]; // zunächst werden nur Streax bis 1000 behandelt (Was danach passiert schauen wir wenn es einer erreicht)
+    final List<int> ziele = [3, 7, 14, 30, 60, 100, 365, 500, 1000];
     int naechstesZiel;
     double rawProgress;
     
+    // Berechnet Fortschritt basierend auf aktueller Streak
     if (streak >= 1000) {
       naechstesZiel = 1000;
       rawProgress = (streak % 1000) / 1000.0;
     } else {
-      // Normaler Fall: nächstes Ziel finden
       naechstesZiel = ziele.firstWhere((ziel) => streak < ziel, orElse: () => 1000);
       rawProgress = streak / naechstesZiel;
     }
     
     if (rawProgress > 1.0) rawProgress = 1.0;
 
-    // NUR bei Änderung aktualisieren
     if (rawProgress != _lastKnownProgress) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _updateProgress(rawProgress, streak);
       });
     }
 
-    final zielText = Text(
-      '$naechstesZiel',
-      style: TextStyle(fontSize: 20, color: Colors.white),
-      textAlign: TextAlign.center,
-    );
-
+    // Passt Schriftgröße an die Anzahl der Streak-Tage an
     double getFontSize(int value) {
       int digits = value.toString().length;
       switch (digits) {
-        case 1: return 50.0; 
-        case 2: return 46.0; 
-        case 3: return 42.0; 
-        case 4: return 38.0; 
-        default: return 34.0; 
+        case 1: return 50.0;
+        case 2: return 46.0;
+        case 3: return 42.0;
+        case 4: return 38.0;
+        default: return 34.0;
       }
     }
 
@@ -208,8 +246,6 @@ class _KopfzeileState extends State<Kopfzeile> with SingleTickerProviderStateMix
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            zielText,
-            const SizedBox(height: 8),
             Stack(
               alignment: Alignment.center,
               children: [
@@ -217,12 +253,31 @@ class _KopfzeileState extends State<Kopfzeile> with SingleTickerProviderStateMix
                   progress: displayValue,
                   size: 120,
                 ),
-                Text(
-                  '$streak',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: getFontSize(streak),
+                // Zentrierte Anzeige "aktuelle Streak / Ziel"
+                Positioned(
+                  top: 35,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '$streak',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: getFontSize(streak),
+                          height: 1.0,
+                        ),
+                      ),
+                      Text(
+                        '/ $naechstesZiel',
+                        style: TextStyle(
+                          color: Colors.grey[400],
+                          fontSize: 16,
+                          fontWeight: FontWeight.normal,
+                          height: 1.0,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -231,6 +286,11 @@ class _KopfzeileState extends State<Kopfzeile> with SingleTickerProviderStateMix
         );
       },
     );
+  }
+
+  // Prüft ob ein Autor für das Zitat vorhanden ist
+  bool _hasAuthor() {
+    return author != null && author!.isNotEmpty;
   }
 
   @override
@@ -246,7 +306,7 @@ class _KopfzeileState extends State<Kopfzeile> with SingleTickerProviderStateMix
         if (snapshot.hasData && snapshot.data!.exists) {
           final userData = snapshot.data!.data() as Map<String, dynamic>;
           streak = userData['streak'] ?? 0;
-          firstName = userData['firstName'] ?? 'Unbekannt'; // Nur Vorname laden
+          firstName = userData['firstName'] ?? 'Unbekannt';
         }
 
         return Column(
@@ -254,24 +314,46 @@ class _KopfzeileState extends State<Kopfzeile> with SingleTickerProviderStateMix
             SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Willkommen(firstName), 
                 Padding(
-                  padding: const EdgeInsets.only(top: 10, right: 20), // Weniger Padding: top: 20->10, right: 30->20
+                  padding: const EdgeInsets.only(top: 30),
+                  child: Willkommen(firstName),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 10, right: 20),
                   child: streakAnzeige(streak),
                 ),
               ],
             ),
-            SizedBox(height: 20),
+            SizedBox(height: 40),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 40),
-              child: Text(
-                "Fall in love with the process, and the results will come.",
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  fontStyle: FontStyle.italic,
-                  color: Colors.grey[400],
-                ),
-                textAlign: TextAlign.center,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                children: [
+                  Text(
+                    // Standard-Zitat falls laden nicht klappt
+                    quote ?? "Fall in love with the process, and the results will come.",
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontStyle: FontStyle.italic,
+                      color: Colors.grey[400],
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  // Autor-Anzeige (falls verfügbar)
+                  if (_hasAuthor()) ...[
+                    SizedBox(height: 8),
+                    Text(
+                      "— $author",
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        fontStyle: FontStyle.normal,
+                        color: Colors.grey[500],
+                        fontSize: 12,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ],
               ),
             ),
           ],
@@ -281,11 +363,10 @@ class _KopfzeileState extends State<Kopfzeile> with SingleTickerProviderStateMix
   }
 }
 
-/// Dein Gradient-Painter, aber mit dem Wissen, dass progress jetzt z.B. 0.0 .. 1.2 etc. sein kann.
-/// Wir nehmen einfach (progress % 1.0) und zeichnen nur diesen Anteil.
+// Kreisförmiger Fortschrittsbalken mit Gradient-Farben
 class GradientCircularProgress extends StatelessWidget {
-  final double progress; // Wert zwischen 0.0 und 1.0 (nach Modulo)
-  final double size;     // Durchmesser des Kreises
+  final double progress;
+  final double size;
 
   const GradientCircularProgress({
     super.key,
@@ -297,24 +378,44 @@ class GradientCircularProgress extends StatelessWidget {
   Widget build(BuildContext context) {
     return CustomPaint(
       size: Size(size, size),
-      painter: _GradientCirclePainter(progress),
+      painter: _GradientCirclePainter(
+        progress,
+        Theme.of(context).colorScheme.surfaceContainer, // << Hintergrundfarbe direkt aus dem Theme
+      ),
     );
   }
 }
 
 class _GradientCirclePainter extends CustomPainter {
-  final double progress; // 0.0 bis knapp < 1.0
+  final double progress;
+  final Color backgroundColor;
 
-  _GradientCirclePainter(this.progress);
+  _GradientCirclePainter(this.progress, this.backgroundColor);
 
   @override
   void paint(Canvas canvas, Size size) {
     final rect = Offset.zero & size;
 
+    // Hintergrund-Kreis (immer voll)
+    final backgroundPaint = Paint()
+      ..color = backgroundColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 10
+      ..strokeCap = StrokeCap.butt;
+
+    canvas.drawArc(
+      rect,
+      0,
+      2 * 3.141592653589793,
+      false,
+      backgroundPaint,
+    );
+
+    // Gradient-Arc für den Fortschritt
     final gradient = SweepGradient(
       colors: [Color(0xFF1C499E), Color(0xFFB1D43A)],
       stops: [0.0, 1.0],
-      transform: GradientRotation(-3.1415926535 / 2), 
+      transform: GradientRotation(-3.1415926535 / 2),
     );
 
     final paint = Paint()
@@ -323,11 +424,10 @@ class _GradientCirclePainter extends CustomPainter {
       ..strokeWidth = 10
       ..strokeCap = StrokeCap.butt;
 
-    // Volle Kreisumfang = 2π, wir zeichnen progress * 2π
     final sweepAngle = 2 * 3.141592653589793 * progress;
     canvas.drawArc(
       rect,
-      -3.141592653589793 / 2, 
+      -3.141592653589793 / 2,
       sweepAngle,
       false,
       paint,
@@ -336,5 +436,6 @@ class _GradientCirclePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_GradientCirclePainter oldDelegate) =>
-      oldDelegate.progress != progress;
+      oldDelegate.progress != progress ||
+      oldDelegate.backgroundColor != backgroundColor;
 }

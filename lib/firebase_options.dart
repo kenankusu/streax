@@ -27,7 +27,7 @@ class DefaultFirebaseOptions {
     storageBucket: "streax-38c3c.firebasestorage.app",
     messagingSenderId: "1418608495",
     appId: "1:1418608495:web:716bdfbb828128f769729a",
-    measurementId: "G-XKQBPR04YF", // Optional für Analytics
+    measurementId: "G-XKQBPR04YF", 
   );
 
   // Android-Konfiguration (für später):

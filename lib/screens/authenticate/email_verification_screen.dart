@@ -2,13 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:streax/Screens/splashscreen.dart';
 import 'package:streax/Services/auth.dart';
 import 'dart:async';
+import 'package:streax/screens/Welcome/welcome.dart';
 
+/// Screen für die Email-Verifizierung nach der Registrierung
+/// Überprüft automatisch alle 3 Sekunden den Verifizierungsstatus
+/// und leitet bei erfolgreicher Verifizierung zur App weiter
 class EmailVerificationScreen extends StatefulWidget {
   final String email;
+  final String uid;
   
   const EmailVerificationScreen({
     super.key,
     required this.email,
+    required this.uid,
   });
 
   @override
@@ -35,16 +41,16 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
     super.dispose();
   }
 
-  // Periodische Überprüfung alle 3 Sekunden starten
+  /// Startet periodische Überprüfung alle 3 Sekunden
   void _startPeriodicVerificationCheck() {
     _timer = Timer.periodic(const Duration(seconds: 3), (timer) async {
       await _checkEmailVerification();
     });
   }
 
-  // Email-Verifizierungsstatus prüfen und bei Erfolg weiterleiten
+  /// Prüft Email-Verifizierungsstatus und leitet bei Erfolg weiter
   Future<void> _checkEmailVerification() async {
-    // Doppelte Ausführung verhindern
+    // Verhindert Doppelausführung und unnötige Checks nach Verifizierung
     if (_isCheckingVerification || _isVerified) return;
     
     setState(() {
@@ -63,31 +69,45 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
         _isVerified = true;
       });
       
-      _timer?.cancel(); // Timer nicht mehr benötigt
+      _timer?.cancel(); // Timer stoppen da nicht mehr benötigt
       
       // Benutzer über Erfolg informieren
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Email verifiziert! Du wirst zur App weitergeleitet..."),
-          behavior: SnackBarBehavior.floating,
-          backgroundColor: Colors.green,
-        ),
-      );
-
+      // mounted-Check vor BuildContext-Verwendung nach async
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Email verifiziert! Du wirst zur App weitergeleitet..."),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
       // Kurze Pause für User-Feedback, dann Navigation
       await Future.delayed(const Duration(seconds: 2));
 
-      // Kompletten Navigation-Stack zurücksetzen und zum Wrapper
+      // Nach Verifizierung: Weiterleitung zur WelcomePage
       if (mounted) {
         Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => Wrapper()),
+          MaterialPageRoute(builder: (context) => WelcomePage(uid: widget.uid)),
           (route) => false, // Alle vorherigen Routes entfernen
         );
+
+        // Kurze Pause für User-Feedback, dann Navigation
+        await Future.delayed(const Duration(seconds: 2));
+
+        // mounted-Check nach weiterem async Gap
+        if (mounted) {
+          // Kompletten Navigation-Stack zurücksetzen und zum Wrapper
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => Wrapper()),
+            (route) => false, // Alle vorherigen Routes entfernen
+          );
+        }
       }
     }
   }
 
-  // Verifizierungs-Email erneut senden mit Cooldown-Mechanismus
+  /// Sendet Verifizierungs-Email erneut mit 60s Cooldown-Mechanismus
   Future<void> _resendVerificationEmail() async {
     if (!_canResendEmail) return;
 
@@ -100,12 +120,14 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
         _resendCooldown = 60;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Verifizierungs-Email erneut gesendet'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Verifizierungs-Email erneut gesendet'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
 
       // Countdown-Timer für Button-Aktivierung
       Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -126,12 +148,25 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
         }
       });
     } else {
-      // Fehlermeldung bei unsuccessful send
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Fehler beim Senden der Email'),
-          backgroundColor: Colors.red,
-        ),
+      // Fehlermeldung bei Sende-Fehler
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Fehler beim Senden der Email'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _handleBackToLogin() async {
+    await _auth.signOut(); // Aktuellen User ausloggen
+    
+    if (mounted) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => Wrapper()),
+        (route) => false,
       );
     }
   }
@@ -139,10 +174,8 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.brown[100],
-      appBar: AppBar(
-        backgroundColor: Colors.brown[400],
-        title: const Text('Email verifizieren'),
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      appBar: AppBar(//Appbar anpassen, aktuell unsichtbar
         automaticallyImplyLeading: false, // Zurück-Button entfernen
       ),
       body: Padding(
@@ -150,12 +183,11 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Icon je nach Verifizierungsstatus
+            // Mail Icon je nach Verifizierungsstatus
             Icon(
               _isVerified ? Icons.check_circle : Icons.mark_email_unread,
               size: 100,
-              color: _isVerified ? Colors.green : Colors.brown[600],
-            ),
+              color: _isVerified ? Theme.of(context).colorScheme.secondary : Theme.of(context).colorScheme.onSurface,),
             const SizedBox(height: 32),
             
             // Überschrift dynamisch je nach Status
@@ -164,7 +196,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: _isVerified ? Colors.green : Colors.brown[800],
+                color: _isVerified ? Theme.of(context).colorScheme.secondary : Colors.white,
               ),
               textAlign: TextAlign.center,
             ),
@@ -174,7 +206,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
             if (!_isVerified) ...[
               Text(
                 'Wir haben eine Verifizierungs-Email an',
-                style: TextStyle(fontSize: 16, color: Colors.brown[700]),
+                style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onSurface),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
@@ -183,26 +215,26 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Colors.brown[800],
+                  color: Colors.white,
                 ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
               Text(
                 'gesendet. Bitte überprüfe dein Postfach und klicke auf den Verifizierungslink.',
-                style: TextStyle(fontSize: 16, color: Colors.brown[700]),
+                style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onSurface),
                 textAlign: TextAlign.center,
               ),
             ] else ...[
               // Verifizierung erfolgreich - Weiterleitungs-Info
               Text(
                 'Du wirst automatisch zur App weitergeleitet...',
-                style: TextStyle(fontSize: 16, color: Colors.green[700]),
+                style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.secondary),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 20),
               CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+                valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.secondary),
               ),
             ],
             
@@ -218,13 +250,13 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                     height: 20,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.brown[600]!),
+                      valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.onSurface),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Text(
                     'Überprüfe Verifizierung...',
-                    style: TextStyle(color: Colors.brown[600]),
+                    style: TextStyle(color: Theme.of(context).colorScheme.secondary),
                   ),
                 ],
               ),
@@ -234,36 +266,46 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
             // Aktions-Buttons nur wenn noch nicht verifiziert
             if (!_isVerified) ...[
               // Email erneut senden Button
-              ElevatedButton(
-                onPressed: _canResendEmail ? _resendVerificationEmail : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.brown[400],
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Theme.of(context).colorScheme.primary,
+                      Theme.of(context).colorScheme.secondary,
+                    ],
+                    begin: Alignment.bottomLeft,
+                    end: Alignment.topRight,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                child: Text(
-                  _canResendEmail 
-                    ? 'Email erneut senden'
-                    : 'Erneut senden in ${_resendCooldown}s',
-                  style: const TextStyle(color: Colors.white),
+                child: ElevatedButton(
+                  onPressed: _canResendEmail ? _resendVerificationEmail : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: Text(
+                    _canResendEmail
+                        ? 'Email erneut senden'
+                        : 'Erneut senden in ${_resendCooldown}s',
+                    style: const TextStyle(color: Colors.white),
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
               
               // Zurück zur Anmeldung Button
               TextButton(
-                onPressed: () async {
-                  await _auth.signOut(); // Aktuellen User ausloggen
-                  if (mounted) {
-                    Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(builder: (context) => Wrapper()),
-                      (route) => false,
-                    );
-                  }
-                },
+                onPressed: _handleBackToLogin,
                 child: Text(
                   'Zur Anmeldung zurück',
                   style: TextStyle(
-                    color: Colors.brown[600],
+                    color: Theme.of(context).colorScheme.primary,
                     decoration: TextDecoration.underline,
                   ),
                 ),
