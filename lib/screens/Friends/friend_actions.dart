@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../services/database.dart';
 
 class FriendActions {
-  // Freundschaftsanfrage senden
+  // Sendet eine Freundschaftsanfrage an einen anderen User
   static Future<void> sendFriendRequest(
     BuildContext context,
     Map<String, dynamic> user,
@@ -36,47 +36,114 @@ class FriendActions {
     }
   }
 
-  // Freundschaftsanfrage akzeptieren
+  // Akzeptiert eine eingehende Freundschaftsanfrage mit Loading-Anzeige
   static Future<void> acceptFriendRequest(
     BuildContext context,
     Map<String, dynamic> user,
     String currentUserId,
   ) async {
-    final success = await DatabaseService(
-      uid: currentUserId,
-    ).acceptFriendRequest(user['uid']);
-
-    if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('${user['firstName']} ist jetzt dein Freund! 🎉'),
-          backgroundColor: Colors.green,
+    try {
+      // Loading-Indikator anzeigen
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text(
+                'Anfrage wird bearbeitet...',
+                style: TextStyle(color: Colors.white),
+              ),
+            ],
+          ),
         ),
       );
-    }
-  }
 
-  // Freundschaftsanfrage ablehnen
-  static Future<void> declineFriendRequest(
-    BuildContext context,
-    Map<String, dynamic> user,
-    String currentUserId,
-  ) async {
-    final success = await DatabaseService(
-      uid: currentUserId,
-    ).declineFriendRequest(user['uid']);
+      final success = await DatabaseService(
+        uid: currentUserId,
+      ).acceptFriendRequest(user['uid']).timeout(Duration(seconds: 15));
 
-    if (success) {
+      // Loading-Dialog wieder schließen
+      if (Navigator.canPop(context)) {
+        Navigator.pop(context);
+      }
+
+    } catch (e) {
+      // Loading-Dialog schließen (falls noch offen)
+      if (Navigator.canPop(context)) {
+        Navigator.pop(context);
+      }
+      
+      print('Fehler in acceptFriendRequest UI: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Freundschaftsanfrage abgelehnt'),
+          content: Text('Timeout oder Netzwerkfehler'),
           backgroundColor: Colors.orange,
         ),
       );
     }
   }
 
-  // Freund entfernen
+  // Lehnt eine Freundschaftsanfrage ab mit Loading-Anzeige
+  static Future<void> declineFriendRequest(
+    BuildContext context,
+    Map<String, dynamic> user,
+    String currentUserId,
+  ) async {
+    try {
+      // Loading-Indikator anzeigen
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+
+      final success = await DatabaseService(
+        uid: currentUserId,
+      ).declineFriendRequest(user['uid']).timeout(Duration(seconds: 15));
+
+      // Loading-Dialog schließen
+      if (Navigator.canPop(context)) {
+        Navigator.pop(context);
+      }
+
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Freundschaftsanfrage abgelehnt'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Fehler beim Ablehnen der Anfrage'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      // Loading-Dialog schließen (falls noch offen)
+      if (Navigator.canPop(context)) {
+        Navigator.pop(context);
+      }
+      
+      print('Fehler in declineFriendRequest UI: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Timeout oder Netzwerkfehler'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+    }
+  }
+
+  // Entfernt einen Freund nach Bestätigung durch den User
   static Future<void> removeFriend(
     BuildContext context,
     Map<String, dynamic> user,
@@ -108,24 +175,89 @@ class FriendActions {
 
     if (confirmed == true) {
       final currentUser = FirebaseAuth.instance.currentUser;
-      if (currentUser != null) {
+
+      if (currentUser == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Fehler: Nicht eingeloggt'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      if (user['uid'] == null || user['uid'].toString().isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Fehler: Ungültige Benutzer-ID'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      try {
+        // Loading-Dialog während der Freund-Entfernung anzeigen
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text(
+                  'Freund wird entfernt...',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ],
+            ),
+          ),
+        );
+
         final success = await DatabaseService(
           uid: currentUser.uid,
-        ).removeFriend(user['uid']);
+        ).removeFriend(user['uid']).timeout(Duration(seconds: 15));
+
+        // Loading-Dialog wieder schließen
+        if (Navigator.canPop(context)) {
+          Navigator.pop(context);
+        }
 
         if (success) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('${user['firstName']} wurde entfernt'),
-              backgroundColor: Colors.orange,
+              backgroundColor: Colors.green,
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Fehler beim Entfernen'),
+              backgroundColor: Colors.red,
             ),
           );
         }
+      } catch (e) {
+        // Loading-Dialog schließen falls noch offen
+        if (Navigator.canPop(context)) {
+          Navigator.pop(context);
+        }
+
+        print('Fehler in removeFriend UI: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Timeout oder Netzwerkfehler'),
+            backgroundColor: Colors.orange,
+          ),
+        );
       }
     }
   }
 
-  // Anfragen-Dialog anzeigen
+  // Zeigt Dialog für eingehende Freundschaftsanfragen
   static void showRequestDialog(
     BuildContext context,
     Map<String, dynamic> user,
@@ -201,7 +333,7 @@ class FriendActions {
   }
 }
 
-// Action Button basierend auf Status
+// Action Button - zeigt verschiedene Buttons je nach Freundschafts-Status
 class ActionButton extends StatelessWidget {
   final Map<String, dynamic> user;
   final String status;
@@ -267,7 +399,7 @@ class ActionButton extends StatelessWidget {
   }
 }
 
-// Profildialog
+// Profil-Dialog für detaillierte User-Informationen
 class ProfileDialog {
   static void show(
     BuildContext context,
@@ -282,7 +414,7 @@ class ProfileDialog {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Profilbild
+            // Größeres Profilbild
             CircleAvatar(
               radius: 40,
               backgroundColor: Colors.grey[300],
@@ -300,7 +432,7 @@ class ProfileDialog {
 
             SizedBox(height: 16),
 
-            // Name
+            // Vollständiger Name des Users
             Text(
               '${user['firstName']} ${user['lastName']}'.trim(),
               style: TextStyle(
@@ -310,7 +442,7 @@ class ProfileDialog {
               ),
             ),
 
-            // Username
+            // Username mit @-Symbol
             Text(
               '@${user['username']}',
               style: TextStyle(color: Colors.grey[400], fontSize: 16),
@@ -318,7 +450,7 @@ class ProfileDialog {
 
             SizedBox(height: 12),
 
-            // Beziehungsstatus
+            // Freundschafts-Status Badge
             if (relationshipStatus == 'friends')
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -337,7 +469,7 @@ class ProfileDialog {
 
             SizedBox(height: 12),
 
-            // Streak Info
+            // Streak-Anzeige falls vorhanden
             if ((user['streak'] ?? 0) > 0)
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),

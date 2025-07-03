@@ -78,13 +78,11 @@ class DatabaseService {
   // Zufälliges Zitat mit separaten Text- und Autor-Feldern
   Future<Map<String, String>> getRandomQuoteWithAuthor() async {
     try {
-      // Hole alle Zitate aus der "quotes" Collection
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
           .collection('quotes')
           .get();
 
       if (querySnapshot.docs.isNotEmpty) {
-        // Zufälliges Zitat auswählen
         final randomIndex = Random().nextInt(querySnapshot.docs.length);
         final randomDoc = querySnapshot.docs[randomIndex];
         final data = randomDoc.data() as Map<String, dynamic>;
@@ -96,7 +94,6 @@ class DatabaseService {
           'author': data['author'] ?? "",
         };
       } else {
-        // Fallback wenn keine Zitate in der Datenbank
         return {
           'text': "Fall in love with the process, and the results will come.",
           'author': "",
@@ -111,28 +108,23 @@ class DatabaseService {
     }
   }
 
-  /// Streak-Mechanismus: Erhöhe den Streak nur, wenn heute eine Aktivität gespeichert wird.
+  // Streak-Mechanismus
   Future<void> saveActivityForToday(Map<String, dynamic> activity) async {
     final userRef = userCollection.doc(uid);
     final userDoc = await userRef.get();
     final now = DateTime.now();
     final todayStr =
         "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
-
-    // WICHTIG: Sowohl das eingegebene Datum als auch der Erstellungszeitpunkt müssen "heute" sein
     final activityDate = activity['datum'];
-    final createdAt = activity['createdAt']; // Firestore ServerTimestamp
+    final createdAt = activity['createdAt'];
 
-    // 1. Prüfung: Das eingegebene Datum muss heute sein
     if (activityDate == null || !activityDate.startsWith(todayStr)) return;
 
-    // 2. Prüfung: Die Aktivität muss auch heute erstellt worden sein
     if (createdAt != null && createdAt is Timestamp) {
       final createdDate = createdAt.toDate();
       final createdDateStr =
           "${createdDate.year}-${createdDate.month.toString().padLeft(2, '0')}-${createdDate.day.toString().padLeft(2, '0')}";
 
-      // Wenn Erstellungsdatum != eingegebenes Datum, Streak nicht erhöhen
       if (createdDateStr != todayStr) return;
     }
 
@@ -152,17 +144,14 @@ class DatabaseService {
         if (diff == 1) {
           streak = prevStreak + 1;
         } else if (diff == 0) {
-          // Bereits heute eine Aktivität geloggt
           streak = prevStreak;
         } else {
-          // Mehr als 1 Tag Unterschied → Streak unterbrochen
           streak = 1;
         }
       }
       maxStreak = streak > prevMaxStreak ? streak : prevMaxStreak;
     }
 
-    // User-Dokument aktualisieren
     await userRef.update({
       'streak': streak,
       'lastStreakDate': lastStreakDate,
@@ -170,7 +159,7 @@ class DatabaseService {
     });
   }
 
-  /// Prüft beim App-Start, ob der Streak unterbrochen wurde
+  // Streak-Status prüfen
   Future<void> checkStreakStatus() async {
     final userRef = userCollection.doc(uid);
     final userDoc = await userRef.get();
@@ -181,7 +170,6 @@ class DatabaseService {
     final lastStreakDate = data['lastStreakDate'];
     final currentStreak = data['streak'] ?? 0;
 
-    // Wenn noch nie eine Aktivität geloggt wurde oder Streak bereits 0
     if (lastStreakDate == null || currentStreak == 0) return;
 
     final now = DateTime.now();
@@ -189,17 +177,12 @@ class DatabaseService {
         "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
     final yesterdayStr =
         "${now.subtract(Duration(days: 1)).year}-${now.subtract(Duration(days: 1)).month.toString().padLeft(2, '0')}-${now.subtract(Duration(days: 1)).day.toString().padLeft(2, '0')}";
-
     try {
-      // Prüfung basiert nur auf Kalendertagen, nicht auf Stunden
-      // Streak bleibt bestehen wenn letzter Log heute oder gestern war
       if (lastStreakDate != todayStr && lastStreakDate != yesterdayStr) {
-        // Mehr als 1 Kalendertag ohne Log → Streak zurücksetzen
         await userRef.update({'streak': 0, 'lastStreakDate': null});
-        // Nachricht entfernt
       }
     } catch (e) {
-      // Fehler-Log entfernt oder stumm gemacht
+      // Fehler-Log stumm
     }
   }
 
@@ -211,10 +194,9 @@ class DatabaseService {
     }, SetOptions(merge: true));
   }
 
-  // Alle User-Daten löschen (User-Dokument und alle Activities)
+  // Alle User-Daten löschen
   Future<bool> deleteAllUserData() async {
     try {
-      // 1. Alle Activities des Users löschen
       final activitiesQuery = await userCollection
           .doc(uid)
           .collection('activities')
@@ -223,7 +205,6 @@ class DatabaseService {
         await doc.reference.delete();
       }
 
-      // 2. Alle Goals des Users löschen
       final goalsQuery = await userCollection
           .doc(uid)
           .collection('goals')
@@ -232,7 +213,6 @@ class DatabaseService {
         await doc.reference.delete();
       }
 
-      // 3. User-Dokument löschen
       await userCollection.doc(uid).delete();
 
       print('Alle User-Daten erfolgreich gelöscht');
@@ -252,7 +232,7 @@ class DatabaseService {
           .get();
 
       if (query.docs.isNotEmpty) {
-        return query.docs.first.id; // Das ist die UID
+        return query.docs.first.id;
       }
       return null;
     } catch (e) {
@@ -260,7 +240,7 @@ class DatabaseService {
     }
   }
 
-  // Prüft, ob ein Username verfügbar ist, aber unter Ausschluss des aktuellen Users
+  // Prüft, ob ein Username verfügbar ist
   Future<bool> isUsernameAvailable(
     String username, {
     String? excludeUid,
@@ -272,30 +252,27 @@ class DatabaseService {
         .limit(1)
         .get();
 
-    // Wenn kein Dokument gefunden wird, ist der Username verfügbar
     if (query.docs.isEmpty) return true;
 
-    // Wenn ein Dokument gefunden wird, prüfe ob es der aktuelle User ist
     if (excludeUid != null && query.docs.first.id == excludeUid) {
-      return true; // Der aktuelle User darf seinen eigenen Username behalten
+      return true;
     }
 
-    return false; // Username ist von einem anderen User belegt
+    return false;
   }
 
-  // Username aktualisieren, mit Verfügbarkeitsprüfung
+  // Username aktualisieren
   Future<bool> updateUsername(String newUsername) async {
     try {
       bool available = await isUsernameAvailable(newUsername);
       if (!available) return false;
 
-      // Username speichern
       await userCollection.doc(uid).update({
         'username': newUsername,
         'last_updated': FieldValue.serverTimestamp(),
       });
 
-      return true; // Username erfolgreich aktualisiert
+      return true;
     } catch (e) {
       return false;
     }
@@ -309,7 +286,6 @@ class DatabaseService {
   // Ziel hinzufügen
   Future<void> addGoal(Map<String, dynamic> goalData) async {
     try {
-      // Aktuelle Anzahl von Zielen holen für ordering
       final existingGoals = await goalsCollection.get();
       final orderIndex = existingGoals.docs.length;
 
@@ -338,13 +314,11 @@ class DatabaseService {
     }
   }
 
-  // Ziel löschen (OPTIMIERT)
+  // Ziel löschen
   Future<void> deleteGoal(String goalId) async {
     try {
-      // Hole alle Ziele in der richtigen Reihenfolge
       final goals = await goalsCollection.orderBy('orderIndex').get();
 
-      // Finde das zu löschende Ziel
       int deletedIndex = -1;
       for (int i = 0; i < goals.docs.length; i++) {
         if (goals.docs[i].id == goalId) {
@@ -357,21 +331,17 @@ class DatabaseService {
         throw Exception('Ziel nicht gefunden');
       }
 
-      // EINE einzige Batch-Operation für Löschen + Neu-Sortieren
       final batch = FirebaseFirestore.instance.batch();
 
-      // 1. Ziel löschen
       batch.delete(goalsCollection.doc(goalId));
 
-      // 2. Alle nachfolgenden Ziele neu nummerieren (in derselben Batch)
       for (int i = deletedIndex + 1; i < goals.docs.length; i++) {
         batch.update(goals.docs[i].reference, {
-          'orderIndex': i - 1, // Index um 1 reduzieren
+          'orderIndex': i - 1,
           'updatedAt': FieldValue.serverTimestamp(),
         });
       }
 
-      // Nur EIN batch.commit() statt zwei
       await batch.commit();
     } catch (e) {
       print('Fehler beim Löschen des Ziels: $e');
@@ -379,7 +349,7 @@ class DatabaseService {
     }
   }
 
-  // Ziele neu sortieren (für Drag & Drop) - OPTIMIERT
+  // Ziele neu sortieren
   Future<void> reorderGoals(List<String> goalIds) async {
     try {
       final batch = FirebaseFirestore.instance.batch();
@@ -420,12 +390,11 @@ class DatabaseService {
     try {
       final currentTime = FieldValue.serverTimestamp();
 
-      // 1. Prüfen ob bereits Freunde oder Anfrage existiert
       final existingFriendship = await friendsCollection
           .doc(targetUserId)
           .get();
       if (existingFriendship.exists) {
-        return false; // Bereits Freunde
+        return false;
       }
 
       final existingRequest = await FirebaseFirestore.instance
@@ -436,10 +405,9 @@ class DatabaseService {
           .get();
 
       if (existingRequest.exists) {
-        return false; // Anfrage bereits gesendet
+        return false;
       }
 
-      // 2. Freundschaftsanfrage beim Empfänger speichern
       await FirebaseFirestore.instance
           .collection('users')
           .doc(targetUserId)
@@ -452,7 +420,6 @@ class DatabaseService {
             'sentAt': currentTime,
           });
 
-      // 3. Gesendete Anfrage bei sich selbst speichern (für Tracking)
       await userCollection
           .doc(uid)
           .collection('sentRequests')
@@ -470,126 +437,148 @@ class DatabaseService {
     }
   }
 
-  // Freundschaftsanfrage akzeptieren
+  // Freundschaftsanfrage akzeptieren - VEREINFACHT
   Future<bool> acceptFriendRequest(String senderId) async {
     try {
-      final currentTime = FieldValue.serverTimestamp();
-
-      // Batch für atomare Operation
+      print('Start acceptFriendRequest: $uid -> $senderId');
+      
       final batch = FirebaseFirestore.instance.batch();
-
-      // 1. Freundschaft bei beiden Usern hinzufügen
-      final friendship1 = friendsCollection.doc(senderId);
-      batch.set(friendship1, {
-        'userId': senderId,
-        'addedAt': currentTime,
-        'status': 'accepted',
-      });
-
-      final friendship2 = FirebaseFirestore.instance
-          .collection('users')
-          .doc(senderId)
-          .collection('friends')
-          .doc(uid);
-      batch.set(friendship2, {
-        'userId': uid,
-        'addedAt': currentTime,
-        'status': 'accepted',
-      });
-
-      // 2. Freundschaftsanfrage beim Empfänger löschen
-      final requestToDelete = friendRequestsCollection.doc(senderId);
-      batch.delete(requestToDelete);
-
-      // 3. Gesendete Anfrage beim Sender löschen
-      final sentRequestToDelete = FirebaseFirestore.instance
-          .collection('users')
-          .doc(senderId)
-          .collection('sentRequests')
-          .doc(uid);
-      batch.delete(sentRequestToDelete);
-
-      // 4. Friends-Counter bei beiden erhöhen
-      final user1Update = userCollection.doc(uid);
-      batch.update(user1Update, {'friends_count': FieldValue.increment(1)});
-
-      final user2Update = userCollection.doc(senderId);
-      batch.update(user2Update, {'friends_count': FieldValue.increment(1)});
-
+      
+      // Freundschaften erstellen
+      batch.set(
+        friendsCollection.doc(senderId),
+        {
+          'userId': senderId,
+          'addedAt': DateTime.now(),
+          'status': 'accepted',
+        }
+      );
+      
+      batch.set(
+        FirebaseFirestore.instance
+            .collection('users')
+            .doc(senderId)
+            .collection('friends')
+            .doc(uid),
+        {
+          'userId': uid,
+          'addedAt': DateTime.now(),
+          'status': 'accepted',
+        }
+      );
+      
+      // Anfragen löschen
+      batch.delete(friendRequestsCollection.doc(senderId));
+      batch.delete(
+        FirebaseFirestore.instance
+            .collection('users')
+            .doc(senderId)
+            .collection('sentRequests')
+            .doc(uid)
+      );
+      
       await batch.commit();
+      
+      print('Batch commit erfolgreich');
+      
+      // Counter separat und defensiv
+      _updateFriendsCountAsync(uid, 1);
+      _updateFriendsCountAsync(senderId, 1);
+      
       return true;
+
     } catch (e) {
-      print('Fehler beim Akzeptieren der Freundschaftsanfrage: $e');
+      print('Fehler in acceptFriendRequest: $e');
       return false;
     }
   }
 
-  // Freundschaftsanfrage ablehnen
-  Future<bool> declineFriendRequest(String senderId) async {
-    try {
-      final batch = FirebaseFirestore.instance.batch();
-
-      // 1. Anfrage beim Empfänger löschen
-      final requestToDelete = friendRequestsCollection.doc(senderId);
-      batch.delete(requestToDelete);
-
-      // 2. Gesendete Anfrage beim Sender löschen
-      final sentRequestToDelete = FirebaseFirestore.instance
-          .collection('users')
-          .doc(senderId)
-          .collection('sentRequests')
-          .doc(uid);
-      batch.delete(sentRequestToDelete);
-
-      await batch.commit();
-      return true;
-    } catch (e) {
-      print('Fehler beim Ablehnen der Freundschaftsanfrage: $e');
-      return false;
-    }
-  }
-
-  // Freund entfernen
+  // Freund entfernen - VEREINFACHT
   Future<bool> removeFriend(String friendId) async {
     try {
+      print('Start removeFriend: $uid -> $friendId');
+      
       final batch = FirebaseFirestore.instance.batch();
-
-      // 1. Freundschaft bei beiden Usern entfernen
-      final friendship1 = friendsCollection.doc(friendId);
-      batch.delete(friendship1);
-
-      final friendship2 = FirebaseFirestore.instance
-          .collection('users')
-          .doc(friendId)
-          .collection('friends')
-          .doc(uid);
-      batch.delete(friendship2);
-
-      // 2. Friends-Counter bei beiden reduzieren
-      final user1Update = userCollection.doc(uid);
-      batch.update(user1Update, {'friends_count': FieldValue.increment(-1)});
-
-      final user2Update = userCollection.doc(friendId);
-      batch.update(user2Update, {'friends_count': FieldValue.increment(-1)});
-
+      
+      batch.delete(
+        userCollection.doc(uid).collection('friends').doc(friendId)
+      );
+      batch.delete(
+        userCollection.doc(friendId).collection('friends').doc(uid)
+      );
+      
       await batch.commit();
+      
+      print('Freundschaften gelöscht');
+      
+      _updateFriendsCountAsync(uid, -1);
+      _updateFriendsCountAsync(friendId, -1);
+      
       return true;
+
     } catch (e) {
-      print('Fehler beim Entfernen der Freundschaft: $e');
+      print('Fehler in removeFriend: $e');
       return false;
     }
+  }
+
+  // Freundschaftsanfrage ablehnen - VEREINFACHT
+  Future<bool> declineFriendRequest(String senderId) async {
+    try {
+      print('Start declineFriendRequest: $uid -> $senderId');
+
+      final batch = FirebaseFirestore.instance.batch();
+      
+      batch.delete(friendRequestsCollection.doc(senderId));
+      batch.delete(
+        FirebaseFirestore.instance
+            .collection('users')
+            .doc(senderId)
+            .collection('sentRequests')
+            .doc(uid)
+      );
+      
+      await batch.commit();
+      
+      print('declineFriendRequest erfolgreich');
+      return true;
+
+    } catch (e) {
+      print('Fehler in declineFriendRequest: $e');
+      return false;
+    }
+  }
+
+  // Async Counter-Update (ohne await)
+  void _updateFriendsCountAsync(String userId, int increment) {
+    userCollection.doc(userId).get().then((doc) {
+      if (doc.exists) {
+        final data = doc.data() as Map<String, dynamic>;
+        final currentCount = data['friends_count'] ?? 0;
+        final newCount = increment > 0 
+            ? currentCount + increment 
+            : (currentCount + increment).clamp(0, double.infinity).toInt();
+        
+        userCollection.doc(userId).update({
+          'friends_count': newCount,
+          'last_updated': DateTime.now(),
+        }).catchError((e) {
+          print('Counter-Update fehlgeschlagen für $userId: $e');
+        });
+      }
+    }).catchError((e) {
+      print('Counter-Read fehlgeschlagen für $userId: $e');
+    });
   }
 
   // Freundschaftsstatus prüfen
   Future<String> getFriendshipStatus(String targetUserId) async {
     try {
-      // 1. Prüfen ob bereits Freunde
       final friendship = await friendsCollection.doc(targetUserId).get();
       if (friendship.exists) {
         return 'friends';
       }
 
-      // 2. Prüfen ob Anfrage gesendet wurde
       final sentRequest = await userCollection
           .doc(uid)
           .collection('sentRequests')
@@ -599,7 +588,6 @@ class DatabaseService {
         return 'request_sent';
       }
 
-      // 3. Prüfen ob Anfrage empfangen wurde
       final receivedRequest = await friendRequestsCollection
           .doc(targetUserId)
           .get();
@@ -635,7 +623,7 @@ class DatabaseService {
         .snapshots();
   }
 
-  // Freundesdaten laden (für Profil-Anzeige)
+  // Freundesdaten laden
   Future<Map<String, dynamic>?> getFriendData(String friendId) async {
     try {
       final doc = await userCollection.doc(friendId).get();
@@ -647,5 +635,111 @@ class DatabaseService {
       print('Fehler beim Laden der Freundes-Daten: $e');
       return null;
     }
+  }
+
+  // Stream für Friend-Aktivitäten der letzten 7 Tage
+  Stream<List<Map<String, dynamic>>> get friendActivities {
+    final sevenDaysAgo = DateTime.now().subtract(Duration(days: 7));
+    
+    return userFriends.asyncMap((friendsSnapshot) async {
+      List<Map<String, dynamic>> allActivities = [];
+      
+      print('Debug: Anzahl Freunde gefunden: ${friendsSnapshot.docs.length}');
+      
+      for (var friendDoc in friendsSnapshot.docs) {
+        final friendData = friendDoc.data() as Map<String, dynamic>;
+        final friendId = friendData['userId'];
+        
+        print('Debug: Lade Aktivitäten für Freund: $friendId');
+        
+        try {
+          final activitiesSnapshot = await FirebaseFirestore.instance
+              .collection('users')
+              .doc(friendId)
+              .collection('activities')
+              .where('createdAt', isGreaterThan: Timestamp.fromDate(sevenDaysAgo))
+              .orderBy('createdAt', descending: true)
+              .get();
+          
+          print('Debug: Aktivitäten für $friendId gefunden: ${activitiesSnapshot.docs.length}');
+          
+          final userData = await getFriendData(friendId);
+          
+          if (userData != null) {
+            for (var activityDoc in activitiesSnapshot.docs) {
+              final activityData = activityDoc.data();
+              print('Debug: Aktivität gefunden: ${activityData['option']} von ${userData['firstName']}');
+              
+              allActivities.add({
+                'activityId': activityDoc.id,
+                'userId': friendId,
+                'userName': '${userData['firstName']} ${userData['lastName']}'.trim(),
+                'username': userData['username'] ?? friendId,
+                'userProfileImage': userData['profileImageUrl'] ?? '',
+                'userStreak': userData['streak'] ?? 0,
+                'title': activityData['option'] ?? 'Unbekannte Aktivität',
+                'description': activityData['text'] ?? '',
+                'category': activityData['option'] ?? 'sonstiges',
+                'duration': _calculateDuration(activityData['von'], activityData['bis']),
+                'timestamp': activityData['createdAt'],
+                'emoji': activityData['emoji'] ?? '',
+                'von': activityData['von'] ?? '',
+                'bis': activityData['bis'] ?? '',
+                'datum': activityData['datum'] ?? '',
+              });
+            }
+          }
+        } catch (e) {
+          print('Debug: Fehler beim Laden der Aktivitäten von $friendId: $e');
+        }
+      }
+      
+      allActivities.sort((a, b) {
+        final aTime = a['timestamp'] as Timestamp?;
+        final bTime = b['timestamp'] as Timestamp?;
+        if (aTime == null || bTime == null) return 0;
+        return bTime.compareTo(aTime);
+      });
+      
+      print('Debug: Gesamt-Aktivitäten im Feed: ${allActivities.length}');
+      return allActivities;
+    });
+  }
+
+  // Hilfsmethode: Dauer berechnen
+  int _calculateDuration(String? von, String? bis) {
+    if (von == null || bis == null || von.isEmpty || bis.isEmpty) return 0;
+    
+    try {
+      final vonParts = von.split(':');
+      final bisParts = bis.split(':');
+      
+      final vonMinutes = int.parse(vonParts[0]) * 60 + int.parse(vonParts[1]);
+      final bisMinutes = int.parse(bisParts[0]) * 60 + int.parse(bisParts[1]);
+      
+      return bisMinutes - vonMinutes;
+    } catch (e) {
+      print('Fehler beim Berechnen der Dauer: $e');
+      return 0;
+    }
+  }
+
+  // Einzelne Aktivität laden
+  Future<Map<String, dynamic>?> getActivityDetails(String userId, String activityId) async {
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .collection('activities')
+          .doc(activityId)
+          .get();
+      
+      if (doc.exists) {
+        return doc.data();
+      }
+    } catch (e) {
+      print('Fehler beim Laden der Aktivitäts-Details: $e');
+    }
+    return null;
   }
 }

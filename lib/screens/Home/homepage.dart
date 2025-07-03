@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';  
 import 'package:provider/provider.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:streax/Screens/Home/Goals/goals.dart'; 
-import 'package:streax/Screens/Home/Goals/goal_dialogues.dart';
 import 'package:streax/Models/user.dart';
 import 'head.dart';
 import 'journal.dart';
@@ -102,7 +100,7 @@ class startseite extends StatelessWidget {
                         children: [
                           GestureDetector(
                             onTap: () {
-                              Navigator.of(context).push(MaterialPageRoute(builder: (context) => kalender()));
+                              Navigator.of(context).push(MaterialPageRoute(builder: (context) => calendar()));
                             },
                             child: Row(
                               children: [

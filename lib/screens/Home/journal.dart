@@ -2,13 +2,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+/// Widget für die Wochenansicht der Journal-Einträge
 class Journal extends StatelessWidget {
   const Journal({super.key});
-
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
 
+    // Berechnung der aktuellen Woche (Montag bis Sonntag)
     final now = DateTime.now();
     final monday = now.subtract(Duration(days: now.weekday - 1));
     final weekStart = DateTime(monday.year, monday.month, monday.day);
@@ -27,7 +28,7 @@ class Journal extends StatelessWidget {
           return const Center(child: CircularProgressIndicator());
         }
 
-        // Mappe Einträge nach Datum
+        // Gruppiert Aktivitäten nach Datum für schnelleren Zugriff
         final Map<String, Map<String, dynamic>> eintraege = {};
         for (var doc in snapshot.data!.docs) {
           final data = doc.data() as Map<String, dynamic>;
@@ -57,7 +58,7 @@ class Journal extends StatelessWidget {
                     tag,
                     style: TextStyle(
                       color: isToday 
-                          ? Color(0xFF1C499E) // Nur blaues Ende des Gradients
+                          ? Color(0xFF1C499E)
                           : Colors.white,
                       fontSize: 16, 
                       fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
@@ -104,7 +105,7 @@ class Journal extends StatelessWidget {
                             decoration: BoxDecoration(
                               color: Colors.transparent,
                               border: Border.all(
-                                color: Color(0xFF1C499E), // Nur blaues Ende des Gradients
+                                color: Color(0xFF1C499E),
                                 width: 4,
                               ),
                               borderRadius: BorderRadius.circular(10),
@@ -174,7 +175,7 @@ class GradientBorder extends StatelessWidget {
       child: Container(
         margin: EdgeInsets.all(borderWidth),
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface, // Hintergrund der App
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(borderRadius.topLeft.x - borderWidth),
         ),
         child: child,

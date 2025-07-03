@@ -4,6 +4,7 @@ import '../Journal/calendar.dart';
 import '../Profile/profile.dart';
 import '../Friends/feed.dart';
 
+// Navigationsleiste mit schwebebendem Plus-Button
 class NavigationsLeiste extends StatelessWidget {
   final int currentPage;
 
@@ -41,73 +42,54 @@ class NavigationsLeiste extends StatelessWidget {
                 switch (index) {
                   case 0:
                     if (currentPage != 0) {
-                      // Navigation zurück zur Startseite
                       Navigator.of(context).popUntil((route) => route.isFirst);
                     }
                     break;
                   case 1:
                     if (currentPage != 1) {
-                      Navigator.of(
-                        context,
-                      ).push(MaterialPageRoute(builder: (context) => Feed()));
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (context) => Feed()),
+                      );
                     }
                     break;
                   case 2:
-                    // Plus-Button öffnet Aktivität-hinzufügen-Fenster
+                    // Plus-Button öffnet Aktivität-hinzufügen-Modal
                     showModalBottomSheet(
                       context: context,
                       isScrollControlled: true,
                       backgroundColor: Colors.transparent,
                       builder: (context) => AktivitaetHinzufuegen(
-                        onSaved: () {
-                          // Kein Navigator.of(context).pop() hier!
-                          // setState im Elternwidget (z.B. Home, Kalender, Journal) ausführen!
-                        },
+                        onSaved: () {},
                       ),
                     );
                     break;
                   case 3:
                     if (currentPage != 3) {
-                      // Navigation zum Kalender
                       Navigator.of(context).push(
-                        MaterialPageRoute(builder: (context) => kalender()),
+                        MaterialPageRoute(builder: (context) => calendar()), // KORRIGIERT: calendar statt calendar
                       );
                     }
                     break;
                   case 4:
                     if (currentPage != 4) {
-                      // Navigation zum Profil
-                      Navigator.of(
-                        context,
-                      ).push(MaterialPageRoute(builder: (context) => Profil()));
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (context) => Profil()),
+                      );
                     }
                     break;
                 }
               },
               items: [
                 BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.group),
-                  label: 'Freunde',
-                ),
-                BottomNavigationBarItem(
-                  // Leerer Platz für den schwebenden Plus-Button - reduzierte Höhe
-                  icon: SizedBox(height: 26),
-                  label: 'Hinzufügen',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.calendar_month),
-                  label: 'Kalender',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.person),
-                  label: 'Einstellungen',
-                ),
+                BottomNavigationBarItem(icon: Icon(Icons.group), label: 'Freunde'),
+                BottomNavigationBarItem(icon: SizedBox(height: 26), label: 'Hinzufügen'),
+                BottomNavigationBarItem(icon: Icon(Icons.calendar_month), label: 'Kalender'),
+                BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Einstellungen'),
               ],
             ),
           ),
         ),
-        // Plus-Button schwebt über der Navigationsleiste
+        // Schwebender Plus-Button
         Positioned(
           bottom: 30,
           left: 0,
@@ -115,7 +97,6 @@ class NavigationsLeiste extends StatelessWidget {
           child: Center(
             child: GestureDetector(
               onTap: () {
-                // Aktivität-hinzufügen-Fenster öffnen
                 showModalBottomSheet(
                   context: context,
                   isScrollControlled: true,
@@ -127,7 +108,6 @@ class NavigationsLeiste extends StatelessWidget {
                 width: 75,
                 height: 75,
                 decoration: BoxDecoration(
-                  // Gradient für den Plus-Button
                   gradient: LinearGradient(
                     colors: [Color(0xFF1C499E), Color(0xFFB1D43A)],
                     stops: [0.35, 1.0],
