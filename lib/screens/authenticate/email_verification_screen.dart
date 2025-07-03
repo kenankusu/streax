@@ -3,6 +3,9 @@ import 'package:streax/Screens/splashscreen.dart';
 import 'package:streax/Services/auth.dart';
 import 'dart:async';
 
+/// Screen für die Email-Verifizierung nach der Registrierung
+/// Überprüft automatisch alle 3 Sekunden den Verifizierungsstatus
+/// und leitet bei erfolgreicher Verifizierung zur App weiter
 class EmailVerificationScreen extends StatefulWidget {
   final String email;
   
@@ -35,16 +38,16 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
     super.dispose();
   }
 
-  // Periodische Überprüfung alle 3 Sekunden starten
+  /// Startet periodische Überprüfung alle 3 Sekunden
   void _startPeriodicVerificationCheck() {
     _timer = Timer.periodic(const Duration(seconds: 3), (timer) async {
       await _checkEmailVerification();
     });
   }
 
-  // Email-Verifizierungsstatus prüfen und bei Erfolg weiterleiten
+  /// Prüft Email-Verifizierungsstatus und leitet bei Erfolg weiter
   Future<void> _checkEmailVerification() async {
-    // Doppelte Ausführung verhindern
+    // Verhindert Doppelausführung und unnötige Checks nach Verifizierung
     if (_isCheckingVerification || _isVerified) return;
     
     setState(() {
@@ -63,31 +66,35 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
         _isVerified = true;
       });
       
-      _timer?.cancel(); // Timer nicht mehr benötigt
+      _timer?.cancel(); // Timer stoppen da nicht mehr benötigt
       
       // Benutzer über Erfolg informieren
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Email verifiziert! Du wirst zur App weitergeleitet..."),
-          behavior: SnackBarBehavior.floating,
-          backgroundColor: Colors.green,
-        ),
-      );
-
-      // Kurze Pause für User-Feedback, dann Navigation
-      await Future.delayed(const Duration(seconds: 2));
-
-      // Kompletten Navigation-Stack zurücksetzen und zum Wrapper
+      // mounted-Check vor BuildContext-Verwendung nach async
       if (mounted) {
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => Wrapper()),
-          (route) => false, // Alle vorherigen Routes entfernen
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Email verifiziert! Du wirst zur App weitergeleitet..."),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Colors.green,
+          ),
         );
+
+        // Kurze Pause für User-Feedback, dann Navigation
+        await Future.delayed(const Duration(seconds: 2));
+
+        // mounted-Check nach weiterem async Gap
+        if (mounted) {
+          // Kompletten Navigation-Stack zurücksetzen und zum Wrapper
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => Wrapper()),
+            (route) => false, // Alle vorherigen Routes entfernen
+          );
+        }
       }
     }
   }
 
-  // Verifizierungs-Email erneut senden mit Cooldown-Mechanismus
+  /// Sendet Verifizierungs-Email erneut mit 60s Cooldown-Mechanismus
   Future<void> _resendVerificationEmail() async {
     if (!_canResendEmail) return;
 
@@ -100,12 +107,14 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
         _resendCooldown = 60;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Verifizierungs-Email erneut gesendet'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Verifizierungs-Email erneut gesendet'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
 
       // Countdown-Timer für Button-Aktivierung
       Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -126,13 +135,15 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
         }
       });
     } else {
-      // Fehlermeldung bei unsuccessful send
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Fehler beim Senden der Email'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      // Fehlermeldung bei Sende-Fehler
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Fehler beim Senden der Email'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -201,7 +212,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 20),
-              CircularProgressIndicator(
+              const CircularProgressIndicator(
                 valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
               ),
             ],
@@ -253,6 +264,8 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
               TextButton(
                 onPressed: () async {
                   await _auth.signOut(); // Aktuellen User ausloggen
+                  
+                  // mounted-Check nach async Operation hinzufügen
                   if (mounted) {
                     Navigator.of(context).pushAndRemoveUntil(
                       MaterialPageRoute(builder: (context) => Wrapper()),
