@@ -143,7 +143,7 @@ class FriendActions {
   static Future<void> removeFriend(
     BuildContext context,
     Map<String, dynamic> user,
-    String currentUserId,  // KORRIGIERT: currentUserId als Parameter hinzugefügt
+    String currentUserId,  // currentUserId als Parameter hinzugefügt
   ) async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -318,7 +318,7 @@ class FriendActions {
   }
 }
 
-// Action Button - zeigt verschiedene Buttons je nach Freundschafts-Status
+// Action Button, zeigt verschiedene Buttons je nach Freundschafts-Status
 class ActionButton extends StatelessWidget {
   final Map<String, dynamic> user;
   final String status;
@@ -384,7 +384,7 @@ class ActionButton extends StatelessWidget {
   }
 }
 
-// Profil-Dialog für detaillierte User-Informationen
+// Profildialog für detaillierte Userinformationen
 class ProfileDialog {
   static void show(
     BuildContext context,
@@ -399,7 +399,6 @@ class ProfileDialog {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Größeres Profilbild
             CircleAvatar(
               radius: 40,
               backgroundColor: Colors.grey[300],
@@ -435,7 +434,7 @@ class ProfileDialog {
 
             SizedBox(height: 12),
 
-            // Freundschafts-Status Badge
+            // Freundschaftsstatus Badge
             if (relationshipStatus == 'friends')
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -454,7 +453,7 @@ class ProfileDialog {
 
             SizedBox(height: 12),
 
-            // Streak-Anzeige falls vorhanden
+            // Streakanzeige falls vorhanden
             if ((user['streak'] ?? 0) > 0)
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),

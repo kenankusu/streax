@@ -20,7 +20,7 @@ class _FriendsSlideInViewState extends State<FriendsSlideInView> {
   List<Map<String, dynamic>> _allRequests = [];
   List<Map<String, dynamic>> _filteredRequests = [];
   bool _isLoading = true;
-  bool _isDisposed = false; // Widget-Lifecycle Tracking
+  bool _isDisposed = false; // Widgetlifecycle Tracking
 
   @override
   void initState() {
@@ -90,7 +90,7 @@ class _FriendsSlideInViewState extends State<FriendsSlideInView> {
       final friendsSnapshot = results[0];
       final requestsSnapshot = results[1];
 
-      // Freunde-Daten laden
+      // Freundedaten laden
       List<Map<String, dynamic>> friendsData = [];
       for (var friendDoc in friendsSnapshot.docs) {
         if (_isDisposed) break; // Breche ab wenn Widget disposed
@@ -149,7 +149,7 @@ class _FriendsSlideInViewState extends State<FriendsSlideInView> {
     }
   }
 
-  // Sichere Methode zum Laden von User-Daten
+  // Sichere Methode zum Laden von Userdaten
   Future<Map<String, dynamic>?> _getFriendData(String friendId) async {
     if (_isDisposed) return null;
     
@@ -192,12 +192,12 @@ class _FriendsSlideInViewState extends State<FriendsSlideInView> {
       body: SafeArea(
         child: Column(
           children: [
-            // Header mit Zurück-Button
+            // Header mit Zurück Button
             Container(
               padding: EdgeInsets.all(20),
               child: Row(
                 children: [
-                  // Zurück-Button
+                  // Zurück Button
                   Container(
                     width: 45,
                     height: 45,
@@ -301,7 +301,7 @@ class _FriendsSlideInViewState extends State<FriendsSlideInView> {
 
             SizedBox(height: 20),
 
-            // Freunde-Liste
+            // Freundeliste
             Expanded(
               child: _isLoading
                   ? Center(
@@ -346,7 +346,7 @@ class _FriendsSlideInViewState extends State<FriendsSlideInView> {
                             SizedBox(height: 32),
                           ],
 
-                          // Freunde-Liste Titel
+                          // Freundeliste Titel
                           Text(
                             'Deine Freunde (${_filteredFriends.length})',
                             style: TextStyle(
@@ -357,7 +357,7 @@ class _FriendsSlideInViewState extends State<FriendsSlideInView> {
                           ),
                           SizedBox(height: 12),
 
-                          // Freunde-Liste
+                          // Freundeliste
                           if (_filteredFriends.isEmpty && _searchQuery.isNotEmpty)
                             Container(
                               padding: EdgeInsets.symmetric(vertical: 40),
@@ -435,7 +435,7 @@ class _FriendRequestCardState extends State<FriendRequestCard> {
       padding: EdgeInsets.only(bottom: 12),
       child: Row(
         children: [
-          // Profilbild mit Tap-Funktion
+          // Profilbild mit Tapfunktion
           GestureDetector(
             onTap: _isProcessing ? null : () {
               Navigator.of(context).push(
@@ -460,7 +460,7 @@ class _FriendRequestCardState extends State<FriendRequestCard> {
 
           SizedBox(width: 12),
 
-          // User-Info
+          // Userinfo
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -519,7 +519,7 @@ class _FriendRequestCardState extends State<FriendRequestCard> {
               ),
             )
           else ...[
-            // Ablehnen-Button
+            // Ablehnen Button
             Container(
               width: 40,
               height: 40,
@@ -536,7 +536,7 @@ class _FriendRequestCardState extends State<FriendRequestCard> {
 
             SizedBox(width: 8),
 
-            // Annehmen-Button
+            // Annehmen Button
             Container(
               width: 40,
               height: 40,
@@ -655,7 +655,7 @@ class _FriendRequestCardState extends State<FriendRequestCard> {
   }
 }
 
-// Freund-Karte für die Slide-in Ansicht mit Entfernen-Button
+// Freundkarte für die Slide in Ansicht mit Entfernen-Button
 class SlideInFriendCard extends StatefulWidget {
   final Map<String, dynamic> user;
   final VoidCallback onComplete;
@@ -704,7 +704,7 @@ class _SlideInFriendCardState extends State<SlideInFriendCard> {
 
           SizedBox(width: 12),
 
-          // User-Info
+          // Userinfo
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -748,7 +748,7 @@ class _SlideInFriendCardState extends State<SlideInFriendCard> {
             ),
           ),
 
-          // Entfernen-Button oder Loading
+          // Entfernen Button oder Loading
           if (_isProcessing)
             SizedBox(
               width: 40,

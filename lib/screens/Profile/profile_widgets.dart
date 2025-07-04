@@ -21,7 +21,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
   final ImageService _imageService = ImageService();
   bool _isUploading = false;
 
-  // Funktion zum Anzeigen der Bildauswahl-Optionen
+  // Funktion zum Anzeigen der Bildauswahloptionen
   void _showImageSourceDialog() {
     showDialog(
       context: context,

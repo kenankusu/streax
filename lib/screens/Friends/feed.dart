@@ -24,22 +24,24 @@ class _FeedState extends State<Feed> {
   bool _isAlreadyFriend = false;
   bool _isSearchExpanded = false;
   bool _requestSent = false;
-  
+
   StreamSubscription<QuerySnapshot>? _friendsStreamSubscription;
-  
+
   // Stream wird einmal beim Start erstellt um unnötige Neuladungen zu vermeiden
   Stream<List<Map<String, dynamic>>>? _cachedFeedStream;
 
   @override
   void initState() {
     super.initState();
-    
+
     // Feed-Stream beim Start initialisieren (wird nicht mehr neugeladen)
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser != null) {
-      _cachedFeedStream = DatabaseService(uid: currentUser.uid).friendActivities;
+      _cachedFeedStream = DatabaseService(
+        uid: currentUser.uid,
+      ).friendActivities;
     }
-    
+
     _searchController.addListener(() {
       setState(() {
         _searchQuery = _searchController.text.trim();
@@ -55,7 +57,8 @@ class _FeedState extends State<Feed> {
 
     _searchFocusNode.addListener(() {
       setState(() {
-        _isSearchExpanded = _searchFocusNode.hasFocus || _searchQuery.isNotEmpty;
+        _isSearchExpanded =
+            _searchFocusNode.hasFocus || _searchQuery.isNotEmpty;
       });
     });
 
@@ -70,7 +73,7 @@ class _FeedState extends State<Feed> {
     super.dispose();
   }
 
-// Überwacht Änderungen in der Freundesliste um zu prüfen ob gesuchte User zu Freunden werden
+  // Überwacht Änderungen in der Freundesliste um zu prüfen ob gesuchte User zu Freunden werden
   void _setupFriendsListener() {
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser == null) return;
@@ -81,18 +84,20 @@ class _FeedState extends State<Feed> {
         .collection('friends')
         .snapshots()
         .listen((snapshot) {
-      if (_exactMatch != null && _searchQuery.isNotEmpty && !_isAlreadyFriend) {
-        _checkIfSearchedUserBecameFriend(snapshot);
-      }
-    });
+          if (_exactMatch != null &&
+              _searchQuery.isNotEmpty &&
+              !_isAlreadyFriend) {
+            _checkIfSearchedUserBecameFriend(snapshot);
+          }
+        });
   }
 
-// Prüft ob der gesuchte User inzwischen Freund geworden ist
+  // Prüft ob der gesuchte User inzwischen Freund geworden ist
   void _checkIfSearchedUserBecameFriend(QuerySnapshot snapshot) {
     if (_exactMatch == null) return;
 
     final searchedUserId = _exactMatch!['uid'];
-    
+
     final isFriendNow = snapshot.docs.any((doc) {
       final data = doc.data() as Map<String, dynamic>;
       return data['userId'] == searchedUserId;
@@ -103,17 +108,20 @@ class _FeedState extends State<Feed> {
         _isAlreadyFriend = true;
         _requestSent = false;
       });
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('${_exactMatch!['firstName']} ist jetzt dein Freund! 🎉'),
+          content: Text(
+            '${_exactMatch!['firstName']} ist jetzt dein Freund! 🎉',
+          ),
           backgroundColor: Colors.green,
           duration: Duration(seconds: 2),
         ),
       );
     }
   }
-// Sucht nach einem User mit exakt diesem Username in der Datenbank
+
+  // Sucht nach einem User mit exakt diesem Username in der Datenbank
   Future<void> _searchForExactMatch() async {
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser == null) return;
@@ -132,10 +140,13 @@ class _FeedState extends State<Feed> {
       if (snapshot.docs.isNotEmpty) {
         final doc = snapshot.docs.first;
         final data = doc.data();
-        
+
         if (doc.id != currentUser.uid) {
-          final friendshipStatus = await _checkFullFriendshipStatus(currentUser.uid, doc.id);
-          
+          final friendshipStatus = await _checkFullFriendshipStatus(
+            currentUser.uid,
+            doc.id,
+          );
+
           setState(() {
             _exactMatch = {
               'uid': doc.id,
@@ -176,8 +187,11 @@ class _FeedState extends State<Feed> {
     });
   }
 
-// Überprüft ob User bereits Freund ist oder eine Anfrage gesendet wurde
-  Future<Map<String, bool>> _checkFullFriendshipStatus(String currentUserId, String targetUserId) async {
+  // Überprüft ob User bereits Freund ist oder eine Anfrage gesendet wurde
+  Future<Map<String, bool>> _checkFullFriendshipStatus(
+    String currentUserId,
+    String targetUserId,
+  ) async {
     try {
       final friendsSnapshot = await FirebaseFirestore.instance
           .collection('users')
@@ -185,7 +199,7 @@ class _FeedState extends State<Feed> {
           .collection('friends')
           .where('userId', isEqualTo: targetUserId)
           .get();
-      
+
       if (friendsSnapshot.docs.isNotEmpty) {
         return {'isFriend': true, 'requestSent': false};
       }
@@ -196,20 +210,19 @@ class _FeedState extends State<Feed> {
           .collection('sentRequests')
           .doc(targetUserId)
           .get();
-    
+
       if (sentRequestSnapshot.exists) {
         return {'isFriend': false, 'requestSent': true};
       }
 
       return {'isFriend': false, 'requestSent': false};
-      
     } catch (e) {
       print('Fehler beim Prüfen des vollständigen Freundschafts-Status: $e');
       return {'isFriend': false, 'requestSent': false};
     }
   }
 
-// Berechnet wie lange eine Aktivität her ist (z.B. "2h", "1d")
+  // Berechnet wie lange eine Aktivität her ist (z.B. "2h", "1d")
   String _getTimeAgo(Timestamp timestamp) {
     final now = DateTime.now();
     final date = timestamp.toDate();
@@ -247,7 +260,12 @@ class _FeedState extends State<Feed> {
             children: [
               // Header mit Suchfeld und Benachrichtigungs-Button
               Container(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.only(
+                  left: 20,
+                  right: 20,
+                  top: 60,
+                  bottom: 20,
+                ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -283,9 +301,14 @@ class _FeedState extends State<Feed> {
                                   textAlignVertical: TextAlignVertical.center,
                                   decoration: InputDecoration(
                                     border: InputBorder.none,
-                                    contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+                                    contentPadding: EdgeInsets.symmetric(
+                                      vertical: 0,
+                                      horizontal: 16,
+                                    ),
                                     prefixIcon: Padding(
-                                      padding: EdgeInsets.symmetric(horizontal: 16),
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                      ),
                                       child: Icon(
                                         Icons.search,
                                         color: Colors.white70,
@@ -301,11 +324,18 @@ class _FeedState extends State<Feed> {
                                       color: Colors.white70,
                                       fontSize: 16,
                                     ),
-                                    suffixIcon: _searchController.text.isNotEmpty
+                                    suffixIcon:
+                                        _searchController.text.isNotEmpty
                                         ? Padding(
-                                            padding: EdgeInsets.symmetric(horizontal: 16),
+                                            padding: EdgeInsets.symmetric(
+                                              horizontal: 16,
+                                            ),
                                             child: IconButton(
-                                              icon: Icon(Icons.clear, color: Colors.white70, size: 20),
+                                              icon: Icon(
+                                                Icons.clear,
+                                                color: Colors.white70,
+                                                size: 20,
+                                              ),
                                               onPressed: () {
                                                 _searchController.clear();
                                                 _searchFocusNode.unfocus();
@@ -327,7 +357,8 @@ class _FeedState extends State<Feed> {
                                 ),
                               ),
                               // Erweiterte Suchansicht - zeigt Suchergebnisse unter dem Suchfeld an
-                              if (_isSearchExpanded && _searchQuery.isNotEmpty) ...[
+                              if (_isSearchExpanded &&
+                                  _searchQuery.isNotEmpty) ...[
                                 Container(
                                   width: double.infinity,
                                   height: 1,
@@ -337,157 +368,211 @@ class _FeedState extends State<Feed> {
                                   padding: EdgeInsets.all(16),
                                   child: _isSearching
                                       ? Row(
-                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
                                           children: [
                                             SizedBox(
                                               width: 20,
                                               height: 20,
                                               child: CircularProgressIndicator(
-                                                color: Theme.of(context).colorScheme.primary,
+                                                color: Theme.of(
+                                                  context,
+                                                ).colorScheme.primary,
                                                 strokeWidth: 2,
                                               ),
                                             ),
                                             SizedBox(width: 12),
                                             Text(
                                               'Suche nach "$_searchQuery"...',
-                                              style: TextStyle(color: Colors.white70, fontSize: 14),
+                                              style: TextStyle(
+                                                color: Colors.white70,
+                                                fontSize: 14,
+                                              ),
                                             ),
                                           ],
                                         )
                                       : _exactMatch != null
-                                          ? Row(
-                                              children: [
-                                                CircleAvatar(
-                                                  radius: 20,
-                                                  backgroundColor: Colors.grey[300],
-                                                  backgroundImage: _exactMatch!['profileImageUrl'] != null &&
-                                                          _exactMatch!['profileImageUrl'].toString().isNotEmpty
-                                                      ? NetworkImage(_exactMatch!['profileImageUrl'])
-                                                      : null,
-                                                  child: _exactMatch!['profileImageUrl'] == null ||
-                                                          _exactMatch!['profileImageUrl'].toString().isEmpty
-                                                      ? Icon(Icons.person, color: Colors.grey[600], size: 24)
-                                                      : null,
-                                                ),
-                                                
-                                                SizedBox(width: 12),
-                                                
-                                                Expanded(
-                                                  child: Column(
-                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                    children: [
-                                                      Text(
-                                                        '${_exactMatch!['firstName']} ${_exactMatch!['lastName']}'.trim(),
-                                                        style: TextStyle(
-                                                          color: Colors.white,
-                                                          fontSize: 14,
-                                                          fontWeight: FontWeight.bold,
-                                                        ),
-                                                      ),
-                                                      Text(
-                                                        '@${_exactMatch!['username']}',
-                                                        style: TextStyle(
-                                                          color: Colors.white70,
-                                                          fontSize: 12,
-                                                        ),
-                                                      ),
-                                                      if (_exactMatch!['streak'] > 0)
-                                                        Text(
-                                                          '🔥 ${_exactMatch!['streak']} Tag${_exactMatch!['streak'] == 1 ? '' : 'e'} Streak',
-                                                          style: TextStyle(
-                                                            color: Theme.of(context).colorScheme.primary,
-                                                            fontSize: 10,
-                                                            fontWeight: FontWeight.w500,
-                                                          ),
-                                                        ),
-                                                    ],
-                                                  ),
-                                                ),
-                                                
-                                                // Dynamischer Button: Freund hinzufügen / Anfrage gesendet / Bereits Freund
-                                                Container(
-                                                  width: 35,
-                                                  height: 35,
-                                                  decoration: BoxDecoration(
-                                                    gradient: _isAlreadyFriend
-                                                        ? LinearGradient(
-                                                            colors: [
-                                                              Color(0xFF4CAF50),
-                                                              Color(0xFF66BB6A),
-                                                            ],
-                                                            begin: Alignment.centerLeft,
-                                                            end: Alignment.centerRight,
-                                                          )
-                                                        : _requestSent
-                                                            ? null
-                                                            : LinearGradient(
-                                                                colors: [
-                                                                  Theme.of(context).colorScheme.primary,
-                                                                  Theme.of(context).colorScheme.secondary,
-                                                                ],
-                                                                begin: Alignment.centerLeft,
-                                                                end: Alignment.centerRight,
-                                                              ),
-                                                    color: _requestSent ? Colors.grey : null,
-                                                    borderRadius: BorderRadius.circular(17.5),
-                                                    boxShadow: _isAlreadyFriend
-                                                        ? [
-                                                            BoxShadow(
-                                                              color: Color(0xFF4CAF50).withOpacity(0.3),
-                                                              blurRadius: 4,
-                                                              offset: Offset(0, 2),
-                                                            ),
-                                                          ]
-                                                        : null,
-                                                  ),
-                                                  child: IconButton(
-                                                    onPressed: (_isAlreadyFriend || _requestSent) ? null : () {
-                                                      setState(() {
-                                                        _requestSent = true;
-                                                      });
-                                                      
-                                                      FriendActions.sendFriendRequest(
-                                                        context,
-                                                        _exactMatch!,
-                                                        () {
-                                                          ScaffoldMessenger.of(context).showSnackBar(
-                                                            SnackBar(
-                                                              content: Text('Freundschaftsanfrage gesendet!'),
-                                                              backgroundColor: Colors.green,
-                                                            ),
-                                                          );
-                                                        },
-                                                      );
-                                                    },
-                                                    icon: Icon(
-                                                      _isAlreadyFriend 
-                                                          ? Icons.check 
-                                                          : _requestSent 
-                                                              ? Icons.hourglass_empty
-                                                              : Icons.person_add,
-                                                      color: Colors.white,
-                                                      size: 18,
-                                                    ),
-                                                    padding: EdgeInsets.zero,
-                                                  ),
-                                                ),
-                                              ],
-                                            )
-                                          : Row(
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                                              children: [
-                                                Icon(
-                                                  Icons.search_off,
-                                                  color: Colors.white70,
-                                                  size: 20,
-                                                ),
-                                                SizedBox(width: 8),
-                                                Text(
-                                                  'Kein User mit diesem Namen gefunden',
-                                                  style: TextStyle(color: Colors.white70, fontSize: 14),
-                                                ),
-                                              ],
+                                      ? Row(
+                                          children: [
+                                            CircleAvatar(
+                                              radius: 20,
+                                              backgroundColor: Colors.grey[300],
+                                              backgroundImage:
+                                                  _exactMatch!['profileImageUrl'] !=
+                                                          null &&
+                                                      _exactMatch!['profileImageUrl']
+                                                          .toString()
+                                                          .isNotEmpty
+                                                  ? NetworkImage(
+                                                      _exactMatch!['profileImageUrl'],
+                                                    )
+                                                  : null,
+                                              child:
+                                                  _exactMatch!['profileImageUrl'] ==
+                                                          null ||
+                                                      _exactMatch!['profileImageUrl']
+                                                          .toString()
+                                                          .isEmpty
+                                                  ? Icon(
+                                                      Icons.person,
+                                                      color: Colors.grey[600],
+                                                      size: 24,
+                                                    )
+                                                  : null,
                                             ),
+
+                                            SizedBox(width: 12),
+
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    '${_exactMatch!['firstName']} ${_exactMatch!['lastName']}'
+                                                        .trim(),
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 14,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    '@${_exactMatch!['username']}',
+                                                    style: TextStyle(
+                                                      color: Colors.white70,
+                                                      fontSize: 12,
+                                                    ),
+                                                  ),
+                                                  if (_exactMatch!['streak'] >
+                                                      0)
+                                                    Text(
+                                                      '🔥 ${_exactMatch!['streak']} Tag${_exactMatch!['streak'] == 1 ? '' : 'e'} Streak',
+                                                      style: TextStyle(
+                                                        color: Theme.of(
+                                                          context,
+                                                        ).colorScheme.primary,
+                                                        fontSize: 10,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                      ),
+                                                    ),
+                                                ],
+                                              ),
+                                            ),
+
+                                            // Dynamischer Button: Freund hinzufügen / Anfrage gesendet / Bereits Freund
+                                            Container(
+                                              width: 35,
+                                              height: 35,
+                                              decoration: BoxDecoration(
+                                                gradient: _isAlreadyFriend
+                                                    ? LinearGradient(
+                                                        colors: [
+                                                          Color(0xFF4CAF50),
+                                                          Color(0xFF66BB6A),
+                                                        ],
+                                                        begin: Alignment
+                                                            .centerLeft,
+                                                        end: Alignment
+                                                            .centerRight,
+                                                      )
+                                                    : _requestSent
+                                                    ? null
+                                                    : LinearGradient(
+                                                        colors: [
+                                                          Theme.of(
+                                                            context,
+                                                          ).colorScheme.primary,
+                                                          Theme.of(context)
+                                                              .colorScheme
+                                                              .secondary,
+                                                        ],
+                                                        begin: Alignment
+                                                            .centerLeft,
+                                                        end: Alignment
+                                                            .centerRight,
+                                                      ),
+                                                color: _requestSent
+                                                    ? Colors.grey
+                                                    : null,
+                                                borderRadius:
+                                                    BorderRadius.circular(17.5),
+                                                boxShadow: _isAlreadyFriend
+                                                    ? [
+                                                        BoxShadow(
+                                                          color: Color(
+                                                            0xFF4CAF50,
+                                                          ).withOpacity(0.3),
+                                                          blurRadius: 4,
+                                                          offset: Offset(0, 2),
+                                                        ),
+                                                      ]
+                                                    : null,
+                                              ),
+                                              child: IconButton(
+                                                onPressed:
+                                                    (_isAlreadyFriend ||
+                                                        _requestSent)
+                                                    ? null
+                                                    : () {
+                                                        setState(() {
+                                                          _requestSent = true;
+                                                        });
+
+                                                        FriendActions.sendFriendRequest(
+                                                          context,
+                                                          _exactMatch!,
+                                                          () {
+                                                            ScaffoldMessenger.of(
+                                                              context,
+                                                            ).showSnackBar(
+                                                              SnackBar(
+                                                                content: Text(
+                                                                  'Freundschaftsanfrage gesendet!',
+                                                                ),
+                                                                backgroundColor:
+                                                                    Colors
+                                                                        .green,
+                                                              ),
+                                                            );
+                                                          },
+                                                        );
+                                                      },
+                                                icon: Icon(
+                                                  _isAlreadyFriend
+                                                      ? Icons.check
+                                                      : _requestSent
+                                                      ? Icons.hourglass_empty
+                                                      : Icons.person_add,
+                                                  color: Colors.white,
+                                                  size: 18,
+                                                ),
+                                                padding: EdgeInsets.zero,
+                                              ),
+                                            ),
+                                          ],
+                                        )
+                                      : Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Icon(
+                                              Icons.search_off,
+                                              color: Colors.white70,
+                                              size: 20,
+                                            ),
+                                            SizedBox(width: 8),
+                                            Text(
+                                              'Kein User mit diesem Namen gefunden',
+                                              style: TextStyle(
+                                                color: Colors.white70,
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                 ),
                               ],
                             ],
@@ -496,13 +581,17 @@ class _FeedState extends State<Feed> {
                       ),
                     ),
                     const SizedBox(width: 15),
-                    
+
                     // Freunde-Button mit Benachrichtigungs-Badge für neue Anfragen
                     StreamBuilder<QuerySnapshot>(
-                      stream: DatabaseService(uid: currentUser.uid).incomingFriendRequests,
+                      stream: DatabaseService(
+                        uid: currentUser.uid,
+                      ).incomingFriendRequests,
                       builder: (context, requestSnapshot) {
-                        final requestCount = requestSnapshot.hasData ? requestSnapshot.data!.docs.length : 0;
-                        
+                        final requestCount = requestSnapshot.hasData
+                            ? requestSnapshot.data!.docs.length
+                            : 0;
+
                         return Stack(
                           children: [
                             Container(
@@ -523,21 +612,38 @@ class _FeedState extends State<Feed> {
                                 onPressed: () {
                                   Navigator.of(context).push(
                                     PageRouteBuilder(
-                                      pageBuilder: (context, animation, secondaryAnimation) => FriendsSlideInView(),
-                                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                                        const begin = Offset(1.0, 0.0);
-                                        const end = Offset.zero;
-                                        const curve = Curves.easeInOutCubic;
+                                      pageBuilder:
+                                          (
+                                            context,
+                                            animation,
+                                            secondaryAnimation,
+                                          ) => FriendsSlideInView(),
+                                      transitionsBuilder:
+                                          (
+                                            context,
+                                            animation,
+                                            secondaryAnimation,
+                                            child,
+                                          ) {
+                                            const begin = Offset(1.0, 0.0);
+                                            const end = Offset.zero;
+                                            const curve = Curves.easeInOutCubic;
 
-                                        var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-                                        var offsetAnimation = animation.drive(tween);
+                                            var tween = Tween(
+                                              begin: begin,
+                                              end: end,
+                                            ).chain(CurveTween(curve: curve));
+                                            var offsetAnimation = animation
+                                                .drive(tween);
 
-                                        return SlideTransition(
-                                          position: offsetAnimation,
-                                          child: child,
-                                        );
-                                      },
-                                      transitionDuration: Duration(milliseconds: 300),
+                                            return SlideTransition(
+                                              position: offsetAnimation,
+                                              child: child,
+                                            );
+                                          },
+                                      transitionDuration: Duration(
+                                        milliseconds: 300,
+                                      ),
                                     ),
                                   );
                                 },
@@ -560,13 +666,17 @@ class _FeedState extends State<Feed> {
                                     color: Colors.red,
                                     shape: BoxShape.circle,
                                     border: Border.all(
-                                      color: Theme.of(context).colorScheme.surface,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.surface,
                                       width: 2.5,
                                     ),
                                   ),
                                   child: Center(
                                     child: Text(
-                                      requestCount > 99 ? '99+' : requestCount.toString(),
+                                      requestCount > 99
+                                          ? '99+'
+                                          : requestCount.toString(),
                                       style: TextStyle(
                                         color: Colors.white,
                                         fontSize: requestCount > 99 ? 8 : 10,
@@ -591,12 +701,15 @@ class _FeedState extends State<Feed> {
                 child: StreamBuilder<List<Map<String, dynamic>>>(
                   stream: _cachedFeedStream,
                   builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
+                    if (snapshot.connectionState == ConnectionState.waiting &&
+                        !snapshot.hasData) {
                       return Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            CircularProgressIndicator(color: colorScheme.primary),
+                            CircularProgressIndicator(
+                              color: colorScheme.primary,
+                            ),
                             SizedBox(height: 16),
                             Text(
                               'Lade Feed...',
@@ -612,7 +725,11 @@ class _FeedState extends State<Feed> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.error_outline, size: 64, color: Colors.red[400]),
+                            Icon(
+                              Icons.error_outline,
+                              size: 64,
+                              color: Colors.red[400],
+                            ),
                             SizedBox(height: 16),
                             Text(
                               'Fehler beim Laden des Feeds',
@@ -668,7 +785,7 @@ class _FeedState extends State<Feed> {
                       itemBuilder: (context, index) {
                         final activity = activities[index];
                         return ActivityCard(
-                          activity: activity, 
+                          activity: activity,
                           timeAgo: _getTimeAgo(activity['timestamp']),
                         );
                       },
@@ -678,7 +795,7 @@ class _FeedState extends State<Feed> {
               ),
             ],
           ),
-          
+
           // Navigation Bar am unteren Rand
           const Positioned(
             bottom: 0,
@@ -706,17 +823,41 @@ class ActivityCard extends StatelessWidget {
   Widget _buildActivityIcon(String category) {
     switch (category.toLowerCase()) {
       case 'krafttraining':
-        return Image.asset('assets/icons/journal/gym.png', width: 36, height: 36);
+        return Image.asset(
+          'assets/icons/journal/gym.png',
+          width: 36,
+          height: 36,
+        );
       case 'laufen':
-        return Image.asset('assets/icons/journal/laufen.png', width: 36, height: 36);
+        return Image.asset(
+          'assets/icons/journal/laufen.png',
+          width: 36,
+          height: 36,
+        );
       case 'boxen':
-        return Image.asset('assets/icons/journal/boxen.png', width: 36, height: 36);
+        return Image.asset(
+          'assets/icons/journal/boxen.png',
+          width: 36,
+          height: 36,
+        );
       case 'tischtennis':
-        return Image.asset('assets/icons/journal/tt.png', width: 36, height: 36);
+        return Image.asset(
+          'assets/icons/journal/tt.png',
+          width: 36,
+          height: 36,
+        );
       case 'fussball':
-        return Image.asset('assets/icons/journal/fussball.png', width: 36, height: 36);
+        return Image.asset(
+          'assets/icons/journal/fussball.png',
+          width: 36,
+          height: 36,
+        );
       case 'ruhetag':
-        return Image.asset('assets/icons/journal/rest.png', width: 36, height: 36);
+        return Image.asset(
+          'assets/icons/journal/rest.png',
+          width: 36,
+          height: 36,
+        );
       default:
         return Icon(Icons.fitness_center, color: Colors.orange, size: 36);
     }
@@ -724,9 +865,10 @@ class ActivityCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasDescription = activity['description'] != null && 
-                          activity['description'].toString().trim().isNotEmpty;
-    
+    final hasDescription =
+        activity['description'] != null &&
+        activity['description'].toString().trim().isNotEmpty;
+
     return Column(
       children: [
         Padding(
@@ -739,33 +881,44 @@ class ActivityCard extends StatelessWidget {
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (context) => ProfileView(user: {
-                        'uid': activity['userId'],
-                        'firstName': activity['userName']?.split(' ').first ?? 'Unbekannt',
-                        'lastName': activity['userName']?.split(' ').skip(1).join(' ') ?? '',
-                        'username': activity['username'],
-                        'profileImageUrl': activity['userProfileImage'],
-                        'streak': activity['userStreak'],
-                      }),
+                      builder: (context) => ProfileView(
+                        user: {
+                          'uid': activity['userId'],
+                          'firstName':
+                              activity['userName']?.split(' ').first ??
+                              'Unbekannt',
+                          'lastName':
+                              activity['userName']
+                                  ?.split(' ')
+                                  .skip(1)
+                                  .join(' ') ??
+                              '',
+                          'username': activity['username'],
+                          'profileImageUrl': activity['userProfileImage'],
+                          'streak': activity['userStreak'],
+                        },
+                      ),
                     ),
                   );
                 },
                 child: CircleAvatar(
                   radius: 24,
                   backgroundColor: Colors.grey[300],
-                  backgroundImage: activity['userProfileImage'] != null &&
+                  backgroundImage:
+                      activity['userProfileImage'] != null &&
                           activity['userProfileImage'].toString().isNotEmpty
                       ? NetworkImage(activity['userProfileImage'])
                       : null,
-                  child: activity['userProfileImage'] == null ||
+                  child:
+                      activity['userProfileImage'] == null ||
                           activity['userProfileImage'].toString().isEmpty
                       ? Icon(Icons.person, color: Colors.grey[600], size: 24)
                       : null,
                 ),
               ),
-              
+
               SizedBox(width: 12),
-              
+
               // User-Infos: Name, Username, Zeit und Streak
               Expanded(
                 child: Column(
@@ -788,9 +941,14 @@ class ActivityCard extends StatelessWidget {
                         // Streak-Badge neben dem Namen
                         if ((activity['userStreak'] ?? 0) > 0)
                           Container(
-                            padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.primary.withOpacity(0.2),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
@@ -804,40 +962,34 @@ class ActivityCard extends StatelessWidget {
                           ),
                       ],
                     ),
-                    
+
                     // Username
                     Text(
                       '@${activity['username'] ?? 'unknown'}',
-                      style: TextStyle(
-                        color: Colors.grey[400],
-                        fontSize: 13,
-                      ),
+                      style: TextStyle(color: Colors.grey[400], fontSize: 13),
                     ),
-                    
+
                     SizedBox(height: 4),
-                    
+
                     // Zeitstempel
                     Text(
                       timeAgo,
-                      style: TextStyle(
-                        color: Colors.grey[500],
-                        fontSize: 12,
-                      ),
+                      style: TextStyle(color: Colors.grey[500], fontSize: 12),
                     ),
                   ],
                 ),
               ),
-              
+
               SizedBox(width: 12),
-              
+
               // Aktivitäts-Icon und Name
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   _buildActivityIcon(activity['category'] ?? ''),
-                  
+
                   SizedBox(height: 8),
-                  
+
                   Text(
                     activity['title'] ?? 'Aktivität',
                     style: TextStyle(
@@ -852,7 +1004,7 @@ class ActivityCard extends StatelessWidget {
             ],
           ),
         ),
-        
+
         // Beschreibung falls vorhanden
         if (hasDescription)
           Container(
@@ -869,9 +1021,9 @@ class ActivityCard extends StatelessWidget {
               ),
             ),
           ),
-        
+
         SizedBox(height: 16),
-        
+
         // Gradient-Trennlinie
         Container(
           height: 1,
@@ -890,7 +1042,7 @@ class ActivityCard extends StatelessWidget {
             ),
           ),
         ),
-        
+
         SizedBox(height: 16),
       ],
     );

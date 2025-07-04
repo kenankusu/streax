@@ -75,7 +75,7 @@ class ImageService {
       // Warte auf bis Upload fertig ist
       final TaskSnapshot snapshot = await uploadTask;
 
-      // Hole die Download-URL
+      // Hole die Download URL
       final String downloadURL = await snapshot.ref.getDownloadURL();
 
       return downloadURL;
@@ -84,7 +84,7 @@ class ImageService {
     }
   }
 
-  // Content-Type basierend auf Dateiendung
+  // Content Type basierend auf Dateiendung
   String _getContentType(String extension) {
     switch (extension.toLowerCase()) {
       case 'jpg':
@@ -103,7 +103,7 @@ class ImageService {
     return allowedFormats.contains(extension.toLowerCase());
   }
 
-  // Profilbild-URL in Firestore speichern
+  // Profilbild URL in Firestore speichern
   Future<bool> updateProfileImageUrl(String uid, String imageUrl) async {
     try {
       await _firestore.collection('users').doc(uid).update({

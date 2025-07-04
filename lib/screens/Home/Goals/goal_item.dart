@@ -28,10 +28,7 @@ class GoalItem extends StatelessWidget {
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: ReorderableDragStartListener(
           index: index,
-          child: Icon(
-            Icons.drag_handle,
-            color: Colors.white,
-          ),
+          child: Icon(Icons.drag_handle, color: Colors.white),
         ),
         title: Text(
           art,
@@ -58,13 +55,21 @@ class GoalItem extends StatelessWidget {
             children: [
               IconButton(
                 onPressed: onEdit,
-                icon: Icon(Icons.edit_outlined, color: Colors.white.withOpacity(0.7), size: 20),
+                icon: Icon(
+                  Icons.edit_outlined,
+                  color: Colors.white.withOpacity(0.7),
+                  size: 20,
+                ),
                 padding: EdgeInsets.zero,
                 constraints: BoxConstraints(minWidth: 40, minHeight: 40),
               ),
               IconButton(
                 onPressed: onDelete,
-                icon: Icon(Icons.delete_outline, color: Colors.red.withOpacity(0.7), size: 20),
+                icon: Icon(
+                  Icons.delete_outline,
+                  color: Colors.red.withOpacity(0.7),
+                  size: 20,
+                ),
                 padding: EdgeInsets.zero,
                 constraints: BoxConstraints(minWidth: 40, minHeight: 40),
               ),

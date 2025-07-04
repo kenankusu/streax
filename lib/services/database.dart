@@ -448,7 +448,7 @@ class DatabaseService {
     return goalsCollection.orderBy('orderIndex', descending: false).snapshots();
   }
 
-  // FREUNDSCHAFTS-SYSTEM
+  // Freundschaftssystem
 
   /// Friends Collection Reference
   CollectionReference get friendsCollection {

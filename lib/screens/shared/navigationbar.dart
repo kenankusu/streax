@@ -20,17 +20,16 @@ class NavigationsLeiste extends StatelessWidget {
       children: [
         // Hauptnavigationsleiste mit abgerundeten Ecken
         Container(
-          height: 65,
-          margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          height: 60,
+          margin: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical:
+                15, // Von 35 auf 15 reduziert, damit die Bar etwas tiefer sitzt
+          ),
           decoration: BoxDecoration(
             color: colorScheme.surfaceContainer,
             borderRadius: BorderRadius.circular(50),
-            boxShadow: const [
-              BoxShadow(
-                color: Colors.black26,
-                blurRadius: 10,
-              )
-            ],
+            boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 10)],
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(50),
@@ -42,7 +41,7 @@ class NavigationsLeiste extends StatelessWidget {
               showUnselectedLabels: false,
               type: BottomNavigationBarType.fixed,
               currentIndex: currentPage,
-              iconSize: 26,
+              iconSize: 24, // Von 26 auf 24 reduziert
               elevation: 0,
               onTap: (index) => _handleNavigation(context, index),
               items: const [
@@ -58,7 +57,7 @@ class NavigationsLeiste extends StatelessWidget {
                 ),
                 BottomNavigationBarItem(
                   // Leerer Platz für den schwebenden Plus-Button
-                  icon: SizedBox(height: 26),
+                  icon: SizedBox(height: 24), // Von 26 auf 24 reduziert
                   label: 'Hinzufügen',
                 ),
                 BottomNavigationBarItem(
@@ -93,9 +92,9 @@ class NavigationsLeiste extends StatelessWidget {
         break;
       case 1:
         // Navigation zum Freunde-Feed
-        Navigator.of(context).push(
-          MaterialPageRoute(builder: (context) => const Feed()),
-        );
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (context) => const Feed()));
         break;
       case 2:
         // Plus-Button öffnet Aktivität-Modal
@@ -103,15 +102,15 @@ class NavigationsLeiste extends StatelessWidget {
         break;
       case 3:
         // Navigation zum Kalender
-        Navigator.of(context).push(
-          MaterialPageRoute(builder: (context) => const calendar()),
-        );
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (context) => const calendar()));
         break;
       case 4:
         // Navigation zum Profil
-        Navigator.of(context).push(
-          MaterialPageRoute(builder: (context) => const Profile()),
-        );
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (context) => const Profile()));
         break;
     }
   }
@@ -119,15 +118,15 @@ class NavigationsLeiste extends StatelessWidget {
   /// Erstellt den schwebenden Plus-Button mit Gradient-Design
   Widget _buildFloatingActionButton(BuildContext context) {
     return Positioned(
-      bottom: 30,
+      bottom: 25, // Von 45 auf 25 reduziert
       left: 0,
       right: 0,
       child: Center(
         child: GestureDetector(
           onTap: () => _showAddActivityModal(context),
           child: Container(
-            width: 75,
-            height: 75,
+            width: 65, // Von 75 auf 65 reduziert
+            height: 65, // Von 75 auf 65 reduziert
             decoration: BoxDecoration(
               // Gradient von Blau zu Grün
               gradient: const LinearGradient(
@@ -145,11 +144,7 @@ class NavigationsLeiste extends StatelessWidget {
                 ),
               ],
             ),
-            child: const Icon(
-              Icons.add,
-              color: Colors.white,
-              size: 40,
-            ),
+            child: const Icon(Icons.add, color: Colors.white, size: 40),
           ),
         ),
       ),

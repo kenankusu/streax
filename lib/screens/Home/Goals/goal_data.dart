@@ -13,16 +13,9 @@ class Goal {
   }
 }
 
-// Diese Liste muss vorhanden sein!
 const List<String> goalTypes = [
   'Gewicht',
   'Training',
   'Schritte',
   'Event',
-];
-
-final List<Goal> defaultGoals = [
-  Goal(art: 'Gewicht', name: 'Gewichtsziel erreichen'),
-  Goal(art: 'Training', name: '3x pro Woche trainieren'),
-  Goal(art: 'Schritte', name: '10.000 Schritte täglich'),
 ];

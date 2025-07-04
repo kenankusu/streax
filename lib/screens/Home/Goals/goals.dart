@@ -5,7 +5,7 @@ import 'package:streax/Models/user.dart';
 import 'package:streax/Services/database.dart';
 import 'goal_dialogues.dart';
 import 'goal_item.dart';
-import 'dart:ui'; 
+import 'dart:ui';
 
 class ZielePopup extends StatefulWidget {
   const ZielePopup({super.key});
@@ -21,7 +21,7 @@ class _ZielePopupState extends State<ZielePopup> {
   @override
   Widget build(BuildContext context) {
     final user = Provider.of<StreaxUser?>(context);
-    
+
     if (user == null) {
       return Container(
         child: Center(child: Text('Fehler: Benutzer nicht gefunden')),
@@ -58,10 +58,11 @@ class _ZielePopupState extends State<ZielePopup> {
                 child: StreamBuilder<QuerySnapshot>(
                   stream: DatabaseService(uid: user.uid).userGoals,
                   builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting && _localGoals == null) {
+                    if (snapshot.connectionState == ConnectionState.waiting &&
+                        _localGoals == null) {
                       return Center(child: CircularProgressIndicator());
                     }
-                    
+
                     if (snapshot.hasError) {
                       return Center(
                         child: Text(
@@ -70,14 +71,14 @@ class _ZielePopupState extends State<ZielePopup> {
                         ),
                       );
                     }
-                    
+
                     // Update lokale Liste nur wenn nicht gerade umsortiert wird
                     if (!_isReordering && snapshot.hasData) {
                       _localGoals = List.from(snapshot.data!.docs);
                     }
-                    
+
                     final goals = _localGoals ?? [];
-                    
+
                     if (goals.isEmpty) {
                       return Center(
                         child: Column(
@@ -91,26 +92,23 @@ class _ZielePopupState extends State<ZielePopup> {
                             SizedBox(height: 16),
                             Text(
                               'Noch keine Ziele vorhanden',
-                              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                color: Colors.grey[400],
-                              ),
+                              style: Theme.of(context).textTheme.bodyLarge
+                                  ?.copyWith(color: Colors.grey[400]),
                             ),
                             SizedBox(height: 8),
                             Text(
                               'Füge dein erstes Ziel hinzu!',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: Colors.grey[500],
-                              ),
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(color: Colors.grey[500]),
                             ),
                           ],
                         ),
                       );
                     }
-                    
+
                     return ReorderableListView.builder(
                       buildDefaultDragHandles: false,
                       itemCount: goals.length,
-                      // Entferne komplexe Animationen die Probleme verursachen
                       proxyDecorator: (child, index, animation) {
                         return Material(
                           elevation: 0,
@@ -123,25 +121,27 @@ class _ZielePopupState extends State<ZielePopup> {
                         if (newIndex > oldIndex) {
                           newIndex -= 1;
                         }
-                        
-                        // Markiere als "umsortierend"
+
                         setState(() {
                           _isReordering = true;
                           // Lokale Liste sofort aktualisieren
                           final item = goals.removeAt(oldIndex);
                           goals.insert(newIndex, item);
                         });
-                        
+
                         try {
-                          List<String> reorderedGoalIds = goals.map((g) => g.id).toList();
-                          await DatabaseService(uid: user.uid).reorderGoals(reorderedGoalIds);
+                          List<String> reorderedGoalIds = goals
+                              .map((g) => g.id)
+                              .toList();
+                          await DatabaseService(
+                            uid: user.uid,
+                          ).reorderGoals(reorderedGoalIds);
                         } catch (e) {
-                          // Bei Fehler: Rückgängig machen
                           setState(() {
                             final item = goals.removeAt(newIndex);
                             goals.insert(oldIndex, item);
                           });
-                          
+
                           if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
@@ -151,7 +151,6 @@ class _ZielePopupState extends State<ZielePopup> {
                             );
                           }
                         } finally {
-                          // Umsortierung beendet
                           setState(() {
                             _isReordering = false;
                           });
@@ -160,9 +159,9 @@ class _ZielePopupState extends State<ZielePopup> {
                       itemBuilder: (context, index) {
                         final goal = goals[index];
                         final data = goal.data() as Map<String, dynamic>;
-                        
+
                         return Card(
-                          key: ValueKey(goal.id), // Vereinfachte Key
+                          key: ValueKey(goal.id),
                           margin: const EdgeInsets.only(bottom: 12),
                           elevation: 0,
                           color: Theme.of(context).colorScheme.surfaceContainer,
@@ -174,7 +173,6 @@ class _ZielePopupState extends State<ZielePopup> {
                             ),
                           ),
                           child: ListTile(
-                            // Drag Handle links
                             leading: ReorderableDragStartListener(
                               index: index,
                               child: Icon(
@@ -250,7 +248,9 @@ class _ZielePopupState extends State<ZielePopup> {
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.transparent,
           shadowColor: Colors.transparent,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
         ),
         child: Center(
@@ -273,10 +273,10 @@ class _ZielePopupState extends State<ZielePopup> {
     );
   }
 
-  // Helper-Methode für Goal-Namen (GEÄNDERT)
+  // Helper-Methode für zielnamen
   String _getGoalDisplayName(Map<String, dynamic> data) {
     final type = data['type'] ?? '';
-    
+
     switch (type) {
       case 'Event':
         return 'Event';
@@ -301,7 +301,9 @@ class _ZielePopupState extends State<ZielePopup> {
           try {
             final date = DateTime.parse(eventDate);
             final daysLeft = date.difference(DateTime.now()).inDays;
-            return name.isNotEmpty ? '$name (noch $daysLeft Tage)' : 'Noch $daysLeft Tage';
+            return name.isNotEmpty
+                ? '$name (noch $daysLeft Tage)'
+                : 'Noch $daysLeft Tage';
           } catch (e) {
             return name.isNotEmpty ? name : 'Event';
           }
@@ -327,15 +329,11 @@ class _ZielePopupState extends State<ZielePopup> {
 
   // Goal-Aktionen
   void _addGoal() {
-    GoalDialogs.showAddGoalDialog(context, () {
-      // Kein setState nötig - StreamBuilder aktualisiert automatisch
-    });
+    GoalDialogs.showAddGoalDialog(context, () {});
   }
 
   void _editGoal(String goalId, Map<String, dynamic> goalData) {
-    GoalDialogs.showEditGoalDialog(context, goalId, goalData, () {
-      // Kein setState nötig - StreamBuilder aktualisiert automatisch
-    });
+    GoalDialogs.showEditGoalDialog(context, goalId, goalData, () {});
   }
 
   void _deleteGoal(String goalId) {
@@ -343,10 +341,7 @@ class _ZielePopupState extends State<ZielePopup> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
-        title: Text(
-          'Ziel löschen',
-          style: TextStyle(color: Colors.white),
-        ),
+        title: Text('Ziel löschen', style: TextStyle(color: Colors.white)),
         content: Text(
           'Möchtest du dieses Ziel wirklich löschen?',
           style: TextStyle(color: Colors.white70),

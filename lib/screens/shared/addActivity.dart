@@ -30,15 +30,14 @@ class AktivitaetHinzufuegen extends StatelessWidget {
     TextEditingController notizenController = TextEditingController();
     int ausgewaehltesEmoji = -1;// damit kein Emoji standardmäßig ausgewählt ist
 
-    // Ersetze DecoratedBox durch Container mit Gradient-Hintergrund
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.bottomCenter,
           end: Alignment.topCenter,
           colors: [
-            Theme.of(context).colorScheme.surface, //unten
-            Theme.of(context).colorScheme.surfaceContainer, //oben
+            Theme.of(context).colorScheme.surface, 
+            Theme.of(context).colorScheme.surfaceContainer, 
           ],
         ),
         borderRadius: const BorderRadius.only(
