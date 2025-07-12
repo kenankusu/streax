@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../Shared/navigationbar.dart';
-import '../../services/database.dart';
-import 'friend_actions.dart';
+import 'package:streax/screens/shared/navigationbar.dart';
+import 'package:streax/services/database.dart';
+import 'package:streax/screens/friends/friend_actions.dart';
+import 'package:streax/screens/friends/friends_list.dart';
+import 'package:streax/screens/friends/profile_view.dart';
 import 'dart:async';
-import 'friends_list.dart';
-import 'profile_view.dart';
 
 class Feed extends StatefulWidget {
   const Feed({super.key});

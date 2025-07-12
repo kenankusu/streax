@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../../services/database.dart';
-import 'profile_view.dart';
+import 'package:streax/services/database.dart';
+import 'package:streax/screens/friends/profile_view.dart';
 
 class FriendsSlideInView extends StatefulWidget {
   const FriendsSlideInView({super.key});

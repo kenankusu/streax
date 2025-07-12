@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
-import '../Shared/navigationbar.dart';
+import 'package:streax/screens/shared/navigationbar.dart';
 import 'package:flutter/cupertino.dart'; 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';

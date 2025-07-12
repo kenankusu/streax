@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:streax/Models/user.dart';
-import 'package:streax/Services/auth.dart';
-import '../Shared/navigationbar.dart';
-import 'package:streax/Services/database.dart';
+import 'package:streax/screens/shared/user.dart';
+import 'package:streax/services/auth.dart';
+import 'package:streax/screens/shared/navigationbar.dart';
+import 'package:streax/services/database.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'Profile_widgets.dart';
-import 'sport_editing.dart';
-import 'delete_account.dart';
+import 'package:streax/screens/profile/profile_widgets.dart';
+import 'package:streax/screens/profile/sport_editing.dart';
+import 'package:streax/screens/profile/delete_account.dart';
 
 class Profile extends StatefulWidget {
   const Profile({super.key});

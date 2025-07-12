@@ -1,9 +1,7 @@
-// ignore_for_file: deprecated_member_use
-
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';  // Diesen Import hinzufügen
 import 'package:streax/services/database.dart';
-import 'package:streax/Screens/splashscreen.dart'; // Für Wrapper-Navigation nach Profilanlage
+import 'package:streax/screens/shared/splashscreen.dart'; // Für Wrapper-Navigation nach Profilanlage
 
 class WelcomePage extends StatefulWidget {
   final String uid;

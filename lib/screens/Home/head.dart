@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:streax/Models/user.dart';
-import 'package:streax/Services/database.dart';
+import 'package:streax/screens/shared/user.dart';
+import 'package:streax/services/database.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../../services/database.dart';
-import 'friend_actions.dart';
+import 'package:streax/screens/friends/friend_actions.dart';
 
 class ProfileView extends StatelessWidget {
   final Map<String, dynamic> user;

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:streax/Screens/splashscreen.dart';
-import 'package:streax/Services/auth.dart';
+import 'package:streax/screens/shared/splashscreen.dart';
+import 'package:streax/services/auth.dart';
+import 'package:streax/screens/welcome/welcome.dart';
 import 'dart:async';
-import 'package:streax/screens/Welcome/welcome.dart';
 
 /// Screen für die Email-Verifizierung nach der Registrierung
 /// Überprüft automatisch alle 3 Sekunden den Verifizierungsstatus

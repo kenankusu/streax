@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:streax/Services/auth.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:streax/services/auth.dart';
 
 /// Dialog für Passwort-Reset Funktionalität
 /// Ermöglicht Benutzern das Zurücksetzen ihres Passworts über Email-Versand

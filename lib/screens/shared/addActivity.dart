@@ -6,7 +6,7 @@ import 'package:flutter/foundation.dart'; // Für kIsWeb, um Web-spezifisches Ve
 import 'package:flutter/cupertino.dart'; // Für CupertinoDatePicker
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../../services/database.dart';
+import 'package:streax/services/database.dart';
 
 class AktivitaetHinzufuegen extends StatelessWidget {
   final VoidCallback? onSaved;

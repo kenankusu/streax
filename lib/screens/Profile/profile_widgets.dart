@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'profile_editing.dart';
-import '../../services/image_service.dart';
-import '../../utils/snackbar.dart';
+import 'package:streax/screens/profile/profile_editing.dart';
+import 'package:streax/services/image_service.dart';
+import 'package:streax/screens/shared/snackbar.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/services.dart';
 
 // Profil Header (Avatar, Name, Edit/Share buttons)
-
 class ProfileHeader extends StatefulWidget {
   final Map<String, dynamic> userData;
   final String uid;

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:streax/Screens/Shared/loading.dart';
-import 'package:streax/Services/auth.dart';
+import 'package:streax/screens/shared/loading.dart';
+import 'package:streax/services/auth.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'password_reset_dialog.dart';
+import 'package:streax/screens/authenticate/password_reset_dialog.dart';
 
 /// Login-Screen mit Email-Verifizierung und Passwort-Reset
 /// Behandelt alle Authentifizierungs-Szenarien inklusive nicht-verifizierter Accounts

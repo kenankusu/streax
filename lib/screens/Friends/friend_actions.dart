@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../../services/database.dart';
+import 'package:streax/services/database.dart';
 
 class FriendActions {
   // Sendet eine Freundschaftsanfrage an einen anderen User

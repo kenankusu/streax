@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'addActivity.dart';
-import '../Journal/calendar.dart';
-import '../Profile/profile.dart';
-import '../Friends/feed.dart';
+import 'package:streax/screens/shared/addActivity.dart';
+import 'package:streax/screens/journal/calendar.dart';
+import 'package:streax/screens/profile/profile.dart';
+import 'package:streax/screens/friends/feed.dart';
 
 /// Hauptnavigationsleiste mit schwebendem Plus-Button
 /// Ermöglicht Navigation zwischen den fünf Hauptbereichen der App

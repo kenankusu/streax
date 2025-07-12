@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:streax/Screens/Authenticate/sign_in.dart';
-import 'package:streax/Screens/Authenticate/register.dart';
+import 'package:streax/screens/authenticate/sign_in.dart';
+import 'package:streax/screens/authenticate/register.dart';
 
 /// Authentication Screen Controller
 /// Wechselt zwischen Login und Registrierung 

@@ -672,13 +672,13 @@ class DatabaseService {
     return userFriends.asyncMap((friendsSnapshot) async {
       List<Map<String, dynamic>> allActivities = [];
       
-      print('Debug: Anzahl Freunde gefunden: ${friendsSnapshot.docs.length}');
+      debugPrint('Debug: Anzahl Freunde gefunden: ${friendsSnapshot.docs.length}');
       
       for (var friendDoc in friendsSnapshot.docs) {
         final friendData = friendDoc.data() as Map<String, dynamic>;
         final friendId = friendData['userId'];
         
-        print('Debug: Lade Aktivitäten für Freund: $friendId');
+        debugPrint('Debug: Lade Aktivitäten für Freund: $friendId');
         
         try {
           final activitiesSnapshot = await FirebaseFirestore.instance
@@ -689,14 +689,14 @@ class DatabaseService {
               .orderBy('createdAt', descending: true)
               .get();
           
-          print('Debug: Aktivitäten für $friendId gefunden: ${activitiesSnapshot.docs.length}');
+          debugPrint('Debug: Aktivitäten für $friendId gefunden: ${activitiesSnapshot.docs.length}');
           
           final userData = await getFriendData(friendId);
           
           if (userData != null) {
             for (var activityDoc in activitiesSnapshot.docs) {
               final activityData = activityDoc.data();
-              print('Debug: Aktivität gefunden: ${activityData['option']} von ${userData['firstName']}');
+              debugPrint('Debug: Aktivität gefunden: ${activityData['option']} von ${userData['firstName']}');
               
               allActivities.add({
                 'activityId': activityDoc.id,
@@ -718,7 +718,7 @@ class DatabaseService {
             }
           }
         } catch (e) {
-          print('Debug: Fehler beim Laden der Aktivitäten von $friendId: $e');
+          debugPrint('Debug: Fehler beim Laden der Aktivitäten von $friendId: $e');
         }
       }
       
@@ -729,7 +729,7 @@ class DatabaseService {
         return bTime.compareTo(aTime);
       });
       
-      print('Debug: Gesamt-Aktivitäten im Feed: ${allActivities.length}');
+      debugPrint('Debug: Gesamt-Aktivitäten im Feed: ${allActivities.length}');
       return allActivities;
     });
   }
@@ -747,7 +747,7 @@ class DatabaseService {
       
       return bisMinutes - vonMinutes;
     } catch (e) {
-      print('Fehler beim Berechnen der Dauer: $e');
+      debugPrint('Fehler beim Berechnen der Dauer: $e');
       return 0;
     }
   }
@@ -766,7 +766,7 @@ class DatabaseService {
         return doc.data();
       }
     } catch (e) {
-      print('Fehler beim Laden der Aktivitäts-Details: $e');
+      debugPrint('Fehler beim Laden der Aktivitäts-Details: $e');
     }
     return null;
   }
