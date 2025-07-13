@@ -134,8 +134,7 @@ class ProfileView extends StatelessWidget {
                               icon: Icons.local_fire_department,
                               iconColor: Theme.of(context).colorScheme.primary,
                               title: 'Aktuelle Streak',
-                              value: '${user['streak'] ?? 0} Tage',
-                              subtitle: user['streak'] == 0 ? 'Noch keine Streak' : 'Weiter so!',
+                              value: '${user['streak'] ?? 0}',
                             ),
                             
                             SizedBox(height: 12),
@@ -145,8 +144,7 @@ class ProfileView extends StatelessWidget {
                               icon: Icons.emoji_events,
                               iconColor: Colors.amber,
                               title: 'Höchste Streak',
-                              value: '${stats['highestStreak'] ?? 0} Tage',
-                              subtitle: stats['highestStreak'] == 0 ? 'Noch kein Rekord' : 'Persönlicher Rekord',
+                              value: '${stats['highestStreak'] ?? 0}',
                             ),
                             
                             SizedBox(height: 12),
@@ -157,7 +155,6 @@ class ProfileView extends StatelessWidget {
                               iconColor: Colors.blue,
                               title: 'Freunde',
                               value: '${stats['friendsCount'] ?? 0}',
-                              subtitle: stats['friendsCount'] == 1 ? 'Freund' : 'Freunde',
                             ),
                             
                             SizedBox(height: 12),
@@ -166,9 +163,8 @@ class ProfileView extends StatelessWidget {
                             _buildStatCard(
                               icon: Icons.fitness_center,
                               iconColor: Colors.green,
-                              title: 'Diese Woche',
+                              title: 'Aktivitäten diese Woche',
                               value: '${stats['activitiesThisWeek'] ?? 0}',
-                              subtitle: stats['activitiesThisWeek'] == 1 ? 'Aktivität' : 'Aktivitäten',
                             ),
                             
                             SizedBox(height: 12),
@@ -177,9 +173,8 @@ class ProfileView extends StatelessWidget {
                             _buildStatCard(
                               icon: Icons.analytics,
                               iconColor: Colors.purple,
-                              title: 'Gesamt',
+                              title: 'Aktivitäten insgesamt',
                               value: '${stats['totalActivities'] ?? 0}',
-                              subtitle: 'Aktivitäten insgesamt',
                             ),
                           ],
                         );
@@ -202,7 +197,6 @@ class ProfileView extends StatelessWidget {
     required Color iconColor,
     required String title,
     required String value,
-    required String subtitle,
   }) {
     return Container(
       width: double.infinity,
@@ -255,13 +249,6 @@ class ProfileView extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    color: Colors.grey[500],
-                    fontSize: 12,
-                  ),
-                ),
               ],
             ),
           ),

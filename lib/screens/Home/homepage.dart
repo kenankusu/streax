@@ -9,6 +9,7 @@ import 'package:streax/screens/shared/navigationbar.dart';
 import 'package:streax/screens/journal/calendar.dart';
 import 'package:streax/services/database.dart';
 import 'package:streax/screens/home/goals/progress_indicators.dart';
+import 'package:streax/screens/Friends/feed.dart';
 
 class Homepage extends StatelessWidget {
   final int streakWert = 25;
@@ -89,7 +90,7 @@ class Homepage extends StatelessWidget {
                 48,
                 20,
                 120,
-              ), 
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -134,21 +135,111 @@ class Homepage extends StatelessWidget {
                     ),
                   ),
 
-                  // Feed
+                  // Feed-Bereich
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 40),
+                    padding: const EdgeInsets.only(bottom: 24), 
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          "Feed",
-                          style: Theme.of(context).textTheme.headlineMedium,
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => Feed(),
+                              ),
+                            );
+                          },
+                          child: Row(
+                            children: [
+                              Text(
+                                "Dein Feed",
+                                style: Theme.of(context).textTheme.headlineMedium,
+                              ),
+                              SizedBox(width: 2),
+                              Icon(
+                                Icons.chevron_right,
+                                color: Colors.white,
+                                size: 32,
+                              ),
+                            ],
+                          ),
                         ),
                         SizedBox(height: 20),
-                        Text(
-                          "keine neuen Aktivitäten",
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(color: Colors.grey[500]),
+
+                        // Feed-Aktivitäten des aktuellen Tages
+                        StreamBuilder<List<Map<String, dynamic>>>(
+                          stream: DatabaseService(uid: user.uid).friendActivities,
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState == ConnectionState.waiting) {
+                              return Center(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(20),
+                                  child: CircularProgressIndicator(),
+                                ),
+                              );
+                            }
+
+                            final activities = (snapshot.data ?? []).where((activity) {
+                              final ts = activity['timestamp'];
+                              if (ts is Timestamp) {
+                                final date = ts.toDate();
+                                final now = DateTime.now();
+                                return date.year == now.year &&
+                                    date.month == now.month &&
+                                    date.day == now.day;
+                              }
+                              return false;
+                            }).toList();
+
+                            if (activities.isEmpty) {
+                              return Text(
+                                "Heute noch keine Aktivitäten deiner Freunde vorhanden.",
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(color: Colors.grey[500]),
+                              );
+                            }
+
+                            return Column(
+                              children: activities.map((activity) {
+                                final ts = activity['timestamp'] as Timestamp;
+                                final timeStr =
+                                    "${ts.toDate().hour.toString().padLeft(2, '0')}:${ts.toDate().minute.toString().padLeft(2, '0')}";
+                                return Card(
+                                  color:
+                                      Theme.of(context).colorScheme.surfaceContainer,
+                                  margin: const EdgeInsets.only(bottom: 12),
+                                  child: ListTile(
+                                    leading: CircleAvatar(
+                                      backgroundColor: Colors.grey[300],
+                                      backgroundImage:
+                                          activity['userProfileImage'] != null &&
+                                                  activity['userProfileImage']
+                                                      .toString()
+                                                      .isNotEmpty
+                                              ? NetworkImage(activity['userProfileImage'])
+                                              : null,
+                                      child: activity['userProfileImage'] == null ||
+                                              activity['userProfileImage']
+                                                  .toString()
+                                                  .isEmpty
+                                          ? Icon(Icons.person, color: Colors.grey[600])
+                                          : null,
+                                    ),
+                                    title: Text(
+                                      activity['userName'] ?? 'Unbekannt',
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    subtitle: Text(
+                                      "${activity['title'] ?? 'Aktivität'} • $timeStr",
+                                      style: TextStyle(color: Colors.white70),
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            );
+                          },
                         ),
                       ],
                     ),

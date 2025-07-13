@@ -174,7 +174,7 @@ class _FeedState extends State<Feed> {
         });
       }
     } catch (e) {
-      print('Fehler bei der Suche: $e');
+      debugPrint('Fehler bei der Suche: $e');
       setState(() {
         _exactMatch = null;
         _isAlreadyFriend = false;
@@ -217,7 +217,7 @@ class _FeedState extends State<Feed> {
 
       return {'isFriend': false, 'requestSent': false};
     } catch (e) {
-      print('Fehler beim Prüfen des vollständigen Freundschafts-Status: $e');
+      debugPrint('Fehler beim Prüfen des vollständigen Freundschafts-Status: $e');
       return {'isFriend': false, 'requestSent': false};
     }
   }
