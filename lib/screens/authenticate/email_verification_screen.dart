@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:streax/screens/shared/splashscreen.dart';
 import 'package:streax/services/auth.dart';
 import 'package:streax/screens/welcome/welcome.dart';
+import 'package:streax/screens/shared/snackbar.dart';
 import 'dart:async';
 
 /// Screen für die Email-Verifizierung nach der Registrierung
@@ -74,13 +75,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
       // Benutzer über Erfolg informieren
       // mounted-Check vor BuildContext-Verwendung nach async
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Email verifiziert! Du wirst zur App weitergeleitet..."),
-            behavior: SnackBarBehavior.floating,
-            backgroundColor: Colors.green,
-          ),
-        );
+        SnackBarUtils.showSuccess(context, "Email verifiziert! Du wirst zur App weitergeleitet...");
       }
       // Kurze Pause für User-Feedback, dann Navigation
       await Future.delayed(const Duration(seconds: 2));
@@ -121,12 +116,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
       });
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Verifizierungs-Email erneut gesendet'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        SnackBarUtils.showSuccess(context, 'Verifizierungs-Email erneut gesendet');
       }
 
       // Countdown-Timer für Button-Aktivierung
@@ -150,12 +140,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
     } else {
       // Fehlermeldung bei Sende-Fehler
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Fehler beim Senden der Email'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        SnackBarUtils.showError(context, 'Fehler beim Senden der Email');
       }
     }
   }
