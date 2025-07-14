@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:streax/Screens/Shared/user.dart';
 import 'package:streax/services/database.dart';
 import 'goal_dialogues.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ZielePopup extends StatefulWidget {
   const ZielePopup({super.key});
@@ -18,13 +19,11 @@ class _ZielePopupState extends State<ZielePopup> {
 
   @override
   Widget build(BuildContext context) {
-    final user = Provider.of<StreaxUser?>(context);
-    
-    if (user == null) {
-      return Container(
-        child: Center(child: Text('Fehler: Benutzer nicht gefunden')),
-      );
+    final firebaseUser = FirebaseAuth.instance.currentUser;
+    if (firebaseUser == null) {
+      return Center(child: Text('Fehler: Benutzer nicht gefunden'));
     }
+    final userUid = firebaseUser.uid;
 
     return Container(
       decoration: BoxDecoration(
@@ -54,7 +53,7 @@ class _ZielePopupState extends State<ZielePopup> {
               const SizedBox(height: 20),
               Expanded(
                 child: StreamBuilder<QuerySnapshot>(
-                  stream: DatabaseService(uid: user.uid).userGoals,
+                  stream: DatabaseService(uid: userUid).userGoals,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting && _localGoals == null) {
                       return Center(child: CircularProgressIndicator());
@@ -132,7 +131,7 @@ class _ZielePopupState extends State<ZielePopup> {
                         
                         try {
                           List<String> reorderedGoalIds = goals.map((g) => g.id).toList();
-                          await DatabaseService(uid: user.uid).reorderGoals(reorderedGoalIds);
+                          await DatabaseService(uid: userUid).reorderGoals(reorderedGoalIds);
                         } catch (e) {
                           // Bei Fehler: Rückgängig machen
                           setState(() {
@@ -354,17 +353,9 @@ class _ZielePopupState extends State<ZielePopup> {
             onPressed: () async {
               Navigator.pop(context);
               try {
-                final user = Provider.of<StreaxUser?>(context, listen: false);
-                if (user != null) {
-                  await DatabaseService(uid: user.uid).deleteGoal(goalId);
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Ziel erfolgreich gelöscht!'),
-                        backgroundColor: Colors.green,
-                      ),
-                    );
-                  }
+                final firebaseUser = FirebaseAuth.instance.currentUser;
+                if (firebaseUser != null) {
+                  await DatabaseService(uid: firebaseUser.uid).deleteGoal(goalId);
                 }
               } catch (e) {
                 if (mounted) {
