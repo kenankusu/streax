@@ -101,11 +101,21 @@ class EditProfileDialog {
     String uid,
     Map<String, dynamic> currentData,
   ) async {
-    final firstNameController = TextEditingController(text: currentData['firstName'] ?? '');
-    final lastNameController = TextEditingController(text: currentData['lastName'] ?? '');
-    final usernameController = TextEditingController(text: currentData['username'] ?? '');
-    final weightController = TextEditingController(text: currentData['weight']?.toString() ?? '');
-    final heightController = TextEditingController(text: currentData['height']?.toString() ?? '');
+    final firstNameController = TextEditingController(
+      text: currentData['firstName'] ?? '',
+    );
+    final lastNameController = TextEditingController(
+      text: currentData['lastName'] ?? '',
+    );
+    final usernameController = TextEditingController(
+      text: currentData['username'] ?? '',
+    );
+    final weightController = TextEditingController(
+      text: currentData['weight']?.toString() ?? '',
+    );
+    final heightController = TextEditingController(
+      text: currentData['height']?.toString() ?? '',
+    );
 
     DateTime? selectedBirthdate = currentData['birthdate'] != null
         ? DateTime.tryParse(currentData['birthdate'])
@@ -130,8 +140,20 @@ class EditProfileDialog {
                 _buildTextField(lastNameController, 'Nachname'),
                 _buildTextField(usernameController, 'Username'),
 
-                _buildPickerField(context, weightController, 'Gewicht (kg)', 'weight', setState),
-                _buildPickerField(context, heightController, 'Größe (cm)', 'height', setState),
+                _buildPickerField(
+                  context,
+                  weightController,
+                  'Gewicht (kg)',
+                  'weight',
+                  setState,
+                ),
+                _buildPickerField(
+                  context,
+                  heightController,
+                  'Größe (cm)',
+                  'height',
+                  setState,
+                ),
 
                 GestureDetector(
                   onTap: () => _showPicker(
@@ -160,9 +182,18 @@ class EditProfileDialog {
                   dropdownColor: Theme.of(context).colorScheme.surface,
                   decoration: InputDecoration(labelText: 'Geschlecht'),
                   items: [
-                    DropdownMenuItem(value: 'm', child: Text(mapGenderToLabel('m'))),
-                    DropdownMenuItem(value: 'w', child: Text(mapGenderToLabel('w'))),
-                    DropdownMenuItem(value: 'd', child: Text(mapGenderToLabel('d'))),
+                    DropdownMenuItem(
+                      value: 'm',
+                      child: Text(mapGenderToLabel('m')),
+                    ),
+                    DropdownMenuItem(
+                      value: 'w',
+                      child: Text(mapGenderToLabel('w')),
+                    ),
+                    DropdownMenuItem(
+                      value: 'd',
+                      child: Text(mapGenderToLabel('d')),
+                    ),
                   ],
                   onChanged: (value) => setState(() => selectedGender = value!),
                 ),
@@ -203,7 +234,10 @@ class EditProfileDialog {
     );
   }
 
-  static Widget _buildTextField(TextEditingController controller, String label) {
+  static Widget _buildTextField(
+    TextEditingController controller,
+    String label,
+  ) {
     return TextField(
       controller: controller,
       style: TextStyle(color: Colors.white),
@@ -289,12 +323,18 @@ class EditProfileDialog {
     String newUsername = username.trim();
 
     if (newUsername.length < 3) {
-      SnackBarUtils.showError(context, 'Username muss mindestens 3 Zeichen haben');
+      SnackBarUtils.showError(
+        context,
+        'Username muss mindestens 3 Zeichen haben',
+      );
       return false;
     }
 
     if (newUsername.contains(' ')) {
-      SnackBarUtils.showError(context, 'Username darf keine Leerzeichen enthalten');
+      SnackBarUtils.showError(
+        context,
+        'Username darf keine Leerzeichen enthalten',
+      );
       return false;
     }
 
@@ -308,7 +348,10 @@ class EditProfileDialog {
     }
 
     DatabaseService dbService = DatabaseService(uid: uid);
-    bool isAvailable = await dbService.isUsernameAvailable(newUsername, excludeUid: uid);
+    bool isAvailable = await dbService.isUsernameAvailable(
+      newUsername,
+      excludeUid: uid,
+    );
     if (!isAvailable) {
       SnackBarUtils.showError(context, 'Dieser Username ist bereits vergeben');
       return false;
