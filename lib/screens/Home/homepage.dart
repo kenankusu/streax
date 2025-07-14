@@ -18,22 +18,6 @@ class Homepage extends StatelessWidget {
 
   const Homepage({super.key});
 
-  String _getGoalDisplayName(Map<String, dynamic> data) {
-    final type = data['type'] ?? '';
-    final name = data['name'] ?? '';
-
-    switch (type) {
-      case 'Event':
-        return name.isNotEmpty ? name : 'Event';
-      case 'Gewicht':
-        return 'Zielgewicht: ${data['targetWeight']?.toInt() ?? 0} kg';
-      case 'Training':
-        return 'Training: ${data['targetTrainings']?.toInt() ?? 0}x/Woche';
-      default:
-        return 'Unbekanntes Ziel';
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final user = Provider.of<StreaxUser?>(context);
@@ -184,12 +168,16 @@ class Homepage extends StatelessWidget {
                       return Column(
                         children: goals.map((goal) {
                           final data = goal.data() as Map<String, dynamic>;
+                          if (data['type'] == 'Event' && data['eventDate'] != null) {
+                            final eventDate = DateTime.tryParse(data['eventDate']);
+                            if (eventDate != null && eventDate.isBefore(DateTime.now())) {
+                              DatabaseService(uid: user.uid).deleteGoal(goal.id);
+                              return Container();
+                            }
+                          }
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 16),
-                            child: ProgressBar(
-                              labelText: _getGoalDisplayName(data),
-                              progressValue: ProgressBar.calculateProgress(data),
-                            ),
+                            child: GoalIndicator(data, context),
                           );
                         }).toList(),
                       );

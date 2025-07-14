@@ -183,3 +183,39 @@ class GradientBorder extends StatelessWidget {
   }
 }
 
+/// Gibt die Anzahl der Wochentage zurück, an denen in dieser Woche ein Training geloggt wurde.
+/// Ein Training ist jede Aktivität mit einer gültigen 'icon' (außer 'Ruhetag').
+int loggedWeekydaysCount(Map<String, Map<String, dynamic>> eintraege) {
+  final now = DateTime.now();
+  final monday = now.subtract(Duration(days: now.weekday - 1));
+  final weekStart = DateTime(monday.year, monday.month, monday.day);
+
+  int count = 0;
+  for (int i = 0; i < 7; i++) {
+    final day = weekStart.add(Duration(days: i));
+    final dateKey = "${day.year.toString().padLeft(4, '0')}-${day.month.toString().padLeft(2, '0')}-${day.day.toString().padLeft(2, '0')}";
+    final eintrag = eintraege[dateKey];
+    if (eintrag != null && eintrag['icon'] != null && eintrag['icon'] != '' && eintrag['icon'] != 'assets/icons/journal/rest.png') {
+      count++;
+    }
+  }
+  return count;
+}
+
+int getLoggedTrainingDaysThisWeek(Map<String, Map<String, dynamic>> eintraege) {
+  final now = DateTime.now();
+  final monday = now.subtract(Duration(days: now.weekday - 1));
+  final weekStart = DateTime(monday.year, monday.month, monday.day);
+
+  int count = 0;
+  for (int i = 0; i < 7; i++) {
+    final day = weekStart.add(Duration(days: i));
+    final dateKey = "${day.year.toString().padLeft(4, '0')}-${day.month.toString().padLeft(2, '0')}-${day.day.toString().padLeft(2, '0')}";
+    final eintrag = eintraege[dateKey];
+    if (eintrag != null && eintrag['icon'] != null && eintrag['icon'] != '' && eintrag['icon'] != 'assets/icons/journal/rest.png') {
+      count++;
+    }
+  }
+  return count;
+}
+

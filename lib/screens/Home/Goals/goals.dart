@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:provider/provider.dart';
-import 'package:streax/Screens/Shared/user.dart';
 import 'package:streax/services/database.dart';
 import 'goal_dialogues.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -281,8 +279,6 @@ class _ZielePopupState extends State<ZielePopup> {
         return 'Gewichtsziel';
       case 'Training':
         return 'Trainingsziel';
-      case 'Schritte':
-        return 'Schrittziel';
       default:
         return 'Unbekanntes Ziel';
     }
@@ -308,18 +304,9 @@ class _ZielePopupState extends State<ZielePopup> {
         return '${data['targetWeight']?.toInt() ?? 0}kg erreichen';
       case 'Training':
         return '${data['targetTrainings']?.toInt() ?? 0}x pro Woche trainieren';
-      case 'Schritte':
-        return '${_formatNumber(data['targetSteps']?.toInt() ?? 0)} Schritte täglich';
       default:
         return 'Unbekanntes Ziel';
     }
-  }
-
-  String _formatNumber(int number) {
-    if (number >= 1000) {
-      return '${(number / 1000).toStringAsFixed(0)}k';
-    }
-    return number.toString();
   }
 
   // Goal-Aktionen

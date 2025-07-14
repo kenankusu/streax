@@ -1,39 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:provider/provider.dart';
-import 'package:streax/Screens/Shared/user.dart';
 import 'package:streax/Services/database.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:streax/Screens/Shared/snackbar.dart';
+import 'package:flutter/cupertino.dart';
 
 const List<String> goalTypes = [
   'Gewicht',
   'Training',
-  'Schritte',
   'Event',
 ];
-
-class Goal {
-  final String type;
-  final String name;
-
-  Goal({required this.type, required this.name});
-
-  Map<String, String> toMap() {
-    return {'type': type, 'name': name};
-  }
-
-  static Goal fromMap(Map<String, String> map) {
-    return Goal(type: map['type']!, name: map['name']!);
-  }
-}
 
 class GoalDialogs {
   static Future<void> showAddGoalDialog(BuildContext context) async {
     String selectedType = goalTypes.first;
     final TextEditingController nameController = TextEditingController();
     final TextEditingController targetWeightController = TextEditingController();
-    final TextEditingController targetTrainingsController = TextEditingController();
-    final TextEditingController targetStepsController = TextEditingController();
     DateTime? selectedEventDate;
+    int zielTrainings = 3;
+
+    bool isValid() {
+      switch (selectedType) {
+        case 'Event':
+          return nameController.text.trim().isNotEmpty && selectedEventDate != null;
+        case 'Gewicht':
+          final weight = double.tryParse(targetWeightController.text);
+          return weight != null && weight > 0;
+        case 'Training':
+          return zielTrainings > 0;
+        default:
+          return false;
+      }
+    }
 
     return showDialog<void>(
       context: context,
@@ -42,14 +40,11 @@ class GoalDialogs {
           builder: (context, setState) {
             return AlertDialog(
               backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
-              title: Text(
-                'Neues Ziel hinzufügen',
-                style: TextStyle(color: Colors.white),
-              ),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    SizedBox(height: 24),
                     DropdownButtonFormField<String>(
                       value: selectedType,
                       dropdownColor: Theme.of(context).colorScheme.surfaceContainer,
@@ -77,7 +72,7 @@ class GoalDialogs {
                       },
                     ),
                     SizedBox(height: 16),
-                    
+
                     if (selectedType == 'Event') ...[
                       TextField(
                         controller: nameController,
@@ -87,25 +82,17 @@ class GoalDialogs {
                           labelStyle: TextStyle(color: Colors.white70),
                           enabledBorder: OutlineInputBorder(
                             borderSide: BorderSide(color: Colors.white30),
+                            borderRadius: BorderRadius.circular(20),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
+                            borderRadius: BorderRadius.circular(20),
                           ),
                         ),
+                        onChanged: (_) => setState(() {}),
                       ),
                       SizedBox(height: 16),
-                      ListTile(
-                        title: Text(
-                          'Event Datum',
-                          style: TextStyle(color: Colors.white70),
-                        ),
-                        subtitle: Text(
-                          selectedEventDate != null
-                              ? '${selectedEventDate!.day}.${selectedEventDate!.month}.${selectedEventDate!.year}'
-                              : 'Datum auswählen',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        trailing: Icon(Icons.calendar_today, color: Colors.white70),
+                      GestureDetector(
                         onTap: () async {
                           final DateTime? picked = await showDatePicker(
                             context: context,
@@ -119,145 +106,241 @@ class GoalDialogs {
                             });
                           }
                         },
+                        child: AbsorbPointer(
+                          child: TextField(
+                            readOnly: true,
+                            style: TextStyle(color: Colors.white),
+                            decoration: InputDecoration(
+                              labelText: 'Datum auswählen',
+                              labelStyle: TextStyle(color: Colors.white70),
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(color: Colors.white30),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              suffixIcon: Icon(Icons.calendar_today, color: Colors.white70),
+                            ),
+                            controller: TextEditingController(
+                              text: selectedEventDate != null
+                                  ? '${selectedEventDate!.day}.${selectedEventDate!.month}.${selectedEventDate!.year}'
+                                  : '',
+                            ),
+                          ),
+                        ),
                       ),
                     ] else if (selectedType == 'Gewicht') ...[
-                      TextField(
-                        controller: targetWeightController,
-                        keyboardType: TextInputType.number,
-                        style: TextStyle(color: Colors.white),
-                        decoration: InputDecoration(
-                          labelText: 'Zielgewicht (kg)',
-                          labelStyle: TextStyle(color: Colors.white70),
-                          enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.white30),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(height: 12),
+                          GestureDetector(
+                            onTap: () {
+                              showCupertinoModalPopup(
+                                context: context,
+                                builder: (context) => Container(
+                                  height: 250,
+                                  color: Colors.grey[900],
+                                  child: Column(
+                                    children: [
+                                      Expanded(
+                                        child: CupertinoPicker(
+                                          backgroundColor: Colors.transparent,
+                                          itemExtent: 40,
+                                          scrollController: FixedExtentScrollController(
+                                            initialItem: targetWeightController.text.isNotEmpty
+                                                ? int.parse(targetWeightController.text) - 40
+                                                : 30,
+                                          ),
+                                          onSelectedItemChanged: (index) {
+                                            setState(() {
+                                              targetWeightController.text = (index + 40).toString();
+                                            });
+                                          },
+                                          children: List.generate(
+                                            161,
+                                            (i) => Center(
+                                              child: Text(
+                                                '${i + 40} kg',
+                                                style: TextStyle(color: Colors.white, fontSize: 18),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(context),
+                                        child: Text('Fertig', style: TextStyle(color: Colors.blue)),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                            child: AbsorbPointer(
+                              child: TextField(
+                                controller: targetWeightController,
+                                style: TextStyle(color: Colors.white),
+                                decoration: InputDecoration(
+                                  labelText: 'Zielgewicht (kg)',
+                                  labelStyle: TextStyle(color: Colors.white70),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderSide: BorderSide(color: Colors.white30),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
-                          ),
-                        ),
+                        ],
                       ),
                     ] else if (selectedType == 'Training') ...[
-                      TextField(
-                        controller: targetTrainingsController,
-                        keyboardType: TextInputType.number,
-                        style: TextStyle(color: Colors.white),
-                        decoration: InputDecoration(
-                          labelText: 'Trainings pro Woche',
-                          labelStyle: TextStyle(color: Colors.white70),
-                          enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.white30),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Trainings pro Woche',
+                            style: TextStyle(color: Colors.white70),
                           ),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
+                          SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Slider(
+                                  value: zielTrainings.toDouble(),
+                                  min: 1,
+                                  max: 7,
+                                  divisions: 6,
+                                  activeColor: Theme.of(context).colorScheme.primary,
+                                  inactiveColor: Theme.of(context).colorScheme.secondary.withOpacity(0.3),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      zielTrainings = value.round();
+                                    });
+                                  },
+                                ),
+                              ),
+                              SizedBox(width: 16),
+                              Text(
+                                '$zielTrainings x',
+                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                              ),
+                            ],
                           ),
-                        ),
-                      ),
-                    ] else if (selectedType == 'Schritte') ...[
-                      TextField(
-                        controller: targetStepsController,
-                        keyboardType: TextInputType.number,
-                        style: TextStyle(color: Colors.white),
-                        decoration: InputDecoration(
-                          labelText: 'Schritte pro Tag',
-                          labelStyle: TextStyle(color: Colors.white70),
-                          enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.white30),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
-                          ),
-                        ),
+                        ],
                       ),
                     ],
                   ],
                 ),
               ),
               actions: [
-                TextButton(
-                  child: Text('Abbrechen'),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                  ),
-                  child: Text('Hinzufügen', style: TextStyle(color: Colors.white)),
-                  onPressed: () async {
-                    final user = Provider.of<StreaxUser?>(context, listen: false);
-                    if (user != null) {
-                      Map<String, dynamic> goalData = {
-                        'type': selectedType,
-                        'createdAt': FieldValue.serverTimestamp(),
-                      };
-
-                      switch (selectedType) {
-                        case 'Event':
-                          if (nameController.text.trim().isNotEmpty && selectedEventDate != null) {
-                            goalData['name'] = nameController.text.trim();
-                            goalData['eventDate'] = selectedEventDate!.toIso8601String();
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Bitte Name und Datum eingeben')),
-                            );
-                            return;
-                          }
-                          break;
-                        case 'Gewicht':
-                          final weight = double.tryParse(targetWeightController.text);
-                          if (weight != null && weight > 0) {
-                            goalData['targetWeight'] = weight;
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Bitte gültiges Gewicht eingeben')),
-                            );
-                            return;
-                          }
-                          break;
-                        case 'Training':
-                          final trainings = int.tryParse(targetTrainingsController.text);
-                          if (trainings != null && trainings > 0) {
-                            goalData['targetTrainings'] = trainings;
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Bitte gültige Anzahl eingeben')),
-                            );
-                            return;
-                          }
-                          break;
-                        case 'Schritte':
-                          final steps = int.tryParse(targetStepsController.text);
-                          if (steps != null && steps > 0) {
-                            goalData['targetSteps'] = steps;
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Bitte gültige Schrittzahl eingeben')),
-                            );
-                            return;
-                          }
-                          break;
-                      }
-
-                      try {
-                        await DatabaseService(uid: user.uid).addGoal(goalData);
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18.5)),
+                        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 32),
+                        backgroundColor: Colors.transparent,
+                        side: BorderSide.none,
+                      ),
+                      onPressed: () {
                         Navigator.of(context).pop();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Ziel erfolgreich hinzugefügt'),
-                            backgroundColor: Colors.green,
+                      },
+                      child: Text(
+                        'Abbrechen',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 16),
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Theme.of(context).colorScheme.primary,
+                            Theme.of(context).colorScheme.secondary,
+                          ],
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 32),
+                          foregroundColor: Colors.white,
+                          disabledForegroundColor: Colors.white.withOpacity(0.5),
+                        ),
+                        onPressed: isValid()
+                            ? () async {
+                                final firebaseUser = FirebaseAuth.instance.currentUser;
+                                if (firebaseUser != null) {
+                                  Map<String, dynamic> goalData = {
+                                    'type': selectedType,
+                                    'createdAt': FieldValue.serverTimestamp(),
+                                  };
+
+                                  switch (selectedType) {
+                                    case 'Event':
+                                      if (nameController.text.trim().isNotEmpty && selectedEventDate != null) {
+                                        goalData['name'] = nameController.text.trim();
+                                        goalData['eventDate'] = selectedEventDate!.toIso8601String();
+                                      } else {
+                                        SnackBarUtils.showError(context, 'Bitte Name und Datum eingeben');
+                                        return;
+                                      }
+                                      break;
+                                    case 'Gewicht':
+                                      final weight = double.tryParse(targetWeightController.text);
+                                      if (weight != null && weight > 0) {
+                                        goalData['targetWeight'] = weight;
+                                      } else {
+                                        SnackBarUtils.showError(context, 'Bitte gültiges Gewicht eingeben');
+                                        return;
+                                      }
+                                      break;
+                                    case 'Training':
+                                      if (zielTrainings > 0) {
+                                        goalData['targetTrainings'] = zielTrainings;
+                                      } else {
+                                        SnackBarUtils.showError(context, 'Bitte gültige Anzahl eingeben');
+                                        return;
+                                      }
+                                      break;
+                                  }
+
+                                  try {
+                                    await DatabaseService(uid: firebaseUser.uid).addGoal(goalData);
+                                    Navigator.of(context).pop();
+                                    SnackBarUtils.showSuccess(context, 'Ziel erfolgreich hinzugefügt');
+                                  } catch (e) {
+                                    SnackBarUtils.showError(context, 'Fehler beim Hinzufügen: $e');
+                                  }
+                                }
+                              }
+                            : null,
+                        child: Text(
+                          'Hinzufügen',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
                           ),
-                        );
-                      } catch (e) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Fehler beim Hinzufügen: $e'),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                      }
-                    }
-                  },
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             );
@@ -274,15 +357,24 @@ class GoalDialogs {
     final TextEditingController targetWeightController = TextEditingController(
       text: data['targetWeight']?.toString() ?? ''
     );
-    final TextEditingController targetTrainingsController = TextEditingController(
-      text: data['targetTrainings']?.toString() ?? ''
-    );
-    final TextEditingController targetStepsController = TextEditingController(
-      text: data['targetSteps']?.toString() ?? ''
-    );
     DateTime? selectedEventDate = data['eventDate'] != null 
         ? DateTime.tryParse(data['eventDate']) 
         : null;
+    int zielTrainings = data['targetTrainings'] ?? 3;
+
+    bool isValid() {
+      switch (selectedType) {
+        case 'Event':
+          return nameController.text.trim().isNotEmpty && selectedEventDate != null;
+        case 'Gewicht':
+          final weight = double.tryParse(targetWeightController.text);
+          return weight != null && weight > 0;
+        case 'Training':
+          return zielTrainings > 0;
+        default:
+          return false;
+      }
+    }
 
     return showDialog<void>(
       context: context,
@@ -291,14 +383,11 @@ class GoalDialogs {
           builder: (context, setState) {
             return AlertDialog(
               backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
-              title: Text(
-                'Ziel bearbeiten',
-                style: TextStyle(color: Colors.white),
-              ),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    SizedBox(height: 24),
                     DropdownButtonFormField<String>(
                       value: selectedType,
                       dropdownColor: Theme.of(context).colorScheme.surfaceContainer,
@@ -326,13 +415,13 @@ class GoalDialogs {
                       },
                     ),
                     SizedBox(height: 16),
-                    
+
                     if (selectedType == 'Event') ...[
                       TextField(
                         controller: nameController,
                         style: TextStyle(color: Colors.white),
                         decoration: InputDecoration(
-                          labelText: 'Event Name',
+                          labelText: 'Name',
                           labelStyle: TextStyle(color: Colors.white70),
                           enabledBorder: OutlineInputBorder(
                             borderSide: BorderSide(color: Colors.white30),
@@ -341,20 +430,10 @@ class GoalDialogs {
                             borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
                           ),
                         ),
+                        onChanged: (_) => setState(() {}),
                       ),
                       SizedBox(height: 16),
-                      ListTile(
-                        title: Text(
-                          'Event Datum',
-                          style: TextStyle(color: Colors.white70),
-                        ),
-                        subtitle: Text(
-                          selectedEventDate != null
-                              ? '${selectedEventDate!.day}.${selectedEventDate!.month}.${selectedEventDate!.year}'
-                              : 'Datum auswählen',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        trailing: Icon(Icons.calendar_today, color: Colors.white70),
+                      GestureDetector(
                         onTap: () async {
                           final DateTime? picked = await showDatePicker(
                             context: context,
@@ -368,145 +447,241 @@ class GoalDialogs {
                             });
                           }
                         },
+                        child: AbsorbPointer(
+                          child: TextField(
+                            readOnly: true,
+                            style: TextStyle(color: Colors.white),
+                            decoration: InputDecoration(
+                              labelText: 'Datum auswählen',
+                              labelStyle: TextStyle(color: Colors.white70),
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(color: Colors.white30),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              suffixIcon: Icon(Icons.calendar_today, color: Colors.white70),
+                            ),
+                            controller: TextEditingController(
+                              text: selectedEventDate != null
+                                  ? '${selectedEventDate!.day}.${selectedEventDate!.month}.${selectedEventDate!.year}'
+                                  : '',
+                            ),
+                          ),
+                        ),
                       ),
                     ] else if (selectedType == 'Gewicht') ...[
-                      TextField(
-                        controller: targetWeightController,
-                        keyboardType: TextInputType.number,
-                        style: TextStyle(color: Colors.white),
-                        decoration: InputDecoration(
-                          labelText: 'Zielgewicht (kg)',
-                          labelStyle: TextStyle(color: Colors.white70),
-                          enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.white30),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(height: 12),
+                          GestureDetector(
+                            onTap: () {
+                              showCupertinoModalPopup(
+                                context: context,
+                                builder: (context) => Container(
+                                  height: 250,
+                                  color: Colors.grey[900],
+                                  child: Column(
+                                    children: [
+                                      Expanded(
+                                        child: CupertinoPicker(
+                                          backgroundColor: Colors.transparent,
+                                          itemExtent: 40,
+                                          scrollController: FixedExtentScrollController(
+                                            initialItem: targetWeightController.text.isNotEmpty
+                                                ? int.parse(targetWeightController.text) - 40
+                                                : 30,
+                                          ),
+                                          onSelectedItemChanged: (index) {
+                                            setState(() {
+                                              targetWeightController.text = (index + 40).toString();
+                                            });
+                                          },
+                                          children: List.generate(
+                                            161,
+                                            (i) => Center(
+                                              child: Text(
+                                                '${i + 40} kg',
+                                                style: TextStyle(color: Colors.white, fontSize: 18),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(context),
+                                        child: Text('Fertig', style: TextStyle(color: Colors.blue)),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                            child: AbsorbPointer(
+                              child: TextField(
+                                controller: targetWeightController,
+                                style: TextStyle(color: Colors.white),
+                                decoration: InputDecoration(
+                                  labelText: 'Zielgewicht (kg)',
+                                  labelStyle: TextStyle(color: Colors.white70),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderSide: BorderSide(color: Colors.white30),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
-                          ),
-                        ),
+                        ],
                       ),
                     ] else if (selectedType == 'Training') ...[
-                      TextField(
-                        controller: targetTrainingsController,
-                        keyboardType: TextInputType.number,
-                        style: TextStyle(color: Colors.white),
-                        decoration: InputDecoration(
-                          labelText: 'Trainings pro Woche',
-                          labelStyle: TextStyle(color: Colors.white70),
-                          enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.white30),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Trainings pro Woche',
+                            style: TextStyle(color: Colors.white70),
                           ),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
+                          SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Slider(
+                                  value: zielTrainings.toDouble(),
+                                  min: 1,
+                                  max: 7,
+                                  divisions: 6,
+                                  activeColor: Theme.of(context).colorScheme.primary,
+                                  inactiveColor: Theme.of(context).colorScheme.secondary.withOpacity(0.3),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      zielTrainings = value.round();
+                                    });
+                                  },
+                                ),
+                              ),
+                              SizedBox(width: 16),
+                              Text(
+                                '$zielTrainings x',
+                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                              ),
+                            ],
                           ),
-                        ),
-                      ),
-                    ] else if (selectedType == 'Schritte') ...[
-                      TextField(
-                        controller: targetStepsController,
-                        keyboardType: TextInputType.number,
-                        style: TextStyle(color: Colors.white),
-                        decoration: InputDecoration(
-                          labelText: 'Schritte pro Tag',
-                          labelStyle: TextStyle(color: Colors.white70),
-                          enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.white30),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
-                          ),
-                        ),
+                        ],
                       ),
                     ],
                   ],
                 ),
               ),
               actions: [
-                TextButton(
-                  child: Text('Abbrechen'),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                  ),
-                  child: Text('Speichern', style: TextStyle(color: Colors.white)),
-                  onPressed: () async {
-                    final user = Provider.of<StreaxUser?>(context, listen: false);
-                    if (user != null) {
-                      Map<String, dynamic> goalData = {
-                        'type': selectedType,
-                        'updatedAt': FieldValue.serverTimestamp(),
-                      };
-
-                      switch (selectedType) {
-                        case 'Event':
-                          if (nameController.text.trim().isNotEmpty && selectedEventDate != null) {
-                            goalData['name'] = nameController.text.trim();
-                            goalData['eventDate'] = selectedEventDate!.toIso8601String();
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Bitte Name und Datum eingeben')),
-                            );
-                            return;
-                          }
-                          break;
-                        case 'Gewicht':
-                          final weight = double.tryParse(targetWeightController.text);
-                          if (weight != null && weight > 0) {
-                            goalData['targetWeight'] = weight;
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Bitte gültiges Gewicht eingeben')),
-                            );
-                            return;
-                          }
-                          break;
-                        case 'Training':
-                          final trainings = int.tryParse(targetTrainingsController.text);
-                          if (trainings != null && trainings > 0) {
-                            goalData['targetTrainings'] = trainings;
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Bitte gültige Anzahl eingeben')),
-                            );
-                            return;
-                          }
-                          break;
-                        case 'Schritte':
-                          final steps = int.tryParse(targetStepsController.text);
-                          if (steps != null && steps > 0) {
-                            goalData['targetSteps'] = steps;
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Bitte gültige Schrittzahl eingeben')),
-                            );
-                            return;
-                          }
-                          break;
-                      }
-
-                      try {
-                        await DatabaseService(uid: user.uid).updateGoal(goal.id, goalData);
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18.5)),
+                        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 32),
+                        backgroundColor: Colors.transparent,
+                        side: BorderSide.none,
+                      ),
+                      onPressed: () {
                         Navigator.of(context).pop();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Ziel erfolgreich aktualisiert'),
-                            backgroundColor: Colors.green,
+                      },
+                      child: Text(
+                        'Abbrechen',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 16),
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Theme.of(context).colorScheme.primary,
+                            Theme.of(context).colorScheme.secondary,
+                          ],
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 32),
+                          foregroundColor: Colors.white,
+                          disabledForegroundColor: Colors.white.withOpacity(0.5),
+                        ),
+                        onPressed: isValid()
+                            ? () async {
+                                final firebaseUser = FirebaseAuth.instance.currentUser;
+                                if (firebaseUser != null) {
+                                  Map<String, dynamic> goalData = {
+                                    'type': selectedType,
+                                    'updatedAt': FieldValue.serverTimestamp(),
+                                  };
+
+                                  switch (selectedType) {
+                                    case 'Event':
+                                      if (nameController.text.trim().isNotEmpty && selectedEventDate != null) {
+                                        goalData['name'] = nameController.text.trim();
+                                        goalData['eventDate'] = selectedEventDate!.toIso8601String();
+                                      } else {
+                                        SnackBarUtils.showError(context, 'Bitte Name und Datum eingeben');
+                                        return;
+                                      }
+                                      break;
+                                    case 'Gewicht':
+                                      final weight = double.tryParse(targetWeightController.text);
+                                      if (weight != null && weight > 0) {
+                                        goalData['targetWeight'] = weight;
+                                      } else {
+                                        SnackBarUtils.showError(context, 'Bitte gültiges Gewicht eingeben');
+                                        return;
+                                      }
+                                      break;
+                                    case 'Training':
+                                      if (zielTrainings > 0) {
+                                        goalData['targetTrainings'] = zielTrainings;
+                                      } else {
+                                        SnackBarUtils.showError(context, 'Bitte gültige Anzahl eingeben');
+                                        return;
+                                      }
+                                      break;
+                                  }
+
+                                  try {
+                                    await DatabaseService(uid: firebaseUser.uid).updateGoal(goal.id, goalData);
+                                    Navigator.of(context).pop();
+                                    SnackBarUtils.showSuccess(context, 'Ziel erfolgreich aktualisiert');
+                                  } catch (e) {
+                                    SnackBarUtils.showError(context, 'Fehler beim Aktualisieren: $e');
+                                  }
+                                }
+                              }
+                            : null,
+                        child: Text(
+                          'Speichern',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
                           ),
-                        );
-                      } catch (e) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Fehler beim Aktualisieren: $e'),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                      }
-                    }
-                  },
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             );
