@@ -10,6 +10,49 @@ class ProgressBar extends StatelessWidget {
     required this.progressValue,
   }) : super(key: key);
 
+  static double calculateProgress(Map<String, dynamic> data, {double? currentWeight}) {
+    // Fortschrittsberechnung für verschiedene Zielarten
+    switch (data['type']) {
+      case 'Event':
+        final eventDate = DateTime.tryParse(data['eventDate'] ?? '');
+        if (eventDate != null) {
+          final now = DateTime.now();
+          final totalDays = eventDate
+              .difference(DateTime.now().subtract(Duration(days: 30)))
+              .inDays;
+          final remainingDays = eventDate.difference(now).inDays;
+          return remainingDays <= 0
+              ? 1.0
+              : (totalDays - remainingDays) / totalDays;
+        }
+        return 0.0;
+      case 'Gewicht':
+        // Beispiel: Fortschritt für Gewichtsziel
+        if (currentWeight == null || data['targetWeight'] == null) return 0.0;
+        final startWeight = data['startWeight'] ?? currentWeight;
+        final targetWeight = data['targetWeight'];
+        if (targetWeight < startWeight) {
+          // Abnehmen
+          if (currentWeight >= startWeight) return 0.0;
+          if (currentWeight <= targetWeight) return 1.0;
+          final progress = (startWeight - currentWeight) / (startWeight - targetWeight);
+          return progress.clamp(0.0, 1.0);
+        } else if (targetWeight > startWeight) {
+          // Zunehmen
+          if (currentWeight <= startWeight) return 0.0;
+          if (currentWeight >= targetWeight) return 1.0;
+          final progress = (currentWeight - startWeight) / (targetWeight - startWeight);
+          return progress.clamp(0.0, 1.0);
+        } else {
+          return 1.0;
+        }
+      case 'Training':
+        return 0.4;
+      default:
+        return 0.0;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(

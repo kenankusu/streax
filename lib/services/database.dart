@@ -36,7 +36,7 @@ class DatabaseService {
       };
 
       // Nur definierte Werte hinzufügen (null-Werte ignorieren)
-      if (username != null) data['username'] = username;
+      if (username != null) data['username'] = username.toLowerCase();
       if (streak != null) data['streak'] = streak;
       if (friends != null) data['friends_count'] = friends;
       if (maxStreak != null) data['streak_max'] = maxStreak;
@@ -303,8 +303,9 @@ class DatabaseService {
     try {
       if (username.trim().isEmpty) return false;
 
+      final lowerUsername = username.trim().toLowerCase();
       final query = await userCollection
-          .where('username', isEqualTo: username.trim())
+          .where('username', isEqualTo: lowerUsername)
           .limit(1)
           .get();
 

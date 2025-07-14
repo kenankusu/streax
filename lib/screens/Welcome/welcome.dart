@@ -513,7 +513,7 @@ class _WelcomePageState extends State<WelcomePage> {
       await DatabaseService(uid: widget.uid).updateUserData(
         vorname,
         nachname,
-        username: username,
+        username: username.toLowerCase(), // Nutzername wird in lowercase gespeichert
         birthdate: selectedBirthdate!.toIso8601String(),
         weight: weightValue,
         height: heightValue,
