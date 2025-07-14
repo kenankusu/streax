@@ -524,7 +524,7 @@ class _FriendRequestCardState extends State<FriendRequestCard> {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.2),
+                color: Colors.red.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: IconButton(

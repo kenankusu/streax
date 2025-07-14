@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:streax/services/auth.dart';
 import 'package:streax/services/database.dart';
 
-/// Sichere Account Löschung mit doppelter Bestätigung
+// Sichere Account Löschung mit doppelter Bestätigung
 class DeleteAccountDialog {
   
-  /// Zeigt erste Bestätigungsebene für Account-Löschung
+  // Zeigt erste Bestätigungsebene für Account-Löschung
   static void show(
     BuildContext context,
     String uid,
@@ -40,7 +40,7 @@ class DeleteAccountDialog {
     );
   }
 
-  /// Letzte Chance für den User, die Löschung abzubrechen
+  // Letzte Chance für den User, die Löschung abzubrechen
   static void _showFinalConfirmation(
     BuildContext context,
     String uid,
@@ -81,7 +81,7 @@ class DeleteAccountDialog {
     );
   }
 
-  /// Löscht zuerst Firestore-Daten, dann Firebase Auth Account
+  // Löscht zuerst Firestore-Daten, dann Firebase Auth Account
   static Future<void> _deleteAccount(
     BuildContext context,
     String uid,

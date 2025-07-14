@@ -25,7 +25,7 @@ class ProfileView extends StatelessWidget {
                     width: 45,
                     height: 45,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
+                      color: Colors.white.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: IconButton(
@@ -53,7 +53,7 @@ class ProfileView extends StatelessWidget {
                     width: 45,
                     height: 45,
                     decoration: BoxDecoration(
-                      color: Colors.red.withOpacity(0.2),
+                      color: Colors.red.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: IconButton(
@@ -202,10 +202,10 @@ class ProfileView extends StatelessWidget {
       width: double.infinity,
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
           width: 1,
         ),
       ),
@@ -215,7 +215,7 @@ class ProfileView extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: iconColor.withOpacity(0.2),
+              color: iconColor.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
@@ -291,7 +291,7 @@ class ProfileView extends StatelessWidget {
         'totalActivities': allActivities.docs.length,
       };
     } catch (e) {
-      print('Fehler beim Laden der User-Stats: $e');
+      debugPrint('Fehler beim Laden der User-Stats: $e');
       return {};
     }
   }
