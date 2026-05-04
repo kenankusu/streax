@@ -41,7 +41,6 @@ class Journal extends StatelessWidget {
         int today = DateTime.now().weekday - 1;
 
         return Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: List.generate(7, (idx) {
             DateTime day = weekStart.add(Duration(days: idx));
             String tag = wochentage[idx];
@@ -49,91 +48,103 @@ class Journal extends StatelessWidget {
             final eintrag = eintraege[dateKey];
             bool hasEntry = eintrag != null && eintrag['icon'] != null && eintrag['icon'] != '';
             bool isToday = idx == today;
+            bool isFuture = idx > today;
 
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 2.0),
-              child: Column(
-                children: [
-                  Text(
-                    tag,
-                    style: TextStyle(
-                      color: isToday 
-                          ? Color(0xFF1C499E)
-                          : Colors.white,
-                      fontSize: 16, 
-                      fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
+            return Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 2.0),
+                child: Column(
+                  children: [
+                    Text(
+                      tag,
+                      style: TextStyle(
+                        color: isToday
+                            ? Color(0xFF1C499E)
+                            : Colors.white,
+                        fontSize: 16,
+                        fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  GestureDetector(
-                    onTap: hasEntry
-                        ? () {
-                            showDialog(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                backgroundColor: const Color.fromARGB(255, 75, 73, 73),
-                                title: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        eintrag['option'] ?? '',
-                                        style: const TextStyle(color: Colors.white),
-                                        overflow: TextOverflow.ellipsis,
+                    const SizedBox(height: 4),
+                    GestureDetector(
+                      onTap: hasEntry
+                          ? () {
+                              showDialog(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  backgroundColor: const Color.fromARGB(255, 75, 73, 73),
+                                  title: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          eintrag['option'] ?? '',
+                                          style: const TextStyle(color: Colors.white),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
                                       ),
+                                    ],
+                                  ),
+                                  content: Text(
+                                    eintrag['text'] ?? '',
+                                    style: const TextStyle(color: Colors.white70),
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.of(context).pop(),
+                                      child: Text('OK', style: TextStyle(color: Theme.of(context).colorScheme.primary)),
                                     ),
                                   ],
                                 ),
-                                content: Text(
-                                  eintrag['text'] ?? '',
-                                  style: const TextStyle(color: Colors.white70),
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.of(context).pop(),
-                                    child: Text('OK', style: TextStyle(color: Theme.of(context).colorScheme.primary)),
+                              );
+                            }
+                          : null,
+                      child: AspectRatio(
+                        aspectRatio: 5 / 7,
+                        child: isToday
+                            ? Container(
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [Color(0xFF1C499E), Color(0xFFB1D43A)],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
                                   ),
-                                ],
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                padding: const EdgeInsets.all(4),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context).colorScheme.surface,
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Center(
+                                    child: hasEntry
+                                        ? Image.asset(eintrag['icon'], width: 36, height: 36, fit: BoxFit.contain)
+                                        : const SizedBox.shrink(),
+                                  ),
+                                ),
+                              )
+                            : Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.transparent,
+                                  border: Border.all(
+                                    color: isFuture
+                                        ? Colors.white54
+                                        : Theme.of(context).colorScheme.surfaceContainer,
+                                    width: 4,
+                                  ),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Center(
+                                  child: hasEntry
+                                      ? Image.asset(eintrag['icon'], width: 36, height: 36, fit: BoxFit.contain)
+                                      : const SizedBox.shrink(),
+                                ),
                               ),
-                            );
-                          }
-                        : null,
-                    child: hasEntry
-                        ? Container(
-                            width: 50,
-                            height: 70,
-                            decoration: BoxDecoration(
-                              color: Colors.transparent,
-                              border: Border.all(
-                                color: Color(0xFF1C499E),
-                                width: 4,
-                              ),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Center(
-                              child: Image.asset(
-                                eintrag['icon'],
-                                width: 36,
-                                height: 36,
-                                fit: BoxFit.contain,
-                              ),
-                            ),
-                          )
-                        : Container(
-                            width: 50,
-                            height: 70,
-                            decoration: BoxDecoration(
-                              color: Colors.transparent,
-                              border: Border.all(
-                                color: Theme.of(context).colorScheme.surfaceContainer,
-                                width: 4,
-                              ),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: const Center(child: SizedBox.shrink()),
-                          ),
-                  ),
-                ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             );
           }),

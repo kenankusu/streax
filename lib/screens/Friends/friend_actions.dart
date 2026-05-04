@@ -43,7 +43,6 @@ class FriendActions {
     String currentUserId,
   ) async {
     try {
-      // Loading-Indikator anzeigen
       showDialog(
         context: context,
         barrierDismissible: false,
@@ -62,17 +61,32 @@ class FriendActions {
         ),
       );
 
-      // Loading-Dialog wieder schließen
-      if (Navigator.canPop(context)) {
-        Navigator.pop(context);
-      }
+      final success = await DatabaseService(
+        uid: currentUserId,
+      ).acceptFriendRequest(user['uid']).timeout(Duration(seconds: 15));
 
-    } catch (e) {
-      // Loading-Dialog schließen (falls noch offen)
-      if (Navigator.canPop(context)) {
-        Navigator.pop(context);
+      if (!context.mounted) return;
+      if (Navigator.canPop(context)) Navigator.pop(context);
+
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${user['firstName']} ist jetzt dein Freund!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Fehler beim Akzeptieren der Anfrage'),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
-      
+    } catch (e) {
+      if (!context.mounted) return;
+      if (Navigator.canPop(context)) Navigator.pop(context);
+
       print('Fehler in acceptFriendRequest UI: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -103,10 +117,8 @@ class FriendActions {
         uid: currentUserId,
       ).declineFriendRequest(user['uid']).timeout(Duration(seconds: 15));
 
-      // Loading-Dialog schließen
-      if (Navigator.canPop(context)) {
-        Navigator.pop(context);
-      }
+      if (!context.mounted) return;
+      if (Navigator.canPop(context)) Navigator.pop(context);
 
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -124,11 +136,9 @@ class FriendActions {
         );
       }
     } catch (e) {
-      // Loading-Dialog schließen (falls noch offen)
-      if (Navigator.canPop(context)) {
-        Navigator.pop(context);
-      }
-      
+      if (!context.mounted) return;
+      if (Navigator.canPop(context)) Navigator.pop(context);
+
       print('Fehler in declineFriendRequest UI: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

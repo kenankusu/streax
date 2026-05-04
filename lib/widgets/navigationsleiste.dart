@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'journal.dart';
+import 'calendar.dart';
 
 class NavigationsLeiste extends StatelessWidget {
   final int currentPage;

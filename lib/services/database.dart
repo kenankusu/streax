@@ -471,13 +471,16 @@ class DatabaseService {
       final currentTime = FieldValue.serverTimestamp();
 
       // 1. Prüfen ob bereits Freunde sind
+      debugPrint('[STEP 1] Prüfe Freundschaft: users/$uid/friends/$targetUserId');
       final existingFriendship = await friendsCollection.doc(targetUserId).get();
       if (existingFriendship.exists) {
         debugPrint('Bereits mit User $targetUserId befreundet');
         return false;
       }
+      debugPrint('[STEP 1] OK');
 
       // 2. Prüfen ob bereits eine Anfrage existiert
+      debugPrint('[STEP 2] Prüfe bestehende Anfrage: users/$targetUserId/friendRequests/$uid');
       final existingRequest = await FirebaseFirestore.instance
           .collection('users')
           .doc(targetUserId)
@@ -489,8 +492,10 @@ class DatabaseService {
         debugPrint('Freundschaftsanfrage bereits gesendet an $targetUserId');
         return false;
       }
+      debugPrint('[STEP 2] OK');
 
       // 3. Freundschaftsanfrage beim Empfänger speichern
+      debugPrint('[STEP 3] Schreibe Anfrage: users/$targetUserId/friendRequests/$uid');
       await FirebaseFirestore.instance
           .collection('users')
           .doc(targetUserId)
@@ -502,8 +507,10 @@ class DatabaseService {
             'status': 'pending',
             'sentAt': currentTime,
           });
+      debugPrint('[STEP 3] OK');
 
       // 4. Gesendete Anfrage für eigenes Tracking speichern
+      debugPrint('[STEP 4] Schreibe sentRequest: users/$uid/sentRequests/$targetUserId');
       await userCollection
           .doc(uid)
           .collection('sentRequests')
@@ -513,6 +520,7 @@ class DatabaseService {
             'sentAt': currentTime,
             'status': 'pending',
           });
+      debugPrint('[STEP 4] OK');
 
       debugPrint('Freundschaftsanfrage erfolgreich gesendet an $targetUserId');
       return true;
