@@ -341,9 +341,10 @@ class _ZielePopupState extends State<ZielePopup> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
           'Ziel löschen',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         content: Text(
           'Möchtest du dieses Ziel wirklich löschen?',

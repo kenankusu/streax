@@ -72,18 +72,12 @@ class Journal extends StatelessWidget {
                               showDialog(
                                 context: context,
                                 builder: (context) => AlertDialog(
-                                  backgroundColor: const Color.fromARGB(255, 75, 73, 73),
-                                  title: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          eintrag['option'] ?? '',
-                                          style: const TextStyle(color: Colors.white),
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                    ],
+                                  backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                                  title: Text(
+                                    eintrag['option'] ?? '',
+                                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                   content: Text(
                                     eintrag['text'] ?? '',

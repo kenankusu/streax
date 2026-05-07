@@ -13,7 +13,8 @@ class DeleteAccountDialog {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: Theme.of(context).colorScheme.surface,
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text(
           'Account löschen',
           style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
@@ -52,7 +53,8 @@ class DeleteAccountDialog {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
-          backgroundColor: Theme.of(ctx).colorScheme.surface,
+          backgroundColor: Theme.of(ctx).colorScheme.surfaceContainer,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: const Text(
             'Passwort bestätigen',
             style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
@@ -163,8 +165,9 @@ class DeleteAccountDialog {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        title: Text('Fehler', style: TextStyle(color: Colors.red)),
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('Fehler', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
         content: Text(message, style: TextStyle(color: Colors.white)),
         actions: [
           TextButton(

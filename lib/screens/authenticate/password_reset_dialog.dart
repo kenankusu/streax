@@ -100,7 +100,7 @@ class _PasswordResetDialogState extends State<PasswordResetDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       // Konsistentes Design mit App-Theme
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),
@@ -108,11 +108,7 @@ class _PasswordResetDialogState extends State<PasswordResetDialog> {
       // Dialog-Titel
       title: Text(
         'Passwort zurücksetzen',
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 24,
-          fontWeight: FontWeight.bold,
-        ),
+        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
       ),
       
       // Haupt-Inhalt des Dialogs

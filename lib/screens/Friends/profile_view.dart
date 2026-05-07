@@ -40,11 +40,7 @@ class ProfileView extends StatelessWidget {
                   Expanded(
                     child: Text(
                       'Profil',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: Theme.of(context).textTheme.headlineMedium,
                     ),
                   ),
                   

@@ -177,9 +177,10 @@ class FriendActions {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
           'Freundschaft entfernen',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         content: Text(
           'Möchtest du ${user['firstName']} wirklich als Freund entfernen?',
@@ -298,9 +299,10 @@ class FriendActions {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
           'Freundschaftsanfrage',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,

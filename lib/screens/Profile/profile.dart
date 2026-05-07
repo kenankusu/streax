@@ -62,13 +62,9 @@ class _ProfilState extends State<Profil> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        title: const Text(
+        title: Text(
           'Profil',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 22,
-          ),
+          style: Theme.of(context).textTheme.headlineMedium,
           textAlign: TextAlign.center,
         ),
         iconTheme: const IconThemeData(color: Colors.white),
