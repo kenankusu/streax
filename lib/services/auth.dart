@@ -216,12 +216,10 @@ class AuthService {
       }
 
       final userEmail = user.email;
-      
-      // Firebase Auth Account unwiderruflich löschen
+
+      // Firebase Auth Account löschen (beendet Session automatisch)
       await user.delete();
-      // Zusätzlicher expliziter Logout für Sicherheit
-      await _auth.signOut();
-      
+
       debugPrint('Firebase Auth Account erfolgreich gelöscht für: $userEmail');
       return true;
     } on FirebaseAuthException catch (e) {

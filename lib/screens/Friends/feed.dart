@@ -272,7 +272,7 @@ class _FeedState extends State<Feed> {
                         child: Column(
                           children: [
                             // Suchfeld
-                            Container(
+                            SizedBox(
                               height: 55,
                               child: TextField(
                                 controller: _searchController,

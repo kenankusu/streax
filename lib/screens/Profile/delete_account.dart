@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:streax/Services/auth.dart';
 import 'package:streax/Services/database.dart';
 
-/// Sichere Account-Löschung mit doppelter Bestätigung
-/// Implementiert mehrstufigen Löschprozess zur Vermeidung versehentlicher Löschungen
 class DeleteAccountDialog {
-  
-  /// Zeigt erste Bestätigungsebene für Account-Löschung
-  /// Erklärt dem User die Konsequenzen der Löschung
+
   static void show(
     BuildContext context,
     String uid,
@@ -33,91 +30,132 @@ class DeleteAccountDialog {
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              _showFinalConfirmation(context, uid, setDeleting);
+              _showPasswordConfirmation(context, uid, setDeleting);
             },
-            child: Text('Löschen', style: TextStyle(color: Colors.red)),
+            child: Text('Weiter', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
     );
   }
 
-  /// Zeigt zweite und finale Bestätigungsebene
-  /// Letzte Chance für den User, die Löschung abzubrechen
-  static void _showFinalConfirmation(
+  /// Passwort-Bestätigung für Re-Authentifizierung (Firebase-Pflicht)
+  static void _showPasswordConfirmation(
     BuildContext context,
     String uid,
     Function(bool) setDeleting,
   ) {
+    final passwordController = TextEditingController();
+    bool obscure = true;
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        title: const Text(
-          'Letzte Bestätigung',
-          style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
-        ),
-        content: const Text(
-          'Dies ist deine letzte Chance!\n\nWenn du auf "Endgültig löschen" klickst, wird dein Account sofort und unwiderruflich gelöscht.',
-          style: TextStyle(color: Colors.white),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Doch nicht löschen',
-              style: TextStyle(color: Colors.grey),
-            ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          backgroundColor: Theme.of(ctx).colorScheme.surface,
+          title: const Text(
+            'Passwort bestätigen',
+            style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
           ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              await _deleteAccount(context, uid, setDeleting);
-            },
-            child: Text(
-              'Endgültig löschen',
-              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
-            ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Bitte gib dein Passwort ein um die Löschung zu bestätigen.',
+                style: TextStyle(color: Colors.white70),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: passwordController,
+                obscureText: obscure,
+                autofocus: true,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  hintText: 'Passwort',
+                  hintStyle: TextStyle(color: Colors.grey[500]),
+                  filled: true,
+                  fillColor: Colors.white10,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      obscure ? Icons.visibility_off : Icons.visibility,
+                      color: Colors.grey,
+                    ),
+                    onPressed: () => setDialogState(() => obscure = !obscure),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text('Abbrechen', style: TextStyle(color: Colors.grey)),
+            ),
+            TextButton(
+              onPressed: () async {
+                final password = passwordController.text;
+                if (password.isEmpty) return;
+                Navigator.pop(ctx);
+                await _deleteAccount(context, uid, password, setDeleting);
+              },
+              child: const Text(
+                'Endgültig löschen',
+                style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  /// Führt die tatsächliche Account-Löschung durch
-  /// Löscht zuerst Firestore-Daten, dann Firebase Auth Account
   static Future<void> _deleteAccount(
     BuildContext context,
     String uid,
+    String password,
     Function(bool) setDeleting,
   ) async {
     setDeleting(true);
 
     try {
       final auth = AuthService();
+      final firebaseUser = FirebaseAuth.instance.currentUser;
 
-      // 1. Firestore-Daten zuerst löschen (Session ist noch aktiv)
+      if (firebaseUser == null || firebaseUser.email == null) {
+        setDeleting(false);
+        if (context.mounted) _showErrorDialog(context, 'Kein Benutzer angemeldet.');
+        return;
+      }
+
+      // Re-Authentifizierung (Firebase-Pflicht vor Account-Löschung)
+      final credential = EmailAuthProvider.credential(
+        email: firebaseUser.email!,
+        password: password,
+      );
+      await firebaseUser.reauthenticateWithCredential(credential);
+
+      // 1. Firestore-Daten löschen (Session ist nach Re-Auth frisch & aktiv)
       await DatabaseService(uid: uid).deleteAllUserData();
 
-      // 2. Firebase Auth Account löschen (beendet die Session automatisch)
-      bool authDeleted = await auth.deleteAccount();
+      // 2. Firebase Auth Account löschen
+      await auth.deleteAccount();
 
-      if (!authDeleted) {
-        // Firestore ist bereits bereinigt – trotzdem ausloggen damit kein
-        // kaputtes Login-Profil entsteht, und dem User Bescheid geben
-        await auth.signOut();
-        if (context.mounted) {
-          _showErrorDialog(
-            context,
-            'Profildaten wurden gelöscht, aber der Auth-Account konnte nicht entfernt werden.\n\nBitte melde dich erneut an und versuche es nochmals.',
-          );
-        }
+    } on FirebaseAuthException catch (e) {
+      setDeleting(false);
+      if (!context.mounted) return;
+      if (e.code == 'wrong-password' || e.code == 'invalid-credential') {
+        _showErrorDialog(context, 'Falsches Passwort. Bitte versuche es erneut.');
+      } else {
+        _showErrorDialog(context, 'Fehler: ${e.message}');
       }
     } catch (e) {
       setDeleting(false);
-      if (context.mounted) {
-        _showErrorDialog(context, 'Unerwarteter Fehler: $e');
-      }
+      if (context.mounted) _showErrorDialog(context, 'Unerwarteter Fehler: $e');
     }
   }
 

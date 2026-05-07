@@ -5,10 +5,10 @@ class Fortschrittsbalken extends StatelessWidget {
   final double fortschritt;
 
   const Fortschrittsbalken({
-    Key? key,
+    super.key,
     required this.label,
     required this.fortschritt,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

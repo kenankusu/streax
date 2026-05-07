@@ -162,13 +162,13 @@ class GradientBorder extends StatelessWidget {
   final BorderRadius borderRadius;
 
   const GradientBorder({
-    Key? key,
+    super.key,
     required this.child,
     required this.width,
     required this.height,
     this.borderWidth = 4,
     required this.borderRadius,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

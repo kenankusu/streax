@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -23,6 +24,11 @@ class _FriendsSlideInViewState extends State<FriendsSlideInView> {
   List<Map<String, dynamic>> _filteredRequests = [];
   bool _isLoading = true;
 
+  StreamSubscription? _friendsSub;
+  StreamSubscription? _requestsSub;
+  bool _isLoadRunning = false;
+  Timer? _debounceTimer;
+
   @override
   void initState() {
     super.initState();
@@ -32,15 +38,35 @@ class _FriendsSlideInViewState extends State<FriendsSlideInView> {
         _filterData();
       });
     });
+
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      final db = DatabaseService(uid: currentUser.uid);
+      _loadAllData(showLoading: true);
+      _friendsSub = db.userFriends.listen((_) => _scheduleReload());
+      _requestsSub = db.incomingFriendRequests.listen((_) => _scheduleReload());
+    }
   }
 
   @override
   void dispose() {
+    _friendsSub?.cancel();
+    _requestsSub?.cancel();
+    _debounceTimer?.cancel();
     _searchController.dispose();
     _searchFocusNode.dispose();
     super.dispose();
   }
     
+  void _scheduleReload() {
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 400), () {
+      if (mounted && !_isLoadRunning) {
+        _loadAllData();
+      }
+    });
+  }
+
 // Filtert Freunde und Anfragen basierend auf der Sucheingabe
   void _filterData() {
     if (_searchQuery.isEmpty) {
@@ -63,17 +89,21 @@ class _FriendsSlideInViewState extends State<FriendsSlideInView> {
     }
   }
 
-  Future<void> _loadAllData() async {
-    // Lädt alle Freunde und Anfragen parallel aus Firebase
+  Future<void> _loadAllData({bool showLoading = false}) async {
+    if (_isLoadRunning) return;
+    _isLoadRunning = true;
+
     final currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser == null) return;
+    if (currentUser == null) {
+      _isLoadRunning = false;
+      return;
+    }
+
+    if (showLoading && mounted) {
+      setState(() { _isLoading = true; });
+    }
 
     try {
-      setState(() {
-        _isLoading = true;
-      });
-
-      // Beide Streams parallel laden
       final results = await Future.wait([
         DatabaseService(uid: currentUser.uid).userFriends.first,
         DatabaseService(uid: currentUser.uid).incomingFriendRequests.first,
@@ -82,50 +112,43 @@ class _FriendsSlideInViewState extends State<FriendsSlideInView> {
       final friendsSnapshot = results[0];
       final requestsSnapshot = results[1];
 
-      // Freunde-Daten laden
       List<Map<String, dynamic>> friendsData = [];
       for (var friendDoc in friendsSnapshot.docs) {
         final friendData = friendDoc.data() as Map<String, dynamic>;
         final friendId = friendData['userId'];
-        
         try {
           final userData = await DatabaseService(uid: currentUser.uid).getFriendData(friendId);
-          if (userData != null) {
-            friendsData.add(userData);
-          }
+          if (userData != null) friendsData.add(userData);
         } catch (e) {
           debugPrint('Fehler beim Laden von Freund $friendId: $e');
         }
       }
 
-      // Anfragen-Daten laden
       List<Map<String, dynamic>> requestsData = [];
       for (var requestDoc in requestsSnapshot.docs) {
         final requestData = requestDoc.data() as Map<String, dynamic>;
         final senderId = requestData['senderId'];
-        
         try {
           final userData = await DatabaseService(uid: currentUser.uid).getFriendData(senderId);
-          if (userData != null) {
-            requestsData.add(userData);
-          }
+          if (userData != null) requestsData.add(userData);
         } catch (e) {
           debugPrint('Fehler beim Laden von Anfrage $senderId: $e');
         }
       }
 
-      setState(() {
-        _allFriends = friendsData;
-        _allRequests = requestsData;
-        _isLoading = false;
-        _filterData();
-      });
-
+      if (mounted) {
+        setState(() {
+          _allFriends = friendsData;
+          _allRequests = requestsData;
+          _isLoading = false;
+          _filterData();
+        });
+      }
     } catch (e) {
       debugPrint('Fehler beim Laden der Daten: $e');
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) setState(() { _isLoading = false; });
+    } finally {
+      _isLoadRunning = false;
     }
   }
 
@@ -248,140 +271,76 @@ class _FriendsSlideInViewState extends State<FriendsSlideInView> {
 
             SizedBox(height: 20),
 
-            // Freunde-Liste mit StreamBuilder für Updates
+            // Freunde-Liste
             Expanded(
-              child: StreamBuilder<QuerySnapshot>(
-                stream: DatabaseService(uid: currentUser.uid).userFriends,
-                builder: (context, friendsSnapshot) {
-                  return StreamBuilder<QuerySnapshot>(
-                    stream: DatabaseService(uid: currentUser.uid).incomingFriendRequests,
-                    builder: (context, requestsSnapshot) {
-                      
-                      // Nur bei Datenänderungen neu laden
-                      if (friendsSnapshot.hasData && requestsSnapshot.hasData) {
-                        // Prüfe ob sich die Anzahl der Dokumente geändert hat
-                        final friendsCount = friendsSnapshot.data!.docs.length;
-                        final requestsCount = requestsSnapshot.data!.docs.length;
-                        
-                        if (_allFriends.length != friendsCount || _allRequests.length != requestsCount) {
-                          // Nur dann neu laden wenn sich etwas geändert hat
-                          WidgetsBinding.instance.addPostFrameCallback((_) {
-                            _loadAllData();
-                          });
-                        }
-                      }
-                      
-                      // Während des ersten Ladens
-                      if (_isLoading) {
-                        // Initiales Laden starten
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          if (_allFriends.isEmpty && _allRequests.isEmpty) {
-                            _loadAllData();
-                          }
-                        });
-                        
-                        return Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              CircularProgressIndicator(color: Theme.of(context).colorScheme.primary),
-                              SizedBox(height: 16),
-                              Text(
-                                'Lade Freunde...',
-                                style: TextStyle(color: Colors.grey[400]),
-                              ),
-                            ],
-                          ),
-                        );
-                      }
-
-                      // Daten anzeigen
-                      return SingleChildScrollView(
-                        padding: EdgeInsets.symmetric(horizontal: 20),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Freundschaftsanfragen (falls vorhanden)
-                            if (_filteredRequests.isNotEmpty) ...[
-                              Text(
-                                'Offene Anfragen (${_filteredRequests.length})',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              SizedBox(height: 12),
-                              
-                              ..._filteredRequests.map((request) {
-                                return FriendRequestCard(
+              child: _isLoading
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CircularProgressIndicator(color: Theme.of(context).colorScheme.primary),
+                          SizedBox(height: 16),
+                          Text('Lade Freunde...', style: TextStyle(color: Colors.grey[400])),
+                        ],
+                      ),
+                    )
+                  : SingleChildScrollView(
+                      padding: EdgeInsets.symmetric(horizontal: 20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (_filteredRequests.isNotEmpty) ...[
+                            Text(
+                              'Offene Anfragen (${_filteredRequests.length})',
+                              style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                            SizedBox(height: 12),
+                            ..._filteredRequests.map((request) => FriendRequestCard(
                                   user: request,
                                   currentUserId: currentUser.uid,
                                   key: ValueKey(request['uid']),
-                                );
-                              }),
-                              
-                              SizedBox(height: 32), // GEÄNDERT: Mehr Abstand statt Gradient-Linie
-                            ],
-
-                            // Freunde-Liste Titel
-                            Text(
-                              'Deine Freunde (${_filteredFriends.length})',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
+                                )),
+                            SizedBox(height: 32),
+                          ],
+                          Text(
+                            'Deine Freunde (${_filteredFriends.length})',
+                            style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                          SizedBox(height: 12),
+                          if (_filteredFriends.isEmpty && _searchQuery.isNotEmpty)
+                            Center(
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(vertical: 40),
+                                child: Column(
+                                  children: [
+                                    Icon(Icons.search_off, size: 48, color: Colors.grey[400]),
+                                    SizedBox(height: 12),
+                                    Text('Keine Freunde gefunden', style: TextStyle(color: Colors.grey[400], fontSize: 16)),
+                                  ],
+                                ),
                               ),
-                            ),
-                            SizedBox(height: 12),
-
-                            // Freunde-Liste
-                            if (_filteredFriends.isEmpty && _searchQuery.isNotEmpty)
-                              Container(
+                            )
+                          else if (_filteredFriends.isEmpty)
+                            Center(
+                              child: Padding(
                                 padding: EdgeInsets.symmetric(vertical: 40),
-                                child: Center(
-                                  child: Column(
-                                    children: [
-                                      Icon(Icons.search_off, size: 48, color: Colors.grey[400]),
-                                      SizedBox(height: 12),
-                                      Text(
-                                        'Keine Freunde gefunden',
-                                        style: TextStyle(color: Colors.grey[400], fontSize: 16),
-                                      ),
-                                    ],
-                                  ),
+                                child: Column(
+                                  children: [
+                                    Icon(Icons.group_outlined, size: 48, color: Colors.grey[400]),
+                                    SizedBox(height: 12),
+                                    Text('Noch keine Freunde', style: TextStyle(color: Colors.grey[400], fontSize: 16)),
+                                  ],
                                 ),
-                              )
-                            else if (_filteredFriends.isEmpty)
-                              Container(
-                                padding: EdgeInsets.symmetric(vertical: 40),
-                                child: Center(
-                                  child: Column(
-                                    children: [
-                                      Icon(Icons.group_outlined, size: 48, color: Colors.grey[400]),
-                                      SizedBox(height: 12),
-                                      Text(
-                                        'Noch keine Freunde',
-                                        style: TextStyle(color: Colors.grey[400], fontSize: 16),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              )
-                            else
-                              ..._filteredFriends.map((friend) {
-                                return SlideInFriendCard(
+                              ),
+                            )
+                          else
+                            ..._filteredFriends.map((friend) => SlideInFriendCard(
                                   user: friend,
                                   key: ValueKey(friend['uid']),
-                                );
-                              }),
-                          ],
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
+                                )),
+                        ],
+                      ),
+                    ),
             ),
           ],
         ),
