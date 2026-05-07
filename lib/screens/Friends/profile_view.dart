@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../services/database.dart';
 import 'friend_actions.dart';
 
 class ProfileView extends StatelessWidget {
@@ -295,12 +294,12 @@ class ProfileView extends StatelessWidget {
       
       return {
         'friendsCount': userData['friends_count'] ?? 0,
-        'highestStreak': userData['highest_streak'] ?? userData['streak'] ?? 0,
+        'highestStreak': userData['streak_max'] ?? userData['streak'] ?? 0,
         'activitiesThisWeek': weekActivities.docs.length,
         'totalActivities': allActivities.docs.length,
       };
     } catch (e) {
-      print('Fehler beim Laden der User-Stats: $e');
+      debugPrint('Fehler beim Laden der User-Stats: $e');
       return {};
     }
   }

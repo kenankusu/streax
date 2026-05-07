@@ -91,26 +91,25 @@ class DeleteAccountDialog {
     String uid,
     Function(bool) setDeleting,
   ) async {
-    // Loading-State aktivieren
     setDeleting(true);
 
     try {
       final auth = AuthService();
 
-      // 1. Alle Firestore-Daten löschen
-      bool firestoreDeleted = await DatabaseService(
-        uid: uid,
-      ).deleteAllUserData();
+      // 1. Firestore-Daten zuerst löschen (Session ist noch aktiv)
+      await DatabaseService(uid: uid).deleteAllUserData();
 
-      // 2. Firebase Auth Account löschen
+      // 2. Firebase Auth Account löschen (beendet die Session automatisch)
       bool authDeleted = await auth.deleteAccount();
 
-      if (!firestoreDeleted || !authDeleted) {
-        setDeleting(false);
+      if (!authDeleted) {
+        // Firestore ist bereits bereinigt – trotzdem ausloggen damit kein
+        // kaputtes Login-Profil entsteht, und dem User Bescheid geben
+        await auth.signOut();
         if (context.mounted) {
           _showErrorDialog(
             context,
-            'Beim Löschen des Accounts ist ein Fehler aufgetreten.',
+            'Profildaten wurden gelöscht, aber der Auth-Account konnte nicht entfernt werden.\n\nBitte melde dich erneut an und versuche es nochmals.',
           );
         }
       }

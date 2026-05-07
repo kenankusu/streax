@@ -456,7 +456,7 @@ class _WelcomePageState extends State<WelcomePage> {
     // Validation
     String vorname = firstNameController.text.trim();
     String nachname = lastNameController.text.trim();
-    String username = usernameController.text.trim();
+    String username = usernameController.text.trim().toLowerCase();
 
     String weight = weightController.text.trim();
     String height = heightController.text.trim();
@@ -541,7 +541,7 @@ class _WelcomePageState extends State<WelcomePage> {
         );
       }
     } catch (e) {
-      print('Profil-Fehler: $e');
+      debugPrint('Profil-Fehler: $e');
       _showError('Fehler beim Erstellen des Profils');
       setState(() => isLoading = false);
     }

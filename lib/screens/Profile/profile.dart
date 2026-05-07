@@ -95,7 +95,11 @@ class _ProfilState extends State<Profil> {
                   return Container();
                 }
 
-                var userData = snapshot.data!.data() as Map<String, dynamic>;
+                final rawData = snapshot.data?.data();
+                if (rawData == null) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                var userData = rawData as Map<String, dynamic>;
 
                 return SingleChildScrollView(
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
@@ -175,7 +179,7 @@ class _ProfilState extends State<Profil> {
   Future<void> _handleLogout() async {
     await _auth.signOut();
     if (mounted) {
-      Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+      Navigator.of(context).popUntil((route) => route.isFirst);
     }
   }
 

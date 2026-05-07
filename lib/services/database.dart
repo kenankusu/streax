@@ -533,7 +533,7 @@ class DatabaseService {
   /// Freundschaftsanfrage akzeptieren - Batch-Operation für Konsistenz
   Future<bool> acceptFriendRequest(String senderId) async {
     try {
-      print('Start acceptFriendRequest: $uid -> $senderId');
+      debugPrint('Start acceptFriendRequest: $uid -> $senderId');
       
       final batch = FirebaseFirestore.instance.batch();
       final currentTime = FieldValue.serverTimestamp();
@@ -577,7 +577,7 @@ class DatabaseService {
   /// Freundschaftsanfrage ablehnen
   Future<bool> declineFriendRequest(String senderId) async {
     try {
-      print('Start declineFriendRequest: $uid -> $senderId');
+      debugPrint('Start declineFriendRequest: $uid -> $senderId');
       
       final batch = FirebaseFirestore.instance.batch();
 
@@ -600,7 +600,7 @@ class DatabaseService {
   /// Freundschaft entfernen
   Future<bool> removeFriend(String friendId) async {
     try {
-      print('Start removeFriend: $uid -> $friendId');
+      debugPrint('Start removeFriend: $uid -> $friendId');
 
       final batch = FirebaseFirestore.instance.batch();
 
@@ -685,17 +685,13 @@ class DatabaseService {
   Stream<List<Map<String, dynamic>>> get friendActivities {
     final sevenDaysAgo = DateTime.now().subtract(Duration(days: 7));
     
-    return userFriends.asyncMap((friendsSnapshot) async {
+    return userFriends.asyncMap((dynamic friendsSnapshot) async {
       List<Map<String, dynamic>> allActivities = [];
-      
-      print('Debug: Anzahl Freunde gefunden: ${friendsSnapshot.docs.length}');
-      
-      for (var friendDoc in friendsSnapshot.docs) {
+
+      for (var friendDoc in friendsSnapshot.docs as List) {
         final friendData = friendDoc.data() as Map<String, dynamic>;
         final friendId = friendData['userId'];
-        
-        print('Debug: Lade Aktivitäten für Freund: $friendId');
-        
+
         try {
           final activitiesSnapshot = await FirebaseFirestore.instance
               .collection('users')
@@ -704,16 +700,13 @@ class DatabaseService {
               .where('createdAt', isGreaterThan: Timestamp.fromDate(sevenDaysAgo))
               .orderBy('createdAt', descending: true)
               .get();
-          
-          print('Debug: Aktivitäten für $friendId gefunden: ${activitiesSnapshot.docs.length}');
-          
+
           final userData = await getFriendData(friendId);
-          
+
           if (userData != null) {
             for (var activityDoc in activitiesSnapshot.docs) {
               final activityData = activityDoc.data();
-              print('Debug: Aktivität gefunden: ${activityData['option']} von ${userData['firstName']}');
-              
+
               allActivities.add({
                 'activityId': activityDoc.id,
                 'userId': friendId,
@@ -734,18 +727,17 @@ class DatabaseService {
             }
           }
         } catch (e) {
-          print('Debug: Fehler beim Laden der Aktivitäten von $friendId: $e');
+          debugPrint('Fehler beim Laden der Aktivitäten von $friendId: $e');
         }
       }
-      
+
       allActivities.sort((a, b) {
         final aTime = a['timestamp'] as Timestamp?;
         final bTime = b['timestamp'] as Timestamp?;
         if (aTime == null || bTime == null) return 0;
         return bTime.compareTo(aTime);
       });
-      
-      print('Debug: Gesamt-Aktivitäten im Feed: ${allActivities.length}');
+
       return allActivities;
     });
   }
@@ -763,7 +755,7 @@ class DatabaseService {
       
       return bisMinutes - vonMinutes;
     } catch (e) {
-      print('Fehler beim Berechnen der Dauer: $e');
+      debugPrint('Fehler beim Berechnen der Dauer: $e');
       return 0;
     }
   }
@@ -782,7 +774,7 @@ class DatabaseService {
         return doc.data();
       }
     } catch (e) {
-      print('Fehler beim Laden der Aktivitäts-Details: $e');
+      debugPrint('Fehler beim Laden der Aktivitäts-Details: $e');
     }
     return null;
   }

@@ -51,13 +51,13 @@ class _FriendsSlideInViewState extends State<FriendsSlideInView> {
       
       _filteredFriends = _allFriends.where((friend) {
         final name = '${friend['firstName']} ${friend['lastName']}'.toLowerCase();
-        final username = friend['username'].toString().toLowerCase();
+        final username = (friend['username'] ?? '').toString().toLowerCase();
         return name.contains(query) || username.contains(query);
       }).toList();
       
       _filteredRequests = _allRequests.where((request) {
         final name = '${request['firstName']} ${request['lastName']}'.toLowerCase();
-        final username = request['username'].toString().toLowerCase();
+        final username = (request['username'] ?? '').toString().toLowerCase();
         return name.contains(query) || username.contains(query);
       }).toList();
     }
@@ -94,7 +94,7 @@ class _FriendsSlideInViewState extends State<FriendsSlideInView> {
             friendsData.add(userData);
           }
         } catch (e) {
-          print('Fehler beim Laden von Freund $friendId: $e');
+          debugPrint('Fehler beim Laden von Freund $friendId: $e');
         }
       }
 
@@ -110,7 +110,7 @@ class _FriendsSlideInViewState extends State<FriendsSlideInView> {
             requestsData.add(userData);
           }
         } catch (e) {
-          print('Fehler beim Laden von Anfrage $senderId: $e');
+          debugPrint('Fehler beim Laden von Anfrage $senderId: $e');
         }
       }
 
@@ -122,7 +122,7 @@ class _FriendsSlideInViewState extends State<FriendsSlideInView> {
       });
 
     } catch (e) {
-      print('Fehler beim Laden der Daten: $e');
+      debugPrint('Fehler beim Laden der Daten: $e');
       setState(() {
         _isLoading = false;
       });
@@ -131,6 +131,12 @@ class _FriendsSlideInViewState extends State<FriendsSlideInView> {
 
   @override
   Widget build(BuildContext context) {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) {
+      return const Scaffold(
+        body: Center(child: Text('Nicht eingeloggt')),
+      );
+    }
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
@@ -191,7 +197,7 @@ class _FriendsSlideInViewState extends State<FriendsSlideInView> {
                   borderRadius: BorderRadius.circular(26),
                   color: Theme.of(context).colorScheme.surface,
                 ),
-                child: Container(
+                child: SizedBox(
                   height: 55,
                   child: TextField(
                     controller: _searchController,
@@ -245,10 +251,10 @@ class _FriendsSlideInViewState extends State<FriendsSlideInView> {
             // Freunde-Liste mit StreamBuilder für Updates
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
-                stream: DatabaseService(uid: FirebaseAuth.instance.currentUser!.uid).userFriends,
+                stream: DatabaseService(uid: currentUser.uid).userFriends,
                 builder: (context, friendsSnapshot) {
                   return StreamBuilder<QuerySnapshot>(
-                    stream: DatabaseService(uid: FirebaseAuth.instance.currentUser!.uid).incomingFriendRequests,
+                    stream: DatabaseService(uid: currentUser.uid).incomingFriendRequests,
                     builder: (context, requestsSnapshot) {
                       
                       // Nur bei Datenänderungen neu laden
@@ -310,10 +316,10 @@ class _FriendsSlideInViewState extends State<FriendsSlideInView> {
                               ..._filteredRequests.map((request) {
                                 return FriendRequestCard(
                                   user: request,
-                                  currentUserId: FirebaseAuth.instance.currentUser!.uid,
+                                  currentUserId: currentUser.uid,
                                   key: ValueKey(request['uid']),
                                 );
-                              }).toList(),
+                              }),
                               
                               SizedBox(height: 32), // GEÄNDERT: Mehr Abstand statt Gradient-Linie
                             ],
@@ -368,7 +374,7 @@ class _FriendsSlideInViewState extends State<FriendsSlideInView> {
                                   user: friend,
                                   key: ValueKey(friend['uid']),
                                 );
-                              }).toList(),
+                              }),
                           ],
                         ),
                       );

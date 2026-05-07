@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'calendar.dart';
+import 'package:streax/screens/shared/addActivity.dart';
 
 class NavigationsLeiste extends StatelessWidget {
   final int currentPage;
   final Function(int) onPageChanged;
 
   const NavigationsLeiste({
-    Key? key,
+    super.key,
     required this.currentPage,
     required this.onPageChanged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -42,10 +42,14 @@ class NavigationsLeiste extends StatelessWidget {
             // Wenn der Add-Button geklickt wurde
             if (index == 2) {
               // Direkter Aufruf des Dialogs zum Hinzufügen einer Aktivität
-              showJournalContextMenu(context, () {
-                // Nach dem Hinzufügen den UI-Status aktualisieren
-                onPageChanged(currentPage); // Beim aktuellen Tab bleiben
-              });
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                builder: (context) => AktivitaetHinzufuegen(
+                  onSaved: () {},
+                ),
+              );
             } else {
               onPageChanged(index);
             }

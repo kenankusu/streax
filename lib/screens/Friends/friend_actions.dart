@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../services/database.dart';
@@ -83,15 +84,24 @@ class FriendActions {
           ),
         );
       }
+    } on TimeoutException {
+      if (!context.mounted) return;
+      if (Navigator.canPop(context)) Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Zeitüberschreitung – bitte versuche es erneut'),
+          backgroundColor: Colors.orange,
+        ),
+      );
     } catch (e) {
       if (!context.mounted) return;
       if (Navigator.canPop(context)) Navigator.pop(context);
 
-      print('Fehler in acceptFriendRequest UI: $e');
+      debugPrint('Fehler in acceptFriendRequest UI: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Timeout oder Netzwerkfehler'),
-          backgroundColor: Colors.orange,
+        const SnackBar(
+          content: Text('Netzwerkfehler – bitte versuche es erneut'),
+          backgroundColor: Colors.red,
         ),
       );
     }
@@ -135,15 +145,24 @@ class FriendActions {
           ),
         );
       }
+    } on TimeoutException {
+      if (!context.mounted) return;
+      if (Navigator.canPop(context)) Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Zeitüberschreitung – bitte versuche es erneut'),
+          backgroundColor: Colors.orange,
+        ),
+      );
     } catch (e) {
       if (!context.mounted) return;
       if (Navigator.canPop(context)) Navigator.pop(context);
 
-      print('Fehler in declineFriendRequest UI: $e');
+      debugPrint('Fehler in declineFriendRequest UI: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Timeout oder Netzwerkfehler'),
-          backgroundColor: Colors.orange,
+        const SnackBar(
+          content: Text('Netzwerkfehler – bitte versuche es erneut'),
+          backgroundColor: Colors.red,
         ),
       );
     }
@@ -246,17 +265,24 @@ class FriendActions {
             ),
           );
         }
-      } catch (e) {
-        // Loading-Dialog schließen falls noch offen
-        if (Navigator.canPop(context)) {
-          Navigator.pop(context);
-        }
-
-        print('Fehler in removeFriend UI: $e');
+      } on TimeoutException {
+        if (!context.mounted) return;
+        if (Navigator.canPop(context)) Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Timeout oder Netzwerkfehler'),
+          const SnackBar(
+            content: Text('Zeitüberschreitung – bitte versuche es erneut'),
             backgroundColor: Colors.orange,
+          ),
+        );
+      } catch (e) {
+        if (!context.mounted) return;
+        if (Navigator.canPop(context)) Navigator.pop(context);
+
+        debugPrint('Fehler in removeFriend UI: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Netzwerkfehler – bitte versuche es erneut'),
+            backgroundColor: Colors.red,
           ),
         );
       }

@@ -4,8 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:streax/Models/user.dart';
 import 'package:streax/Services/database.dart';
 import 'goal_dialogues.dart';
-import 'goal_item.dart';
-import 'dart:ui'; 
 
 class ZielePopup extends StatefulWidget {
   const ZielePopup({super.key});
