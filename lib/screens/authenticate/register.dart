@@ -31,44 +31,46 @@ class _RegisterState extends State<Register> {
 
   /// Führt die Registrierung durch und erstellt ein User-Profil
   Future<void> _performRegistration() async {
-    if (!_formKey.currentState!.validate()) return;
+  if (!_formKey.currentState!.validate()) return;
+  
+  setState(() => loading = true);
+  
+  try {
+    Map<String, dynamic> result = await _auth.registerWithEmailAndPassword(email, password);
     
-    setState(() => loading = true);
-    
-    try {
-      Map<String, dynamic> result = await _auth.registerWithEmailAndPassword(email, password);
+    if (result['success'] == true && result['user'] != null) {
       
-      if (result['success'] == true && result['user'] != null) {
-        // User-Profil in Firestore erstellen mit der UID aus der Map
-        await DatabaseService(uid: result['uid']).updateUserData(
-          'Neuer',
-          'User',
-        );
-        
-        // Zur Email-Verifizierung weiterleiten
-        if (mounted) {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => EmailVerificationScreen(
-                email: result['email'],
-                uid: result['uid'],
-              ),
-            ),
-          );
-        }
-      } else {
-        setState(() {
-          error = result['error'] ?? 'Registrierung fehlgeschlagen';
-          loading = false;
-        });
+      // Firestore-Fehler soll Registrierung NICHT blockieren
+      try {
+        await DatabaseService(uid: result['uid']).updateUserData('Neuer', 'User');
+      } catch (dbError) {
+        debugPrint('Firestore-Profil konnte nicht erstellt werden: $dbError');
+        // Kein return, kein setState(error) – weitermachen!
       }
-    } catch (e) {
+      
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => EmailVerificationScreen(
+              email: result['email'],
+              uid: result['uid'],
+            ),
+          ),
+        );
+      }
+    } else {
       setState(() {
-        error = 'Registrierung fehlgeschlagen: $e';
+        error = result['error'] ?? 'Registrierung fehlgeschlagen';
         loading = false;
       });
     }
+  } catch (e) {
+    setState(() {
+      error = 'Registrierung fehlgeschlagen: $e';
+      loading = false;
+    });
   }
+}
 
   @override
   Widget build(BuildContext context) {

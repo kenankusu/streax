@@ -1,168 +1,135 @@
 import 'package:flutter/material.dart';
-import 'package:streax/screens/shared/addActivity.dart';
-import 'package:streax/screens/journal/calendar.dart';
-import 'package:streax/screens/profile/profile.dart';
-import 'package:streax/screens/friends/feed.dart';
+import 'addActivity.dart';
+import '../Journal/calendar.dart';
+import '../Profile/profile.dart';
+import '../Friends/feed.dart';
 
-/// Hauptnavigationsleiste mit schwebendem Plus-Button
-/// Ermöglicht Navigation zwischen den fünf Hauptbereichen der App
 class NavigationsLeiste extends StatelessWidget {
   final int currentPage;
-
   const NavigationsLeiste({super.key, this.currentPage = 0});
+
+  static const _active   = Colors.white;
+  static const _inactive = Color(0xFF383C45);
+  static const _blue     = Color(0xFF2A9FFF);
+  static const _green    = Color(0xFF1CE9B0);
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        // Hauptnavigationsleiste mit abgerundeten Ecken
+        // Nav bar
         Container(
-          height: 60,
-          margin: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical:
-                15, // Von 35 auf 15 reduziert, damit die Bar etwas tiefer sitzt
-          ),
+          height: 65,
+          margin: const EdgeInsets.fromLTRB(20, 8, 20, 14),
           decoration: BoxDecoration(
-            color: colorScheme.surfaceContainer,
-            borderRadius: BorderRadius.circular(50),
-            boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 10)],
+            color: const Color(0xFF1A1D21),
+            borderRadius: BorderRadius.circular(26),
+            border: Border.all(color: const Color(0xFF252830)),
+            boxShadow: const [
+              BoxShadow(color: Colors.black38, blurRadius: 16, offset: Offset(0, 4)),
+            ],
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(50),
+            borderRadius: BorderRadius.circular(26),
             child: BottomNavigationBar(
-              backgroundColor: colorScheme.surfaceContainer,
-              selectedItemColor: Colors.white70,
-              unselectedItemColor: Colors.white70,
-              showSelectedLabels: false,
-              showUnselectedLabels: false,
-              type: BottomNavigationBarType.fixed,
-              currentIndex: currentPage,
-              iconSize: 24, // Von 26 auf 24 reduziert
-              elevation: 0,
-              onTap: (index) => _handleNavigation(context, index),
-              items: const [
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.home_outlined),
-                  activeIcon: Icon(Icons.home),
-                  label: 'Home',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.group_outlined),
-                  activeIcon: Icon(Icons.group),
-                  label: 'Freunde',
-                ),
-                BottomNavigationBarItem(
-                  // Leerer Platz für den schwebenden Plus-Button
-                  icon: SizedBox(height: 24), // Von 26 auf 24 reduziert
-                  label: 'Hinzufügen',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.calendar_month_outlined),
-                  activeIcon: Icon(Icons.calendar_month),
-                  label: 'Kalender',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.person_outline),
-                  activeIcon: Icon(Icons.person),
-                  label: 'Profil',
-                ),
-              ],
+              backgroundColor: Colors.transparent,
+                selectedItemColor: _active,
+                unselectedItemColor: _inactive,
+                showSelectedLabels: false,
+                showUnselectedLabels: false,
+                type: BottomNavigationBarType.fixed,
+                currentIndex: currentPage,
+                iconSize: 26,
+                elevation: 0,
+                onTap: (i) => _navigate(context, i),
+                items: const [
+                  BottomNavigationBarItem(
+                    icon:       Icon(Icons.home_outlined),
+                    activeIcon: Icon(Icons.home),
+                    label: 'Home',
+                  ),
+                  BottomNavigationBarItem(
+                    icon:       Icon(Icons.group_outlined),
+                    activeIcon: Icon(Icons.group),
+                    label: 'Freunde',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: SizedBox(height: 26),
+                    label: 'Hinzufügen',
+                  ),
+                  BottomNavigationBarItem(
+                    icon:       Icon(Icons.calendar_month_outlined),
+                    activeIcon: Icon(Icons.calendar_month),
+                    label: 'Kalender',
+                  ),
+                  BottomNavigationBarItem(
+                    icon:       Icon(Icons.person_outline),
+                    activeIcon: Icon(Icons.person),
+                    label: 'Profil',
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-        // Schwebender Plus-Button mit Gradient-Design
-        _buildFloatingActionButton(context),
+
+          // FAB
+          Positioned(
+            bottom: 22,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: GestureDetector(
+                onTap: () => _showAddActivity(context),
+                child: Container(
+                  width: 58,
+                  height: 58,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [_blue, _green],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: _blue.withValues(alpha: 0.35),
+                        blurRadius: 14,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(Icons.add, color: Colors.white, size: 28),
+                ),
+              ),
+            ),
+          ),
       ],
     );
   }
 
-  /// Behandelt die Navigation zwischen den verschiedenen Bereichen
-  void _handleNavigation(BuildContext context, int index) {
-    // Verhindert unnötige Navigation zur gleichen Seite
+  void _navigate(BuildContext context, int index) {
     if (index == currentPage) return;
-
     switch (index) {
       case 0:
-        // Navigation zur Startseite - alle anderen Seiten schließen
-        Navigator.of(context).popUntil((route) => route.isFirst);
-        break;
+        Navigator.of(context).popUntil((r) => r.isFirst);
       case 1:
-        // Navigation zum Freunde-Feed
-        Navigator.of(
-          context,
-        ).push(MaterialPageRoute(builder: (context) => const Feed()));
-        break;
+        Navigator.of(context).push(MaterialPageRoute(builder: (_) => const Feed()));
       case 2:
-        // Plus-Button öffnet Aktivität-Modal
-        _showAddActivityModal(context);
-        break;
+        _showAddActivity(context);
       case 3:
-        // Navigation zum Kalender
-        Navigator.of(
-          context,
-        ).push(MaterialPageRoute(builder: (context) => const calendar()));
-        break;
+        Navigator.of(context).push(MaterialPageRoute(builder: (_) => const calendar()));
       case 4:
-        // Navigation zum Profil
-        Navigator.of(
-          context,
-        ).push(MaterialPageRoute(builder: (context) => const Profile()));
-        break;
+        Navigator.of(context).push(MaterialPageRoute(builder: (_) => const Profil()));
     }
   }
 
-  /// Erstellt den schwebenden Plus-Button mit Gradient-Design
-  Widget _buildFloatingActionButton(BuildContext context) {
-    return Positioned(
-      bottom: 25, // Von 45 auf 25 reduziert
-      left: 0,
-      right: 0,
-      child: Center(
-        child: GestureDetector(
-          onTap: () => _showAddActivityModal(context),
-          child: Container(
-            width: 65, // Von 75 auf 65 reduziert
-            height: 65, // Von 75 auf 65 reduziert
-            decoration: BoxDecoration(
-              // Gradient von Blau zu Grün
-              gradient: const LinearGradient(
-                colors: [Color(0xFF1C499E), Color(0xFFB1D43A)],
-                stops: [0.35, 1.0],
-                begin: Alignment.bottomLeft,
-                end: Alignment.topRight,
-              ),
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF4A90E2).withValues(alpha: 0.3),
-                  blurRadius: 12,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
-            child: const Icon(Icons.add, color: Colors.white, size: 40),
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// Zeigt das Modal zum Hinzufügen einer neuen Aktivität
-  void _showAddActivityModal(BuildContext context) {
+  void _showAddActivity(BuildContext context) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => AktivitaetHinzufuegen(
-        onSaved: () {
-          // Callback für erfolgreiche Aktivität-Speicherung
-          // Navigation wird vom Modal selbst gehandhabt
-        },
-      ),
+      builder: (_) => AktivitaetHinzufuegen(onSaved: () {}),
     );
   }
 }

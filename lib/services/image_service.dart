@@ -135,6 +135,40 @@ class ImageService {
     return downloadURL;
   }
 
+  Future<String?> uploadActivityImage(String uid, XFile imageFile) async {
+    try {
+      String extension = 'jpg';
+      if (imageFile.name.contains('.')) {
+        extension = imageFile.name.split('.').last.toLowerCase();
+      }
+      if (!_isAllowedImageFormat(extension)) return null;
+
+      final String fileName =
+          'activity_images/$uid/${DateTime.now().millisecondsSinceEpoch}';
+      final Reference ref = _storage.ref().child(fileName);
+
+      late UploadTask uploadTask;
+      if (kIsWeb) {
+        final Uint8List bytes = await imageFile.readAsBytes();
+        uploadTask = ref.putData(
+          bytes,
+          SettableMetadata(contentType: _getContentType(extension)),
+        );
+      } else {
+        final File file = File(imageFile.path);
+        uploadTask = ref.putFile(
+          file,
+          SettableMetadata(contentType: _getContentType(extension)),
+        );
+      }
+
+      final TaskSnapshot snapshot = await uploadTask;
+      return await snapshot.ref.getDownloadURL();
+    } catch (e) {
+      return null;
+    }
+  }
+
   // Altes Profilbild löschen (optional für Speicherplatz-Optimierung)
   Future<bool> deleteProfileImage(String uid) async {
     try {

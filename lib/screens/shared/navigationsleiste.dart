@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'journal.dart';
+import 'Journal.dart';
 
 class NavigationsLeiste extends StatelessWidget {
   final int currentPage;
@@ -30,12 +30,19 @@ class NavigationsLeiste extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(30),
-        child: BottomNavigationBar(
+        child: Theme(
+          data: Theme.of(context).copyWith(
+            splashColor: Colors.transparent,
+            highlightColor: Colors.transparent,
+            hoverColor: Colors.transparent,
+          ),
+          child: BottomNavigationBar(
           backgroundColor: colorScheme.surfaceContainer,
           selectedItemColor: colorScheme.primary,
           unselectedItemColor: Colors.white,
           showSelectedLabels: false,
           showUnselectedLabels: false,
+          elevation: 0,
           type: BottomNavigationBarType.fixed,
           currentIndex: currentPage,
           onTap: (index) {
@@ -80,6 +87,7 @@ class NavigationsLeiste extends StatelessWidget {
               label: 'Einstellungen',
             ),
           ],
+        ),
         ),
       ),
     );
