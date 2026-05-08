@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:streax/Services/database.dart';
+import 'package:streax/services/database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:streax/Screens/Shared/snackbar.dart';
+import 'package:streax/screens/shared/snackbar.dart';
 import 'package:flutter/cupertino.dart';
 
 const List<String> goalTypes = [

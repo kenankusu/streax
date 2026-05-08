@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'services/firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:streax/Screens/splashscreen.dart'; 
+import 'package:streax/screens/shared/splashscreen.dart';
 import 'package:streax/services/database.dart';
 
 void main() async {

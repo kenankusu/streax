@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
-import 'package:streax/Screens/Home/Goals/goals.dart'; 
-import 'package:streax/Models/user.dart';
+import 'package:streax/screens/Home/Goals/goals.dart'; 
+import 'package:streax/screens/shared/user.dart';
 import 'head.dart';
 import 'journal.dart';
-import '../Shared/navigationbar.dart';
+import '../shared/navigationbar.dart';
 import '../Journal/calendar.dart';
-import '../../Services/database.dart';
+import '../../services/database.dart';
 import 'Goals/progress_indicators.dart';
 import '../Friends/feed.dart';
-import '../../utils/sport_utils.dart';
+import '../shared/sport_utils.dart';
 
 class Homepage extends StatelessWidget {
   final int streakWert = 25;
@@ -165,32 +165,12 @@ class Homepage extends StatelessWidget {
                             final data = goal.data() as Map<String, dynamic>;
                             return Padding(
                               padding: const EdgeInsets.only(bottom: 16),
-                              child: Fortschrittsbalken(
-                                label: _getGoalDisplayName(data),
-                                fortschritt: _calculateProgress(data),
-                              ),
+                              child: GoalIndicator(data, context),
                             );
-                          },
-                          child: Row(
-                            children: [
-                              Text(
-                                "Deine Woche",
-                                style: Theme.of(context).textTheme.headlineMedium,
-                              ),
-                              SizedBox(width: 2),
-                              Icon(
-                                Icons.chevron_right,
-                                color: Colors.white,
-                                size: 32,
-                              ),
-                            ],
-                          ),
-                        ),
-                        SizedBox(height: 30),
-                        Journal(),
-                      ],
+                          }).toList(),
+                        );
+                      },
                     ),
-                  ),
 
                   // Feed-Bereich
                   Padding(
@@ -222,7 +202,7 @@ class Homepage extends StatelessWidget {
                           ),
                         ),
                         SizedBox(height: 20),
-                        HomepageFeed(userUid: user.uid),
+                        HomeFeedPreview(userId: user.uid),
                       ],
                     ),
                   ),

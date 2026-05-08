@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'Journal.dart';
+import 'addActivity.dart';
 
 class NavigationsLeiste extends StatelessWidget {
   final int currentPage;
@@ -48,11 +48,14 @@ class NavigationsLeiste extends StatelessWidget {
           onTap: (index) {
             // Wenn der Add-Button geklickt wurde
             if (index == 2) {
-              // Direkter Aufruf des Dialogs zum Hinzufügen einer Aktivität
-              showJournalContextMenu(context, () {
-                // Nach dem Hinzufügen den UI-Status aktualisieren
-                onPageChanged(currentPage); // Beim aktuellen Tab bleiben
-              });
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                builder: (_) => AktivitaetHinzufuegen(onSaved: () {
+                  onPageChanged(currentPage);
+                }),
+              );
             } else {
               onPageChanged(index);
             }

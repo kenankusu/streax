@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:async';
 import '../../services/database.dart';
-import '../../utils/sport_utils.dart';
+import '../shared/sport_utils.dart';
 import 'friend_actions.dart';
 import 'profile_view.dart';
 
@@ -95,7 +95,7 @@ class _FriendsSlideInViewState extends State<FriendsSlideInView> {
         _loadAll();
       }
     });
-    _loadAllData();
+    _loadAll();
   }
 
   @override
@@ -541,7 +541,7 @@ class _FriendCard extends StatelessWidget {
                   ),
                 ),
                 GestureDetector(
-                  onTap: () => FriendActions.removeFriend(context, user),
+                  onTap: () => FriendActions.removeFriend(context, user, FirebaseAuth.instance.currentUser?.uid ?? ''),
                   behavior: HitTestBehavior.opaque,
                   child: _rankPill(_rankLabel(rank), style['pillBg'] as Color, style['pillText'] as Color, style['pillBorder'] as Color),
                 ),

@@ -2,18 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:streax/screens/profile/profile_widgets.dart';
-import 'package:streax/screens/profile/sport_editing.dart';
-import 'package:streax/screens/profile/delete_account.dart';
-
-import 'package:streax/Models/user.dart';
-import 'package:streax/Services/auth.dart';
-import 'package:streax/Services/database.dart';
-import '../Shared/navigationbar.dart';
+import 'package:streax/screens/shared/user.dart';
+import 'package:streax/services/auth.dart';
+import 'package:streax/services/database.dart';
+import '../shared/navigationbar.dart';
 import 'profile_widgets.dart';
 import 'sport_editing.dart';
 import 'delete_account.dart';
-import '../../utils/sport_utils.dart';
+import '../shared/sport_utils.dart';
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const _bg       = Color(0xFF111214);
@@ -38,7 +34,7 @@ class Profil extends StatefulWidget {
   const Profil({super.key});
 
   @override
-  State<Profile> createState() => _ProfileState();
+  State<Profil> createState() => _ProfilState();
 }
 
 class _ProfilState extends State<Profil> {

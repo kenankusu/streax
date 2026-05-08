@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'profile_editing.dart';
 import '../../services/image_service.dart';
-import '../../utils/snackbar.dart';
+import '../shared/snackbar.dart';
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const _heroBg  = Color(0xFF0D0F11);

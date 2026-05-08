@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../Shared/navigationbar.dart';
+import '../shared/navigationbar.dart';
 import '../../services/database.dart';
 import 'friend_actions.dart';
 import 'dart:async';
 import 'friends_list.dart';
 import 'profile_view.dart';
-import '../../utils/sport_utils.dart';
+import '../shared/sport_utils.dart';
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const _bg       = Color(0xFF111214);
@@ -807,7 +807,6 @@ class _ActivityCardState extends State<ActivityCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             // ── Repost header ─────────────────────────────────────────────
             if (isRepost)
               Padding(
@@ -872,6 +871,8 @@ class _ActivityCardState extends State<ActivityCard> {
                         ),
                     ],
                   ),
+                  
+              
 
                   const SizedBox(width: 10),
 
@@ -1073,227 +1074,8 @@ class _ActivityCardState extends State<ActivityCard> {
                                   ],
                                 ),
                               ),
-                              // Erweiterte Suchansicht - zeigt Suchergebnisse unter dem Suchfeld an
-                              if (_isSearchExpanded &&
-                                  _searchQuery.isNotEmpty) ...[
-                                Container(
-                                  width: double.infinity,
-                                  height: 1,
-                                  color: Colors.white.withOpacity(0.1),
-                                ),
-                                Container(
-                                  padding: EdgeInsets.all(16),
-                                  child: _isSearching
-                                      ? Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            SizedBox(
-                                              width: 20,
-                                              height: 20,
-                                              child: CircularProgressIndicator(
-                                                color: Theme.of(
-                                                  context,
-                                                ).colorScheme.primary,
-                                                strokeWidth: 2,
-                                              ),
-                                            ),
-                                            SizedBox(width: 12),
-                                            Text(
-                                              'Suche nach "$_searchQuery"...',
-                                              style: TextStyle(
-                                                color: Colors.white70,
-                                                fontSize: 14,
-                                              ),
-                                            ),
-                                          ],
-                                        )
-                                      : _exactMatch != null
-                                      ? Row(
-                                          children: [
-                                            CircleAvatar(
-                                              radius: 20,
-                                              backgroundColor: Colors.grey[300],
-                                              backgroundImage:
-                                                  _exactMatch!['profileImageUrl'] !=
-                                                          null &&
-                                                      _exactMatch!['profileImageUrl']
-                                                          .toString()
-                                                          .isNotEmpty
-                                                  ? NetworkImage(
-                                                      _exactMatch!['profileImageUrl'],
-                                                    )
-                                                  : null,
-                                              child:
-                                                  _exactMatch!['profileImageUrl'] ==
-                                                          null ||
-                                                      _exactMatch!['profileImageUrl']
-                                                          .toString()
-                                                          .isEmpty
-                                                  ? Icon(
-                                                      Icons.person,
-                                                      color: Colors.grey[600],
-                                                      size: 24,
-                                                    )
-                                                  : null,
-                                            ),
-
-                                            SizedBox(width: 12),
-
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    '${_exactMatch!['firstName']} ${_exactMatch!['lastName']}'
-                                                        .trim(),
-                                                    style: TextStyle(
-                                                      color: Colors.white,
-                                                      fontSize: 14,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                  Text(
-                                                    '@${_exactMatch!['username']}',
-                                                    style: TextStyle(
-                                                      color: Colors.white70,
-                                                      fontSize: 12,
-                                                    ),
-                                                  ),
-                                                  if (_exactMatch!['streak'] >
-                                                      0)
-                                                    Text(
-                                                      '🔥 ${_exactMatch!['streak']} Tag${_exactMatch!['streak'] == 1 ? '' : 'e'} Streak',
-                                                      style: TextStyle(
-                                                        color: Theme.of(
-                                                          context,
-                                                        ).colorScheme.primary,
-                                                        fontSize: 10,
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                      ),
-                                                    ),
-                                                ],
-                                              ),
-                                            ),
-
-                                            // Dynamischer Button: Freund hinzufügen / Anfrage gesendet / Bereits Freund
-                                            Container(
-                                              width: 35,
-                                              height: 35,
-                                              decoration: BoxDecoration(
-                                                gradient: _isAlreadyFriend
-                                                    ? LinearGradient(
-                                                        colors: [
-                                                          Color(0xFF4CAF50),
-                                                          Color(0xFF66BB6A),
-                                                        ],
-                                                        begin: Alignment
-                                                            .centerLeft,
-                                                        end: Alignment
-                                                            .centerRight,
-                                                      )
-                                                    : _requestSent
-                                                    ? null
-                                                    : LinearGradient(
-                                                        colors: [
-                                                          Theme.of(
-                                                            context,
-                                                          ).colorScheme.primary,
-                                                          Theme.of(context)
-                                                              .colorScheme
-                                                              .secondary,
-                                                        ],
-                                                        begin: Alignment
-                                                            .centerLeft,
-                                                        end: Alignment
-                                                            .centerRight,
-                                                      ),
-                                                color: _requestSent
-                                                    ? Colors.grey
-                                                    : null,
-                                                borderRadius:
-                                                    BorderRadius.circular(17.5),
-                                                boxShadow: _isAlreadyFriend
-                                                    ? [
-                                                        BoxShadow(
-                                                          color: Color(
-                                                            0xFF4CAF50,
-                                                          ).withOpacity(0.3),
-                                                          blurRadius: 4,
-                                                          offset: Offset(0, 2),
-                                                        ),
-                                                      ]
-                                                    : null,
-                                              ),
-                                              child: IconButton(
-                                                onPressed:
-                                                    (_isAlreadyFriend ||
-                                                        _requestSent)
-                                                    ? null
-                                                    : () {
-                                                        setState(() {
-                                                          _requestSent = true;
-                                                        });
-
-                                                        FriendActions.sendFriendRequest(
-                                                          context,
-                                                          _exactMatch!,
-                                                          () {
-                                                            ScaffoldMessenger.of(
-                                                              context,
-                                                            ).showSnackBar(
-                                                              SnackBar(
-                                                                content: Text(
-                                                                  'Freundschaftsanfrage gesendet!',
-                                                                ),
-                                                                backgroundColor:
-                                                                    Colors
-                                                                        .green,
-                                                              ),
-                                                            );
-                                                          },
-                                                        );
-                                                      },
-                                                icon: Icon(
-                                                  _isAlreadyFriend
-                                                      ? Icons.check
-                                                      : _requestSent
-                                                      ? Icons.hourglass_empty
-                                                      : Icons.person_add,
-                                                  color: Colors.white,
-                                                  size: 18,
-                                                ),
-                                                padding: EdgeInsets.zero,
-                                              ),
-                                            ),
-                                          ],
-                                        )
-                                      : Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Icon(
-                                              Icons.search_off,
-                                              color: Colors.white70,
-                                              size: 20,
-                                            ),
-                                            SizedBox(width: 8),
-                                            Text(
-                                              'Kein User mit diesem Namen gefunden',
-                                              style: TextStyle(
-                                                color: Colors.white70,
-                                                fontSize: 14,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                ),
-                              ],
                             ],
-                          ),
+                          ],
                         ),
                       ),
                     ),
@@ -1323,17 +1105,9 @@ class _ActivityCardState extends State<ActivityCard> {
                   ),
                 ],
               ),
-            ],
-          ),
-
-          // Navigation Bar am unteren Rand
-          const Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: NavigationsLeiste(currentPage: 1),
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }

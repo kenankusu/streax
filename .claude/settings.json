@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C streax status)",
+      "Bash(git -C streax add macos/Flutter/GeneratedPluginRegistrant.swift)",
+      "Bash(git -C streax commit -m \"GeneratedPluginRegistrant update\")",
+      "Bash(git -C streax pull origin review -X ours --no-edit)",
+      "Bash(git -C streax push origin review)",
+      "Bash(git -C streax pull origin review --no-edit)",
+      "Bash(git -C /c/Users/kenan/Desktop/streax/streax-1 rm --cached streax)",
+      "Bash(git -C /c/Users/kenan/Desktop/streax/streax-1 add .gitignore)",
+      "Bash(git -C /c/Users/kenan/Desktop/streax/streax-1 commit -m \"streax/ aus Git entfernt und zu .gitignore hinzugefügt\")",
+      "Bash(rm -rf /c/Users/kenan/Desktop/streax/streax-1/streax/)",
+      "Bash(flutter analyze *)",
+      "Bash(sed -i \"s|../../utils/sport_utils.dart|../shared/sport_utils.dart|g\" /c/Users/kenan/Desktop/streax/streax-1/lib/screens/Friends/friends_list.dart)",
+      "Bash(sed -i \"s|../../utils/sport_utils.dart|../shared/sport_utils.dart|g\" /c/Users/kenan/Desktop/streax/streax-1/lib/screens/Friends/profile_view.dart)",
+      "Bash(sed -i \"s|package:streax/Models/user.dart|package:streax/screens/shared/user.dart|g\" /c/Users/kenan/Desktop/streax/streax-1/lib/screens/Home/homepage.dart)",
+      "Bash(sed -i \"s|../Shared/navigationbar.dart|../shared/navigationbar.dart|g\" /c/Users/kenan/Desktop/streax/streax-1/lib/screens/Home/homepage.dart)",
+      "Bash(sed -i \"s|../../Services/database.dart|../../services/database.dart|g\" /c/Users/kenan/Desktop/streax/streax-1/lib/screens/Home/homepage.dart)"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\kenan\\Desktop\\streax\\streax-1\\streax\\"
+    ]
+  }
+}

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:streax/Models/user.dart';
-import 'package:streax/Screens/Home/homepage.dart';
-import 'package:streax/Screens/Authenticate/email_verification_screen.dart';
-import 'package:streax/Services/auth.dart';
+import 'package:streax/screens/shared/user.dart';
+import 'package:streax/screens/Home/homepage.dart';
+import 'package:streax/screens/authenticate/email_verification_screen.dart';
+import 'package:streax/services/auth.dart';
 import 'package:provider/provider.dart';
 import 'package:streax/screens/authenticate/authenticate.dart';
 import 'dart:async';
