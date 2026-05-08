@@ -2,7 +2,17 @@
   "permissions": {
     "allow": [
       "Bash(git add *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(git checkout *)",
+      "Bash(git stash *)",
+      "Bash(git merge *)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(Remove-Item -Force \".claude/settings.local.json\" -ErrorAction SilentlyContinue)",
+      "Bash(rm -f \".claude/settings.local.json\" && git merge main -X theirs --no-edit)",
+      "Bash(git push *)"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\kenan\\Desktop\\streax\\streax-1\\.claude"
     ]
   }
 }
