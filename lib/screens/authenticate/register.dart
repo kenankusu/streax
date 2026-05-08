@@ -26,12 +26,22 @@ class _RegisterState extends State<Register> {
   String password = '';
   String error = '';
 
+  // Einwilligungen (DSGVO-Pflicht)
+  bool _privacyAccepted = false;
+  bool _healthDataAccepted = false;
+  bool _ageConfirmed = false;
+
   // Controller für den PageView
   final PageController _controller = PageController();
 
   /// Führt die Registrierung durch und erstellt ein User-Profil
   Future<void> _performRegistration() async {
   if (!_formKey.currentState!.validate()) return;
+
+  if (!_privacyAccepted || !_healthDataAccepted || !_ageConfirmed) {
+    setState(() => error = 'Bitte alle Einwilligungen bestätigen.');
+    return;
+  }
   
   setState(() => loading = true);
   
@@ -71,6 +81,69 @@ class _RegisterState extends State<Register> {
     });
   }
 }
+
+  void _showPrivacyPolicy(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1D21),
+        title: const Text('Datenschutzerklärung', style: TextStyle(color: Colors.white)),
+        content: SingleChildScrollView(
+          child: Text(
+            'Verantwortlicher: <Kenan Kusu>\n\n'
+            'Wir verarbeiten folgende personenbezogene Daten:\n'
+            '• E-Mail-Adresse, Vorname, Nachname, Nutzername\n'
+            '• Körperdaten: Gewicht, Größe, Geburtsdatum\n'
+            '• Aktivitätsdaten: Sportart, Dauer, Distanz, Stimmung\n'
+            '• Profilbild und Aktivitätsfotos\n\n'
+            'Rechtsgrundlage: Einwilligung (Art. 6 Abs. 1 lit. a DSGVO) sowie '
+            'Vertragserfüllung (Art. 6 Abs. 1 lit. b DSGVO).\n\n'
+            'Gesundheitsdaten werden ausschließlich zur Bereitstellung der App-Funktionen '
+            'verarbeitet (Art. 9 Abs. 2 lit. a DSGVO).\n\n'
+            'Drittanbieter: Firebase (Google Ireland Ltd.) als Auftragsverarbeiter '
+            'für Authentifizierung, Datenbank und Dateispeicherung.\n\n'
+            'Deine Rechte: Auskunft, Berichtigung, Löschung, Einschränkung, '
+            'Datenübertragbarkeit und Widerspruch jederzeit per E-Mail an '
+            'kenan.kusu@gmail.com\n\n'
+            'Account und alle Daten können jederzeit in den Profileinstellungen '
+            'vollständig gelöscht werden.',
+            style: const TextStyle(color: Colors.white70, fontSize: 13, height: 1.5),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Schließen', style: TextStyle(color: Theme.of(context).colorScheme.primary)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _consentCheckbox({
+    required bool value,
+    required ValueChanged<bool?> onChanged,
+    required Widget child,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 24,
+          height: 24,
+          child: Checkbox(
+            value: value,
+            onChanged: onChanged,
+            activeColor: Theme.of(context).colorScheme.primary,
+            side: const BorderSide(color: Colors.white38),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(child: Padding(padding: const EdgeInsets.only(top: 2), child: child)),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -169,8 +242,65 @@ class _RegisterState extends State<Register> {
                                           validator: (val) => val!.length < 10 ? 'Passwort muss mindestens 10 Zeichen lang sein' : null,
                                           onChanged: (val) => setState(() => password = val),
                                         ),
-                                        const SizedBox(height: 30.0),
-                                        
+                                        const SizedBox(height: 20.0),
+
+                                        // Einwilligungen (DSGVO)
+                                        _consentCheckbox(
+                                          value: _privacyAccepted,
+                                          onChanged: (v) => setState(() => _privacyAccepted = v ?? false),
+                                          child: RichText(
+                                            text: TextSpan(
+                                              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white70),
+                                              children: [
+                                                const TextSpan(text: 'Ich habe die '),
+                                                WidgetSpan(
+                                                  child: GestureDetector(
+                                                    onTap: () => _showPrivacyPolicy(context),
+                                                    child: Text(
+                                                      'Datenschutzerklärung',
+                                                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                                        color: Theme.of(context).colorScheme.primary,
+                                                        decoration: TextDecoration.underline,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                const TextSpan(text: ' gelesen und stimme zu. *'),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 10.0),
+
+                                        _consentCheckbox(
+                                          value: _healthDataAccepted,
+                                          onChanged: (v) => setState(() => _healthDataAccepted = v ?? false),
+                                          child: Text(
+                                            'Ich willige in die Verarbeitung meiner Gesundheitsdaten (Gewicht, Größe, Geburtsdatum) zur Nutzung der App ein. *',
+                                            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white70),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 10.0),
+
+                                        _consentCheckbox(
+                                          value: _ageConfirmed,
+                                          onChanged: (v) => setState(() => _ageConfirmed = v ?? false),
+                                          child: Text(
+                                            'Ich bestätige, dass ich mindestens 16 Jahre alt bin. *',
+                                            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white70),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8.0),
+                                        Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: Text(
+                                            '* Pflichtfelder',
+                                            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white38, fontSize: 11),
+                                          ),
+                                        ),
+
+                                        const SizedBox(height: 20.0),
+
                                         // Registrierungs-Button mit Gradient
                                         Align(
                                           alignment: Alignment.center,
