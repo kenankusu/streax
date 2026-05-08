@@ -1,19 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:streax/services/database.dart';
-import 'package:streax/screens/shared/snackbar.dart';
+import 'package:streax/Services/database.dart';
+import '../../utils/snackbar.dart';
+import '../../utils/sport_utils.dart';
 
 // Sportart auswählen
 
 class SportSelectionDialog {
-  static const List<String> availableSports = [
-      'Krafttraining',
-      'Laufen',
-      'Tischtennis',
-      'Boxen',
-      'Fussball',
-  ];
+  static List<String> get availableSports => kAllSports;
 
   static void show(
     BuildContext context,
@@ -39,10 +34,6 @@ class SportSelectionDialog {
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  Text(
-                    'Wähle Sportarten, die du regelmäßig machst:',
-                    style: TextStyle(color: Colors.grey[300]),
-                  ),
                   const SizedBox(height: 16),
                   ...availableSports.map(
                     (sport) => CheckboxListTile(
@@ -161,50 +152,27 @@ class SportIcon extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: GestureDetector(
         onLongPress: () => _showRemoveSportDialog(context, sportName),
-        child: Column(
-          children: [
-            Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                gradient: LinearGradient(
-                  colors: [Color(0xFF1C499E), Color(0xFFB1D43A)],
-                  stops: [0.35, 1.0],
-                  begin: Alignment.bottomLeft,
-                  end: Alignment.topRight,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+          decoration: BoxDecoration(
+            color: const Color(0xFF161920),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: const Color(0xFF252830)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(sportEmoji(sportName), style: const TextStyle(fontSize: 22)),
+              const SizedBox(height: 5),
+              Text(
+                sportName.length > 8 ? '${sportName.substring(0, 7)}.' : sportName,
+                style: const TextStyle(
+                  fontSize: 9, fontWeight: FontWeight.w700,
+                  letterSpacing: 0.4, color: Color(0xFF555555),
                 ),
               ),
-              child: Container(
-                margin: const EdgeInsets.all(3), // Border thickness
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
-                  borderRadius: BorderRadius.circular(9), // 12 - border thickness
-                ),
-                child: Center(
-                  child: Text(
-                    sportName.substring(0, 1).toUpperCase(),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              sportName,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                fontSize: 10,
-                color: Colors.grey[400],
-              ),
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

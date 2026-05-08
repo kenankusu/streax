@@ -1,47 +1,67 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
-// Klasse für einheitliche SnackBar in der gesamten App
 class SnackBarUtils {
-  // Zeigt eine grüne Erfolgs SnackBar an
-  static void showSuccess(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.green,
-        duration: const Duration(seconds: 3),
-      ),
-    );
+  static void showSuccess(BuildContext context, String message) =>
+      _show(context, message, Icons.check_circle_outline_rounded,
+            const Color(0xFF1CE9B0), const Duration(seconds: 3));
+
+  static void showError(BuildContext context, String message) =>
+      _show(context, message, Icons.error_outline_rounded,
+            const Color(0xFFFF4455), const Duration(seconds: 4));
+
+  static void showWarning(BuildContext context, String message) =>
+      _show(context, message, Icons.warning_amber_rounded,
+            const Color(0xFFF0A020), const Duration(seconds: 3));
+
+  static void showInfo(BuildContext context, String message) =>
+      _show(context, message, Icons.info_outline_rounded,
+            const Color(0xFF2A9FFF), const Duration(seconds: 3));
+
+  static void _show(BuildContext context, String message, IconData icon,
+      Color accent, Duration duration) {
+    ScaffoldMessenger.of(context)
+      ..clearSnackBars()
+      ..showSnackBar(_build(message, icon, accent, duration));
   }
 
-  // Zeigt eine rote Fehler SnackBar an
-  static void showError(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-        duration: const Duration(seconds: 4),
+  static SnackBar _build(
+      String message, IconData icon, Color accent, Duration duration) {
+    return SnackBar(
+      duration: duration,
+      behavior: SnackBarBehavior.floating,
+      backgroundColor: const Color(0xFF1A1D21),
+      elevation: 0,
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+      padding: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: BorderSide(color: accent.withValues(alpha: 0.3)),
       ),
-    );
-  }
-
-  // Zeigt eine gelbe Warn SnackBar an
-  static void showWarning(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.orange,
-        duration: const Duration(seconds: 3),
-      ),
-    );
-  }
-
-  // Zeigt eine blaue Info SnackBar an
-  static void showInfo(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.blue,
-        duration: const Duration(seconds: 3),
+      content: ClipRRect(
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border(left: BorderSide(color: accent, width: 3)),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+          child: Row(
+            children: [
+              Icon(icon, color: accent, size: 18),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  message,
+                  style: GoogleFonts.barlow(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
