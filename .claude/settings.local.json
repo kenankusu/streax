@@ -9,7 +9,8 @@
       "Bash(echo \"exit: $?\")",
       "Bash(Remove-Item -Force \".claude/settings.local.json\" -ErrorAction SilentlyContinue)",
       "Bash(rm -f \".claude/settings.local.json\" && git merge main -X theirs --no-edit)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(git pull *)"
     ],
     "additionalDirectories": [
       "C:\\Users\\kenan\\Desktop\\streax\\streax-1\\.claude"
