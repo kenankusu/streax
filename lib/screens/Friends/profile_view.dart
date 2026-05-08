@@ -1,8 +1,10 @@
+import 'package:streax/shared/utils/level_utils.dart';
+import 'package:streax/shared/constants/theme_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../shared/sport_utils.dart';
+import '../../shared/constants/sport_utils.dart';
 import 'friend_actions.dart';
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
@@ -16,19 +18,8 @@ const _fire     = Color(0xFFFF6030);
 const _orange   = Color(0xFFF0A020);
 const _secLbl   = Color(0xFF3A7A9A);
 
-// Sport chip palette (cycling)
-const _chipPalette = [
-  {'border': Color(0xFFF0A020), 'bg': Color(0xFF231800), 'letter': Color(0xFFF0A020), 'name': Color(0xFF8A5A10)},
-  {'border': Color(0xFF7C5FDC), 'bg': Color(0xFF1A1230), 'letter': Color(0xFF7C5FDC), 'name': Color(0xFF4A3890)},
-  {'border': Color(0xFF1CE9B0), 'bg': Color(0xFF0B2620), 'letter': Color(0xFF1CE9B0), 'name': Color(0xFF0E7050)},
-  {'border': Color(0xFF2A9FFF), 'bg': Color(0xFF0B2233), 'letter': Color(0xFF2A9FFF), 'name': Color(0xFF1A6090)},
-];
 
 // ─── Level helpers (same as profile.dart) ────────────────────────────────────
-int _level(int streakMax) => ((streakMax * 10) / 100).floor() + 1;
-double _xpProgress(int streakMax) => ((streakMax * 10) % 100 / 100.0).clamp(0.0, 1.0);
-int _xp(int streakMax) => streakMax * 10;
-int _nextXp(int streakMax) => _level(streakMax) * 100;
 
 String _initials(Map u) {
   final f = (u['firstName'] ?? '').toString();
@@ -112,10 +103,10 @@ class ProfileView extends StatelessWidget {
             final imgUrl    = (merged['profileImageUrl'] ?? '').toString();
             final name      = '${merged['firstName'] ?? ''} ${merged['lastName'] ?? ''}'.trim();
             final handle    = merged['username'] ?? '';
-            final lv        = _level(streakMax);
-            final xpVal     = _xp(streakMax);
-            final xpNext    = _nextXp(streakMax);
-            final xpProg    = _xpProgress(streakMax);
+            final lv        = getLevel(streakMax);
+            final xpVal     = getXp(streakMax);
+            final xpNext    = getNextXp(streakMax);
+            final xpProg    = getXpProgress(streakMax);
             final diff      = streak - myStreak;
 
             return Column(
@@ -530,7 +521,7 @@ class ProfileView extends StatelessWidget {
       scrollDirection: Axis.horizontal,
       child: Row(
         children: sports.asMap().entries.map((e) {
-          final colors = _chipPalette[e.key % _chipPalette.length];
+          final colors = kChipPalette[e.key % kChipPalette.length];
           final s = e.value;
           return Container(
             margin: const EdgeInsets.only(right: 8),

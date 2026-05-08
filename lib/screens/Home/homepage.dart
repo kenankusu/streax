@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 import 'package:streax/screens/Home/Goals/goals.dart'; 
-import 'package:streax/screens/shared/user.dart';
+import 'package:streax/models/user.dart';
 import 'head.dart';
 import 'journal.dart';
-import '../shared/navigationbar.dart';
+import '../../shared/widgets/navigation_bar.dart';
 import '../Journal/calendar.dart';
 import '../../services/database.dart';
 import 'Goals/progress_indicators.dart';
 import '../Friends/feed.dart';
-import '../shared/sport_utils.dart';
+import '../../shared/constants/sport_utils.dart';
 
 class Homepage extends StatelessWidget {
   final int streakWert = 25;

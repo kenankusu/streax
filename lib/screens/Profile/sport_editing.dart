@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:streax/services/database.dart';
-import '../shared/snackbar.dart';
-import '../shared/sport_utils.dart';
+import '../../shared/utils/snackbar.dart';
+import '../../shared/constants/sport_utils.dart';
 
 // Sportart auswählen
 

@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:async';
 import '../../services/database.dart';
-import '../shared/sport_utils.dart';
+import '../../shared/constants/sport_utils.dart';
 import 'friend_actions.dart';
 import 'profile_view.dart';
 

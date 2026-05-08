@@ -1,10 +1,11 @@
+import 'package:streax/shared/utils/level_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'profile_editing.dart';
 import '../../services/image_service.dart';
-import '../shared/snackbar.dart';
+import '../../shared/utils/snackbar.dart';
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const _heroBg  = Color(0xFF0D0F11);
@@ -14,27 +15,6 @@ const _btnLine = Color(0xFF252830);
 const _blue    = Color(0xFF2A9FFF);
 const _green   = Color(0xFF1CE9B0);
 const _orange  = Color(0xFFF0A020);
-
-// ─── Level helpers ────────────────────────────────────────────────────────────
-int _getLevel(int streakMax) {
-  final xp = streakMax * 10;
-  return (xp / 100).floor() + 1;
-}
-
-double _getXpProgress(int streakMax) {
-  final xp = streakMax * 10;
-  return ((xp % 100) / 100.0).clamp(0.0, 1.0);
-}
-
-int _getXp(int streakMax)     => streakMax * 10;
-int _getNextXp(int streakMax) => (_getLevel(streakMax)) * 100;
-
-String _getRank(int level) {
-  if (level >= 9) return 'Legend';
-  if (level >= 6) return 'Pro';
-  if (level >= 3) return 'Amateur';
-  return 'Rookie';
-}
 
 // ─── ProfileHeroSection ───────────────────────────────────────────────────────
 class ProfileHeroSection extends StatefulWidget {
@@ -115,11 +95,11 @@ class _ProfileHeroSectionState extends State<ProfileHeroSection> {
     final lastName   = widget.userData['lastName']  ?? '';
     final username   = widget.userData['username']  ?? '';
     final streakMax  = widget.userData['streak_max'] as int? ?? 0;
-    final level      = _getLevel(streakMax);
-    final rank       = _getRank(level);
-    final xp         = _getXp(streakMax);
-    final nextXp     = _getNextXp(streakMax);
-    final progress   = _getXpProgress(streakMax);
+    final level      = getLevel(streakMax);
+    final rank       = getRank(level);
+    final xp         = getXp(streakMax);
+    final nextXp     = getNextXp(streakMax);
+    final progress   = getXpProgress(streakMax);
     final statusBarH = MediaQuery.of(context).padding.top;
 
     return SizedBox(

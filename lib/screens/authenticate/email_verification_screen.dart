@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:streax/screens/shared/splashscreen.dart';
+import 'package:streax/shared/widgets/splash_screen.dart';
 import 'package:streax/services/auth.dart';
 import 'package:streax/screens/welcome/welcome.dart';
-import 'package:streax/screens/shared/snackbar.dart';
+import 'package:streax/shared/utils/snackbar.dart';
 import 'dart:async';
 
 /// Screen für die Email-Verifizierung nach der Registrierung

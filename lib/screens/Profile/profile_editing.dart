@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:streax/services/database.dart';
-import 'package:streax/screens/shared/snackbar.dart';
+import 'package:streax/shared/utils/snackbar.dart';
 
 class EditProfileDialog {
   // Mappings für Geschlecht

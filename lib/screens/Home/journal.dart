@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import '../shared/sport_utils.dart';
+import '../../shared/constants/sport_utils.dart';
 
 /// Widget für die Wochenansicht der Journal-Einträge
 class Journal extends StatelessWidget {

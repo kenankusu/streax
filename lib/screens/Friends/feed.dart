@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../shared/navigationbar.dart';
+import '../../shared/widgets/navigation_bar.dart';
 import '../../services/database.dart';
 import 'friend_actions.dart';
 import 'dart:async';
 import 'friends_list.dart';
 import 'profile_view.dart';
-import '../shared/sport_utils.dart';
+import '../../shared/constants/sport_utils.dart';
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const _bg       = Color(0xFF111214);

@@ -6,7 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../services/database.dart';
 import '../../services/image_service.dart';
-import './sport_utils.dart';
+import '../constants/sport_utils.dart';
 import 'activity_confirmation.dart';
 
 // ─── Design tokens ────────────────────────────────────────────────────────────

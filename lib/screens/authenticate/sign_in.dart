@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:streax/screens/shared/loading.dart';
+import 'package:streax/shared/widgets/loading.dart';
 import 'package:streax/services/auth.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:streax/screens/authenticate/password_reset_dialog.dart';

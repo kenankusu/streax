@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';  // Diesen Import hinzufügen
 import 'package:streax/services/database.dart';
-import 'package:streax/screens/shared/splashscreen.dart'; // Für Wrapper-Navigation nach Profilanlage
+import 'package:streax/shared/widgets/splash_screen.dart'; // Für Wrapper-Navigation nach Profilanlage
 
 class WelcomePage extends StatefulWidget {
   final String uid;

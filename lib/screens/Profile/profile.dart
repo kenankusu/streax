@@ -1,15 +1,16 @@
+import 'package:streax/shared/constants/theme_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:streax/screens/shared/user.dart';
+import 'package:streax/models/user.dart';
 import 'package:streax/services/auth.dart';
 import 'package:streax/services/database.dart';
-import '../shared/navigationbar.dart';
+import '../../shared/widgets/navigation_bar.dart';
 import 'profile_widgets.dart';
 import 'sport_editing.dart';
 import 'delete_account.dart';
-import '../shared/sport_utils.dart';
+import '../../shared/constants/sport_utils.dart';
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const _bg       = Color(0xFF111214);
@@ -21,13 +22,6 @@ const _fire     = Color(0xFFFF6030);
 const _secLbl   = Color(0xFF3A7A9A);
 const _statLbl  = Color(0xFF3A5A6A);
 
-// Sport chip color palette (cycling by index)
-const _chipPalette = [
-  {'border': Color(0xFF2A9FFF), 'bg': Color(0xFF0B2233), 'letter': Color(0xFF2A9FFF), 'name': Color(0xFF1A6090)},
-  {'border': Color(0xFF1CE9B0), 'bg': Color(0xFF0B2620), 'letter': Color(0xFF1CE9B0), 'name': Color(0xFF0E7050)},
-  {'border': Color(0xFF7C5FDC), 'bg': Color(0xFF1A1230), 'letter': Color(0xFF7C5FDC), 'name': Color(0xFF4A3890)},
-  {'border': Color(0xFFF0A020), 'bg': Color(0xFF231800), 'letter': Color(0xFFF0A020), 'name': Color(0xFF8A5A10)},
-];
 
 // ─── Main screen ──────────────────────────────────────────────────────────────
 class Profil extends StatefulWidget {
@@ -196,7 +190,7 @@ class _ProfilState extends State<Profil> {
       child: Row(
         children: [
           ...sports.asMap().entries.map((e) {
-            final colors = _chipPalette[e.key % _chipPalette.length];
+            final colors = kChipPalette[e.key % kChipPalette.length];
             final sport  = e.value;
             return GestureDetector(
               onLongPress: () => _showRemoveDialog(context, sport, uid, data),

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'addActivity.dart';
-import '../Journal/calendar.dart';
-import '../Profile/profile.dart';
-import '../Friends/feed.dart';
+import './add_activity.dart';
+import '../../screens/Journal/calendar.dart';
+import '../../screens/Profile/profile.dart';
+import '../../screens/Friends/feed.dart';
 
 class NavigationsLeiste extends StatelessWidget {
   final int currentPage;

@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
-import 'package:streax/screens/shared/user.dart';
+import 'package:streax/models/user.dart';
 
 /// Authentication Service für Firebase Auth-Operationen
 /// Verwaltet Registrierung, Login, Email-Verifizierung und Passwort-Reset
