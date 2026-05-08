@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart'; // Für debugPrint
+import 'dart:async';
 import 'dart:math';
 
 /// Firestore Database Service für alle Datenbankoperationen
@@ -205,6 +206,23 @@ class DatabaseService {
 
   /// Prüft beim App-Start ob Streak unterbrochen wurde
   /// Setzt Streak auf 0 wenn mehr als 1 Tag ohne Aktivität
+  /// Löscht veraltete friendRequests von nicht mehr existierenden Usern
+  Future<void> cleanupStaleRequests() async {
+    try {
+      final snap = await friendRequestsCollection
+          .where('status', isEqualTo: 'pending')
+          .get();
+      for (final doc in snap.docs) {
+        final senderId = (doc.data() as Map)['senderId'] as String?;
+        if (senderId == null) { await doc.reference.delete(); continue; }
+        final senderDoc = await userCollection.doc(senderId).get();
+        if (!senderDoc.exists) await doc.reference.delete();
+      }
+    } catch (e) {
+      debugPrint('cleanupStaleRequests: $e');
+    }
+  }
+
   Future<void> checkStreakStatus() async {
     try {
       final userRef = userCollection.doc(uid);
@@ -598,6 +616,68 @@ class DatabaseService {
   }
 
   /// Freundschaft entfernen
+  Future<void> likeActivity({
+    required String ownerId,
+    required String activityId,
+    required bool currentlyLiked,
+    required String currentUserId,
+    required String profileImageUrl,
+    required String displayName,
+  }) async {
+    final ref = FirebaseFirestore.instance
+        .collection('users').doc(ownerId)
+        .collection('activities').doc(activityId);
+
+    await FirebaseFirestore.instance.runTransaction((tx) async {
+      final doc = await tx.get(ref);
+      if (!doc.exists) return;
+      final data = doc.data()!;
+      final likedBy = List<String>.from(data['likedBy'] ?? []);
+      final profiles = List<Map<String, dynamic>>.from(
+        (data['likedByProfiles'] as List? ?? []).map((e) => Map<String, dynamic>.from(e as Map)),
+      );
+
+      if (currentlyLiked) {
+        likedBy.remove(currentUserId);
+        profiles.removeWhere((p) => p['uid'] == currentUserId);
+      } else {
+        if (!likedBy.contains(currentUserId)) {
+          likedBy.add(currentUserId);
+          if (profiles.length < 4) {
+            profiles.add({'uid': currentUserId, 'profileImageUrl': profileImageUrl, 'name': displayName});
+          }
+        }
+      }
+
+      tx.update(ref, {
+        'likedBy': likedBy,
+        'likedByProfiles': profiles,
+        'likeCount': likedBy.length,
+      });
+    });
+  }
+
+  Future<void> repostActivity(Map<String, dynamic> activity) async {
+    await userCollection.doc(uid).collection('activities').add({
+      'isRepost': true,
+      'originalUserId': activity['userId'],
+      'originalActivityId': activity['activityId'],
+      'option': activity['title'],
+      'photoUrl': activity['photoUrl'] ?? '',
+      'text': activity['description'] ?? '',
+      'icon': activity['icon'] ?? '',
+      'emoji': activity['emoji'] ?? '',
+      'von': activity['von'] ?? '',
+      'bis': activity['bis'] ?? '',
+      'datum': DateTime.now().toIso8601String(),
+      'createdAt': FieldValue.serverTimestamp(),
+      'userId': uid,
+      'likeCount': 0,
+      'likedBy': [],
+      'likedByProfiles': [],
+    });
+  }
+
   Future<bool> removeFriend(String friendId) async {
     try {
       print('Start removeFriend: $uid -> $friendId');
@@ -655,7 +735,9 @@ class DatabaseService {
 
   /// Stream für eingehende Freundschaftsanfragen
   Stream<QuerySnapshot> get incomingFriendRequests {
-    return friendRequestsCollection.orderBy('sentAt', descending: true).snapshots();
+    return friendRequestsCollection
+        .where('status', isEqualTo: 'pending')
+        .snapshots();
   }
 
   /// Stream für gesendete Freundschaftsanfragen
@@ -683,71 +765,93 @@ class DatabaseService {
 
   // Stream für Friend-Aktivitäten der letzten 7 Tage
   Stream<List<Map<String, dynamic>>> get friendActivities {
-    final sevenDaysAgo = DateTime.now().subtract(Duration(days: 7));
-    
-    return userFriends.asyncMap((friendsSnapshot) async {
-      List<Map<String, dynamic>> allActivities = [];
-      
-      print('Debug: Anzahl Freunde gefunden: ${friendsSnapshot.docs.length}');
-      
-      for (var friendDoc in friendsSnapshot.docs) {
-        final friendData = friendDoc.data() as Map<String, dynamic>;
-        final friendId = friendData['userId'];
-        
-        print('Debug: Lade Aktivitäten für Freund: $friendId');
-        
-        try {
-          final activitiesSnapshot = await FirebaseFirestore.instance
-              .collection('users')
-              .doc(friendId)
-              .collection('activities')
-              .where('createdAt', isGreaterThan: Timestamp.fromDate(sevenDaysAgo))
-              .orderBy('createdAt', descending: true)
-              .get();
-          
-          print('Debug: Aktivitäten für $friendId gefunden: ${activitiesSnapshot.docs.length}');
-          
-          final userData = await getFriendData(friendId);
-          
-          if (userData != null) {
-            for (var activityDoc in activitiesSnapshot.docs) {
-              final activityData = activityDoc.data();
-              print('Debug: Aktivität gefunden: ${activityData['option']} von ${userData['firstName']}');
-              
-              allActivities.add({
-                'activityId': activityDoc.id,
-                'userId': friendId,
-                'userName': '${userData['firstName']} ${userData['lastName']}'.trim(),
-                'username': userData['username'] ?? friendId,
-                'userProfileImage': userData['profileImageUrl'] ?? '',
-                'userStreak': userData['streak'] ?? 0,
-                'title': activityData['option'] ?? 'Unbekannte Aktivität',
-                'description': activityData['text'] ?? '',
-                'category': activityData['option'] ?? 'sonstiges',
-                'duration': _calculateDuration(activityData['von'], activityData['bis']),
-                'timestamp': activityData['createdAt'],
-                'emoji': activityData['emoji'] ?? '',
-                'von': activityData['von'] ?? '',
-                'bis': activityData['bis'] ?? '',
-                'datum': activityData['datum'] ?? '',
-              });
-            }
-          }
-        } catch (e) {
-          print('Debug: Fehler beim Laden der Aktivitäten von $friendId: $e');
-        }
-      }
-      
-      allActivities.sort((a, b) {
+    final sevenDaysAgo = DateTime.now().subtract(const Duration(days: 7));
+    final controller = StreamController<List<Map<String, dynamic>>>();
+
+    final Map<String, List<Map<String, dynamic>>> activitiesByFriend = {};
+    final List<StreamSubscription> activitySubs = [];
+
+    void emitCombined() {
+      final all = activitiesByFriend.values.expand((e) => e).toList();
+      all.sort((a, b) {
         final aTime = a['timestamp'] as Timestamp?;
         final bTime = b['timestamp'] as Timestamp?;
         if (aTime == null || bTime == null) return 0;
         return bTime.compareTo(aTime);
       });
-      
-      print('Debug: Gesamt-Aktivitäten im Feed: ${allActivities.length}');
-      return allActivities;
+      if (!controller.isClosed) controller.add(all);
+    }
+
+    final friendsSub = userFriends.listen((friendsSnapshot) async {
+      for (final sub in activitySubs) { await sub.cancel(); }
+      activitySubs.clear();
+      activitiesByFriend.clear();
+
+      final friendIds = friendsSnapshot.docs
+          .map((d) => (d.data() as Map<String, dynamic>)['userId'] as String?)
+          .whereType<String>()
+          .toList();
+
+      if (friendIds.isEmpty) {
+        emitCombined();
+        return;
+      }
+
+      for (final friendId in friendIds) {
+        final sub = FirebaseFirestore.instance
+            .collection('users')
+            .doc(friendId)
+            .collection('activities')
+            .where('createdAt', isGreaterThan: Timestamp.fromDate(sevenDaysAgo))
+            .orderBy('createdAt', descending: true)
+            .snapshots()
+            .listen((activitiesSnapshot) async {
+          final userData = await getFriendData(friendId);
+          if (userData == null) return;
+
+          activitiesByFriend[friendId] = activitiesSnapshot.docs.map((doc) {
+            final data = doc.data();
+            return {
+              'activityId': doc.id,
+              'userId': friendId,
+              'userName': '${userData['firstName']} ${userData['lastName']}'.trim(),
+              'username': userData['username'] ?? friendId,
+              'userProfileImage': userData['profileImageUrl'] ?? '',
+              'userStreak': userData['streak'] ?? 0,
+              'title': data['option'] ?? 'Unbekannte Aktivität',
+              'description': data['text'] ?? '',
+              'category': data['option'] ?? 'sonstiges',
+              'icon': data['icon'] ?? '',
+              'duration': _calculateDuration(data['von'], data['bis']),
+              'timestamp': data['createdAt'],
+              'emoji': data['emoji'] ?? '',
+              'photoUrl': data['photoUrl'] ?? '',
+              'likeCount': data['likeCount'] ?? 0,
+              'likedBy': List<String>.from(data['likedBy'] ?? []),
+              'likedByProfiles': List<Map<String, dynamic>>.from(
+                (data['likedByProfiles'] as List? ?? []).map((e) => Map<String, dynamic>.from(e as Map)),
+              ),
+              'isRepost': data['isRepost'] ?? false,
+              'originalUserId': data['originalUserId'] ?? '',
+              'von': data['von'] ?? '',
+              'bis': data['bis'] ?? '',
+              'datum': data['datum'] ?? '',
+            };
+          }).toList();
+
+          emitCombined();
+        });
+
+        activitySubs.add(sub);
+      }
     });
+
+    controller.onCancel = () async {
+      await friendsSub.cancel();
+      for (final sub in activitySubs) { await sub.cancel(); }
+    };
+
+    return controller.stream;
   }
 
   // Hilfsmethode: Dauer berechnen

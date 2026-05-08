@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:streax/Screens/splashscreen.dart'; 
-import 'package:streax/Services/database.dart';   
+import 'package:streax/services/database.dart';
 
 void main() async {
   // Flutter-Engine initialisieren für Firebase
@@ -17,10 +17,12 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // Streak-Status prüfen, falls User eingeloggt
+  // Initialisierung für eingeloggte User
   final user = FirebaseAuth.instance.currentUser;
   if (user != null) {
-    await DatabaseService(uid: user.uid).checkStreakStatus();
+    final db = DatabaseService(uid: user.uid);
+    await db.checkStreakStatus();
+    db.cleanupStaleRequests(); // fire-and-forget, läuft im Hintergrund
   }
 
   runApp(streax());

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import '../../utils/sport_utils.dart';
 
 /// Widget für die Wochenansicht der Journal-Einträge
 class Journal extends StatelessWidget {
@@ -46,7 +47,7 @@ class Journal extends StatelessWidget {
             String tag = wochentage[idx];
             String dateKey = "${day.year.toString().padLeft(4, '0')}-${day.month.toString().padLeft(2, '0')}-${day.day.toString().padLeft(2, '0')}";
             final eintrag = eintraege[dateKey];
-            bool hasEntry = eintrag != null && eintrag['icon'] != null && eintrag['icon'] != '';
+            bool hasEntry = eintrag != null && (eintrag['option'] ?? '').toString().isNotEmpty;
             bool isToday = idx == today;
             bool isFuture = idx > today;
 
@@ -119,7 +120,7 @@ class Journal extends StatelessWidget {
                                   ),
                                   child: Center(
                                     child: hasEntry
-                                        ? Image.asset(eintrag['icon'], width: 36, height: 36, fit: BoxFit.contain)
+                                        ? Text(sportEmoji(eintrag['option'] ?? ''), style: const TextStyle(fontSize: 26))
                                         : const SizedBox.shrink(),
                                   ),
                                 ),
@@ -137,7 +138,7 @@ class Journal extends StatelessWidget {
                                 ),
                                 child: Center(
                                   child: hasEntry
-                                      ? Image.asset(eintrag['icon'], width: 36, height: 36, fit: BoxFit.contain)
+                                      ? Text(sportEmoji(eintrag['option'] ?? ''), style: const TextStyle(fontSize: 26))
                                       : const SizedBox.shrink(),
                                 ),
                               ),

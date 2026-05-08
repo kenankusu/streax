@@ -42,6 +42,9 @@ class FriendActions {
     Map<String, dynamic> user,
     String currentUserId,
   ) async {
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+
     try {
       showDialog(
         context: context,
@@ -65,18 +68,17 @@ class FriendActions {
         uid: currentUserId,
       ).acceptFriendRequest(user['uid']).timeout(Duration(seconds: 15));
 
-      if (!context.mounted) return;
-      if (Navigator.canPop(context)) Navigator.pop(context);
+      if (navigator.canPop()) navigator.pop();
 
       if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(
             content: Text('${user['firstName']} ist jetzt dein Freund!'),
             backgroundColor: Colors.green,
           ),
         );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(
             content: Text('Fehler beim Akzeptieren der Anfrage'),
             backgroundColor: Colors.red,
@@ -84,11 +86,10 @@ class FriendActions {
         );
       }
     } catch (e) {
-      if (!context.mounted) return;
-      if (Navigator.canPop(context)) Navigator.pop(context);
+      if (navigator.canPop()) navigator.pop();
 
       print('Fehler in acceptFriendRequest UI: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         SnackBar(
           content: Text('Timeout oder Netzwerkfehler'),
           backgroundColor: Colors.orange,
@@ -103,8 +104,10 @@ class FriendActions {
     Map<String, dynamic> user,
     String currentUserId,
   ) async {
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+
     try {
-      // Loading-Indikator anzeigen
       showDialog(
         context: context,
         barrierDismissible: false,
@@ -117,18 +120,17 @@ class FriendActions {
         uid: currentUserId,
       ).declineFriendRequest(user['uid']).timeout(Duration(seconds: 15));
 
-      if (!context.mounted) return;
-      if (Navigator.canPop(context)) Navigator.pop(context);
+      if (navigator.canPop()) navigator.pop();
 
       if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(
             content: Text('Freundschaftsanfrage abgelehnt'),
             backgroundColor: Colors.orange,
           ),
         );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(
             content: Text('Fehler beim Ablehnen der Anfrage'),
             backgroundColor: Colors.red,
@@ -136,11 +138,10 @@ class FriendActions {
         );
       }
     } catch (e) {
-      if (!context.mounted) return;
-      if (Navigator.canPop(context)) Navigator.pop(context);
+      if (navigator.canPop()) navigator.pop();
 
-      print('Fehler in declineFriendRequest UI: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
+      debugPrint('Fehler in declineFriendRequest UI: $e');
+      messenger.showSnackBar(
         SnackBar(
           content: Text('Timeout oder Netzwerkfehler'),
           backgroundColor: Colors.orange,
@@ -154,6 +155,9 @@ class FriendActions {
     BuildContext context,
     Map<String, dynamic> user,
   ) async {
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -183,7 +187,7 @@ class FriendActions {
       final currentUser = FirebaseAuth.instance.currentUser;
 
       if (currentUser == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(
             content: Text('Fehler: Nicht eingeloggt'),
             backgroundColor: Colors.red,
@@ -193,7 +197,7 @@ class FriendActions {
       }
 
       if (user['uid'] == null || user['uid'].toString().isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(
             content: Text('Fehler: Ungültige Benutzer-ID'),
             backgroundColor: Colors.red,
@@ -203,7 +207,6 @@ class FriendActions {
       }
 
       try {
-        // Loading-Dialog während der Freund-Entfernung anzeigen
         showDialog(
           context: context,
           barrierDismissible: false,
@@ -226,20 +229,17 @@ class FriendActions {
           uid: currentUser.uid,
         ).removeFriend(user['uid']).timeout(Duration(seconds: 15));
 
-        // Loading-Dialog wieder schließen
-        if (Navigator.canPop(context)) {
-          Navigator.pop(context);
-        }
+        if (navigator.canPop()) navigator.pop();
 
         if (success) {
-          ScaffoldMessenger.of(context).showSnackBar(
+          messenger.showSnackBar(
             SnackBar(
               content: Text('${user['firstName']} wurde entfernt'),
               backgroundColor: Colors.green,
             ),
           );
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
+          messenger.showSnackBar(
             SnackBar(
               content: Text('Fehler beim Entfernen'),
               backgroundColor: Colors.red,
@@ -247,13 +247,10 @@ class FriendActions {
           );
         }
       } catch (e) {
-        // Loading-Dialog schließen falls noch offen
-        if (Navigator.canPop(context)) {
-          Navigator.pop(context);
-        }
+        if (navigator.canPop()) navigator.pop();
 
-        print('Fehler in removeFriend UI: $e');
-        ScaffoldMessenger.of(context).showSnackBar(
+        debugPrint('Fehler in removeFriend UI: $e');
+        messenger.showSnackBar(
           SnackBar(
             content: Text('Timeout oder Netzwerkfehler'),
             backgroundColor: Colors.orange,
@@ -270,8 +267,8 @@ class FriendActions {
   ) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: Theme.of(dialogContext).colorScheme.surfaceContainer,
         title: Text(
           'Freundschaftsanfrage',
           style: TextStyle(color: Colors.white),
@@ -314,7 +311,7 @@ class FriendActions {
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.pop(dialogContext);
               final currentUser = FirebaseAuth.instance.currentUser;
               if (currentUser != null) {
                 declineFriendRequest(context, user, currentUser.uid);
@@ -324,7 +321,7 @@ class FriendActions {
           ),
           ElevatedButton(
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.pop(dialogContext);
               final currentUser = FirebaseAuth.instance.currentUser;
               if (currentUser != null) {
                 acceptFriendRequest(context, user, currentUser.uid);
