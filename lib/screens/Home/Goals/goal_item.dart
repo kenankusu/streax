@@ -57,7 +57,7 @@ class GoalItem extends StatelessWidget {
                 onPressed: onEdit,
                 icon: Icon(
                   Icons.edit_outlined,
-                  color: Colors.white.withOpacity(0.7),
+                  color: Colors.white.withValues(alpha: 0.7),
                   size: 20,
                 ),
                 padding: EdgeInsets.zero,
@@ -67,7 +67,7 @@ class GoalItem extends StatelessWidget {
                 onPressed: onDelete,
                 icon: Icon(
                   Icons.delete_outline,
-                  color: Colors.red.withOpacity(0.7),
+                  color: Colors.red.withValues(alpha: 0.7),
                   size: 20,
                 ),
                 padding: EdgeInsets.zero,

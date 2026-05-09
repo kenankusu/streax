@@ -470,6 +470,7 @@ class _AktivitaetHinzufuegenState extends State<AktivitaetHinzufuegen> {
         ]);
 
       case SportCategory.general:
+      case SportCategory.universal:
         return _statBox(label: 'Dauer', value: _dauer, unit: 'min', step: 5, min: 0, max: 300, onChanged: (v) => setState(() => _dauer = v));
     }
   }

@@ -10,6 +10,8 @@ enum SportCategory {
   combat,
   /// Nur Dauer (Krafttraining, Yoga …)
   general,
+  /// Fallback — nur Dauer, keine weiteren Felder
+  universal,
 }
 
 const Map<String, SportCategory> kSportCategories = {
@@ -34,6 +36,7 @@ const Map<String, SportCategory> kSportCategories = {
   'Kickboxen':       SportCategory.combat,
   'Muay Thai':       SportCategory.combat,
   'Ringen':          SportCategory.combat,
+  'Skateboarding':      SportCategory.universal,
 };
 
 /// Gibt die Kategorie für eine Sportart zurück (default: general)
@@ -50,6 +53,7 @@ const List<String> kAllSports = [
   'Ringen',            'Rudern',       'Schwimmen',    'Ski',
   'Snowboarding',      'Tennis',       'Tischtennis',  'Turnen',
   'Volleyball',        'Wandern',      'Yoga',
+  'Skateboard',
 ];
 
 // ─── Sport → Emoji ────────────────────────────────────────────────────────────
@@ -85,6 +89,7 @@ const Map<String, String> kSportEmojis = {
   'Volleyball':        '🏐',
   'Wandern':           '🥾',
   'Yoga':              '🧘',
+  'Skateboard':        '🛹',
 };
 
 // ─── Sport → Icon-Asset-Pfad ──────────────────────────────────────────────────
