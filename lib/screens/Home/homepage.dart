@@ -27,6 +27,7 @@ class Homepage extends StatelessWidget {
     return Scaffold(
       backgroundColor: kBg,
       body: Stack(
+        fit: StackFit.expand,
         children: [
           SafeArea(
             bottom: false,
